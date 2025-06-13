@@ -5,7 +5,7 @@ import {
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { Header } from "../../components";
 import { tokens } from "../../theme";
-import { LocalPizzaOutlined } from "@mui/icons-material";
+import { LocalPizzaOutlined, TagOutlined } from "@mui/icons-material";
 import { useEffect, useState, useCallback } from "react";
 import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -13,7 +13,7 @@ import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
 
 // ...reportData definition remains unchanged...
 let mealData = {
-    "breakfast": [
+      "breakfast": [
         {
             "cat_id": 1,
             "cat_name": "BREAKFAST DAILY SPECIAL",
@@ -24,34 +24,8 @@ let mealData = {
                     "item_id": 649,
                     "item_name": "Egg, Turkey Bacon, Hashbrowns, Whole Wheat and Oatmeal & Fruits",
                     "chinese_name": "雞蛋、火雞培根、土豆餅、全麥和燕麥、水果",
-                    "options": [
-                        {
-                            "id": 1,
-                            "name": "Rice",
-                            "c_name": "Rice",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 3,
-                            "name": "Yam Fries ( extra $5)",
-                            "c_name": "山药薯条 (额外 5 美元)",
-                            "is_selected": 0
-                        }
-                    ],
-                    "preference": [
-                        {
-                            "id": 1,
-                            "name": "Less oil",
-                            "c_name": "Less oil",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 2,
-                            "name": "Less Salt",
-                            "c_name": "少盐",
-                            "is_selected": 0
-                        }
-                    ],
+                    "options": [],
+                    "preference": [],
                     "item_image": null,
                     "qty": 0,
                     "comment": "",
@@ -75,34 +49,8 @@ let mealData = {
                     "item_name": "Choice of Egg",
                     "chinese_name": "雞蛋",
                     "item_image": null,
-                    "options": [
-                        {
-                            "id": 1,
-                            "name": "Rice",
-                            "c_name": "Rice",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 3,
-                            "name": "Yam Fries ( extra $5)",
-                            "c_name": "山药薯条 (额外 5 美元)",
-                            "is_selected": 0
-                        }
-                    ],
-                    "preference": [
-                        {
-                            "id": 1,
-                            "name": "Less oil",
-                            "c_name": "Less oil",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 2,
-                            "name": "Less Salt",
-                            "c_name": "少盐",
-                            "is_selected": 0
-                        }
-                    ],
+                    "options": [],
+                    "preference": [],
                     "qty": 0,
                     "comment": "",
                     "order_id": 0
@@ -137,34 +85,8 @@ let mealData = {
                     "item_name": "Fruit",
                     "chinese_name": "水果",
                     "item_image": null,
-                    "options": [
-                        {
-                            "id": 1,
-                            "name": "Rice",
-                            "c_name": "Rice",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 3,
-                            "name": "Yam Fries ( extra $5)",
-                            "c_name": "山药薯条 (额外 5 美元)",
-                            "is_selected": 0
-                        }
-                    ],
-                    "preference": [
-                        {
-                            "id": 1,
-                            "name": "Less oil",
-                            "c_name": "Less oil",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 2,
-                            "name": "Less Salt",
-                            "c_name": "少盐",
-                            "is_selected": 0
-                        }
-                    ],
+                    "options": [],
+                    "preference": [],
                     "qty": 0,
                     "comment": "",
                     "order_id": 0
@@ -183,34 +105,8 @@ let mealData = {
                     "item_id": 470,
                     "item_name": "Soup of the Day",
                     "chinese_name": null,
-                    "options": [
-                        {
-                            "id": 1,
-                            "name": "Rice",
-                            "c_name": "Rice",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 3,
-                            "name": "Yam Fries ( extra $5)",
-                            "c_name": "山药薯条 (额外 5 美元)",
-                            "is_selected": 0
-                        }
-                    ],
-                    "preference": [
-                        {
-                            "id": 1,
-                            "name": "Less oil",
-                            "c_name": "Less oil",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 2,
-                            "name": "Less Salt",
-                            "c_name": "少盐",
-                            "is_selected": 0
-                        }
-                    ],
+                    "options": [],
+                    "preference": [],
                     "item_image": null,
                     "qty": 0,
                     "comment": "",
@@ -242,20 +138,7 @@ let mealData = {
                             "is_selected": 0
                         }
                     ],
-                    "preference": [
-                        {
-                            "id": 1,
-                            "name": "Less oil",
-                            "c_name": "Less oil",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 2,
-                            "name": "Less Salt",
-                            "c_name": "少盐",
-                            "is_selected": 0
-                        }
-                    ],
+                    "preference": [],
                     "item_image": null,
                     "qty": 0,
                     "comment": "",
@@ -304,34 +187,8 @@ let mealData = {
                     "item_name": "Egg Salad Sandwich",
                     "chinese_name": "蛋沙律三文治",
                     "item_image": null,
-                    "options": [
-                        {
-                            "id": 1,
-                            "name": "Rice",
-                            "c_name": "Rice",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 3,
-                            "name": "Yam Fries ( extra $5)",
-                            "c_name": "山药薯条 (额外 5 美元)",
-                            "is_selected": 0
-                        }
-                    ],
-                    "preference": [
-                        {
-                            "id": 1,
-                            "name": "Less oil",
-                            "c_name": "Less oil",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 2,
-                            "name": "Less Salt",
-                            "c_name": "少盐",
-                            "is_selected": 0
-                        }
-                    ],
+                    "options": [],
+                    "preference": [],
                     "qty": 0,
                     "comment": "",
                     "order_id": 0
@@ -342,34 +199,8 @@ let mealData = {
                     "item_name": "Ham and Cheese Sandwich",
                     "chinese_name": "火腿芝士三文治",
                     "item_image": null,
-                    "options": [
-                        {
-                            "id": 1,
-                            "name": "Rice",
-                            "c_name": "Rice",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 3,
-                            "name": "Yam Fries ( extra $5)",
-                            "c_name": "山药薯条 (额外 5 美元)",
-                            "is_selected": 0
-                        }
-                    ],
-                    "preference": [
-                        {
-                            "id": 1,
-                            "name": "Less oil",
-                            "c_name": "Less oil",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 2,
-                            "name": "Less Salt",
-                            "c_name": "少盐",
-                            "is_selected": 0
-                        }
-                    ],
+                    "options": [],
+                    "preference": [],
                     "qty": 0,
                     "comment": "",
                     "order_id": 0
@@ -380,34 +211,8 @@ let mealData = {
                     "item_name": "Turkey Sandwich",
                     "chinese_name": "火雞三文治",
                     "item_image": null,
-                    "options": [
-                        {
-                            "id": 1,
-                            "name": "Rice",
-                            "c_name": "Rice",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 3,
-                            "name": "Yam Fries ( extra $5)",
-                            "c_name": "山药薯条 (额外 5 美元)",
-                            "is_selected": 0
-                        }
-                    ],
-                    "preference": [
-                        {
-                            "id": 1,
-                            "name": "Less oil",
-                            "c_name": "Less oil",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 2,
-                            "name": "Less Salt",
-                            "c_name": "少盐",
-                            "is_selected": 0
-                        }
-                    ],
+                    "options": [],
+                    "preference": [],
                     "qty": 0,
                     "comment": "",
                     "order_id": 0
@@ -418,34 +223,8 @@ let mealData = {
                     "item_name": "Cheese Omelette",
                     "chinese_name": "芝士奄列",
                     "item_image": null,
-                    "options": [
-                        {
-                            "id": 1,
-                            "name": "Rice",
-                            "c_name": "Rice",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 3,
-                            "name": "Yam Fries ( extra $5)",
-                            "c_name": "山药薯条 (额外 5 美元)",
-                            "is_selected": 0
-                        }
-                    ],
-                    "preference": [
-                        {
-                            "id": 1,
-                            "name": "Less oil",
-                            "c_name": "Less oil",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 2,
-                            "name": "Less Salt",
-                            "c_name": "少盐",
-                            "is_selected": 0
-                        }
-                    ],
+                    "options": [],
+                    "preference": [],
                     "qty": 0,
                     "comment": "",
                     "order_id": 0
@@ -464,34 +243,8 @@ let mealData = {
                     "item_id": 624,
                     "item_name": "Salt Baked Chicken with Rice and Steamed Bok Choy",
                     "chinese_name": "鹽焗雞飯配白菜",
-                    "options": [
-                        {
-                            "id": 1,
-                            "name": "Rice",
-                            "c_name": "Rice",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 3,
-                            "name": "Yam Fries ( extra $5)",
-                            "c_name": "山药薯条 (额外 5 美元)",
-                            "is_selected": 0
-                        }
-                    ],
-                    "preference": [
-                        {
-                            "id": 1,
-                            "name": "Less oil",
-                            "c_name": "Less oil",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 2,
-                            "name": "Less Salt",
-                            "c_name": "少盐",
-                            "is_selected": 0
-                        }
-                    ],
+                    "options": [],
+                    "preference": [],
                     "item_image": null,
                     "qty": 0,
                     "comment": "",
@@ -559,34 +312,8 @@ let mealData = {
                     "item_name": "Pan Seared Chicken Breast",
                     "chinese_name": "香煎雞胸",
                     "item_image": null,
-                    "options": [
-                        {
-                            "id": 1,
-                            "name": "Rice",
-                            "c_name": "Rice",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 3,
-                            "name": "Yam Fries ( extra $5)",
-                            "c_name": "山药薯条 (额外 5 美元)",
-                            "is_selected": 0
-                        }
-                    ],
-                    "preference": [
-                        {
-                            "id": 1,
-                            "name": "Less oil",
-                            "c_name": "Less oil",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 2,
-                            "name": "Less Salt",
-                            "c_name": "少盐",
-                            "is_selected": 0
-                        }
-                    ],
+                    "options": [],
+                    "preference": [],
                     "qty": 0,
                     "comment": "",
                     "order_id": 0
@@ -658,120 +385,132 @@ const Order = () => {
 
     // ...existing code...
 
-    function transformMealData(mealData) {
-        // Breakfast
-        const breakfastCat = mealData.breakfast?.[0];
-        const breakfast = breakfastCat?.items || [];
-        const breakFastDailySpecialCatName = breakfastCat?.cat_name || "";
-        const breakFastAlternativeCat = breakfast.find(item => item.type === "sub_cat");
-        const breakFastAlternativeCatName = breakFastAlternativeCat?.item_name || "";
-        const breakFastDailySpecial = breakfast
-            .filter(item => item.type === "item")
-            .map(item => ({
-                id: item.item_id,
-                name: item.item_name,
-                chinese_name: item.chinese_name,
-                qty: item.qty,
-                options: item.options,
-                preference: item.preference
-            }));
-        const breakFastAlternative = breakfast
-            .filter(item => item.type === "sub_cat_item")
-            .map(item => ({
-                id: item.item_id,
-                name: item.item_name,
-                chinese_name: item.chinese_name,
-                qty: item.qty,
-                options: item.options,
-                preference: item.preference
-            }));
+  // ...existing code...
 
-        const lunchSoupCatName = mealData.lunch?.[0]?.cat_name || "";
-        const lunchEntreeCatName = mealData.lunch?.[1]?.cat_name || "";
-        const lunchAlternativeCat = mealData.lunch?.[1]?.items?.find(item => item.type === "sub_cat");
-        const lunchAlternativeCatName = lunchAlternativeCat?.item_name || "";
-        const lunchSoup = mealData.lunch?.[0]?.items?.map(item => ({
+function selectFirstOption(options) {
+    if (!options || options.length === 0) return [];
+    return options.map((opt, idx) => ({
+        ...opt,
+        is_selected: idx === 0 ? 1 : 0
+    }));
+}
+
+function transformMealData(mealData) {
+    // Breakfast
+    const breakfastCat = mealData.breakfast?.[0];
+    const breakfast = breakfastCat?.items || [];
+    const breakFastDailySpecialCatName = breakfastCat?.cat_name || "";
+    const breakFastAlternativeCat = breakfast.find(item => item.type === "sub_cat");
+    const breakFastAlternativeCatName = breakFastAlternativeCat?.item_name || "";
+    const breakFastDailySpecial = breakfast
+        .filter(item => item.type === "item")
+        .map(item => ({
             id: item.item_id,
             name: item.item_name,
             chinese_name: item.chinese_name,
             qty: item.qty,
-            options: item.options,
+            options: selectFirstOption(item.options),
+            preference: item.preference
+        }));
+    const breakFastAlternative = breakfast
+        .filter(item => item.type === "sub_cat_item")
+        .map(item => ({
+            id: item.item_id,
+            name: item.item_name,
+            chinese_name: item.chinese_name,
+            qty: item.qty,
+            options: selectFirstOption(item.options),
+            preference: item.preference
+        }));
+
+    const lunchSoupCatName = mealData.lunch?.[0]?.cat_name || "";
+    const lunchEntreeCatName = mealData.lunch?.[1]?.cat_name || "";
+    const lunchAlternativeCat = mealData.lunch?.[1]?.items?.find(item => item.type === "sub_cat");
+    const lunchAlternativeCatName = lunchAlternativeCat?.item_name || "";
+    const lunchSoup = mealData.lunch?.[0]?.items?.map(item => ({
+        id: item.item_id,
+        name: item.item_name,
+        chinese_name: item.chinese_name,
+        qty: item.qty,
+        options: selectFirstOption(item.options),
+        preference: item.preference
+    })) || [];
+    const lunchEntree = mealData.lunch?.[1]?.items
+        ?.filter(item => item.type === "item")
+        .map(item => ({
+            id: item.item_id,
+            name: item.item_name,
+            chinese_name: item.chinese_name,
+            qty: item.qty,
+            options: selectFirstOption(item.options),
             preference: item.preference
         })) || [];
-        const lunchEntree = mealData.lunch?.[1]?.items
-            ?.filter(item => item.type === "item")
-            .map(item => ({
-                id: item.item_id,
-                name: item.item_name,
-                chinese_name: item.chinese_name,
-                qty: item.qty,
-                options: item.options,
-                preference: item.preference
-            })) || [];
-        const lunchAlternative = mealData.lunch?.[1]?.items
-            ?.filter(item => item.type === "sub_cat_item")
-            .map(item => ({
-                id: item.item_id,
-                name: item.item_name,
-                chinese_name: item.chinese_name,
-                qty: item.qty,
-                options: item.options,
-                preference: item.preference
-            })) || [];
+    const lunchAlternative = mealData.lunch?.[1]?.items
+        ?.filter(item => item.type === "sub_cat_item")
+        .map(item => ({
+            id: item.item_id,
+            name: item.item_name,
+            chinese_name: item.chinese_name,
+            qty: item.qty,
+            options: selectFirstOption(item.options),
+            preference: item.preference
+        })) || [];
 
-        // Dinner
-        const dinnerCat = mealData.dinner?.[0];
-        const dinnerEntreeCatName = dinnerCat?.cat_name || "";
-        const dinnerAlternativeCat = dinnerCat?.items?.find(item => item.type === "sub_cat");
-        const dinnerAlternativeCatName = dinnerAlternativeCat?.item_name || "";
-        const dinnerSoup = []; // If you have soup in dinner, extract it here
-        const dinnerEntree = dinnerCat?.items
-            ?.filter(item => item.type === "item")
-            .map(item => ({
-                id: item.item_id,
-                name: item.item_name,
-                chinese_name: item.chinese_name,
-                qty: item.qty,
-                options: item.options,
-                preference: item.preference
-            })) || [];
-        const dinnerAlternative = dinnerCat?.items
-            ?.filter(item => item.type === "sub_cat_item")
-            .map(item => ({
-                id: item.item_id,
-                name: item.item_name,
-                chinese_name: item.chinese_name,
-                qty: item.qty,
-                options: item.options,
-                preference: item.preference
-            })) || [];
+    // Dinner
+    const dinnerCat = mealData.dinner?.[0];
+    const dinnerEntreeCatName = dinnerCat?.cat_name || "";
+    const dinnerAlternativeCat = dinnerCat?.items?.find(item => item.type === "sub_cat");
+    const dinnerAlternativeCatName = dinnerAlternativeCat?.item_name || "";
+    const dinnerSoup = []; // If you have soup in dinner, extract it here
+    const dinnerEntree = dinnerCat?.items
+        ?.filter(item => item.type === "item")
+        .map(item => ({
+            id: item.item_id,
+            name: item.item_name,
+            chinese_name: item.chinese_name,
+            qty: item.qty,
+            options: selectFirstOption(item.options),
+            preference: item.preference
+        })) || [];
+    const dinnerAlternative = dinnerCat?.items
+        ?.filter(item => item.type === "sub_cat_item")
+        .map(item => ({
+            id: item.item_id,
+            name: item.item_name,
+            chinese_name: item.chinese_name,
+            qty: item.qty,
+            options: selectFirstOption(item.options),
+            preference: item.preference
+        })) || [];
 
-        return {
-            breakFastDailySpecialCatName,
-            breakFastAlternativeCatName,
-            breakFastDailySpecial,
-            breakFastAlternative,
-            lunchSoup,
-            lunchSoupCatName,
-            lunchEntree,
-            lunchEntreeCatName,
-            lunchAlternative,
-            lunchAlternativeCatName,
-            dinnerEntree,
-            dinnerEntreeCatName,
-            dinnerAlternative,
-            dinnerAlternativeCatName,
-            dinnerSoup,
-        };
-    }
+    return {
+        breakFastDailySpecialCatName,
+        breakFastAlternativeCatName,
+        breakFastDailySpecial,
+        breakFastAlternative,
+        lunchSoup,
+        lunchSoupCatName,
+        lunchEntree,
+        lunchEntreeCatName,
+        lunchAlternative,
+        lunchAlternativeCatName,
+        dinnerEntree,
+        dinnerEntreeCatName,
+        dinnerAlternative,
+        dinnerAlternativeCatName,
+        dinnerSoup,
+    };
+}
+
+// ...existing code...
 
     // ...existing code...
     console.log("Meal data", data)
     return (
         <Box m="20px">
             <Header
-                title="Order Details"
-                icon={<LocalPizzaOutlined />}
+                title="Room Number Here"
+                icon={<TagOutlined />}
             />
             <Box
                 mt="40px"
@@ -1078,6 +817,53 @@ const Order = () => {
                                         ))}
                                     </>
                                 )}
+                                {/* After all Items Display then if quantity graterthern 0 after show 2 check box like Escort Service and tray Service */}
+                                {(
+                                    (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0))
+                                ) && (
+                                        <Box mt={3}>
+                                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                                Additional Services
+                                            </Typography>
+                                            <label style={{ marginRight: 24 }}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={Array.isArray(data.breakfast_additional_services) && data.breakfast_additional_services.includes('escort')}
+                                                    onChange={e => {
+                                                        setData(prev => {
+                                                            const arr = Array.isArray(prev.breakfast_additional_services) ? prev.breakfast_additional_services : [];
+                                                            return {
+                                                                ...prev,
+                                                                breakfast_additional_services: e.target.checked
+                                                                    ? [...arr, 'escort']
+                                                                    : arr.filter(s => s !== 'escort')
+                                                            };
+                                                        });
+                                                    }}
+                                                />
+                                                Escort Service
+                                            </label>
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={Array.isArray(data.breakfast_additional_services) && data.breakfast_additional_services.includes('tray')}
+                                                    onChange={e => {
+                                                        setData(prev => {
+                                                            const arr = Array.isArray(prev.breakfast_additional_services) ? prev.breakfast_additional_services : [];
+                                                            return {
+                                                                ...prev,
+                                                                breakfast_additional_services: e.target.checked
+                                                                    ? [...arr, 'tray']
+                                                                    : arr.filter(s => s !== 'tray')
+                                                            };
+                                                        });
+                                                    }}
+                                                />
+                                                Tray Service
+                                            </label>
+                                        </Box>
+                                    )}
+
                             </Box>
                         )}
 
@@ -1447,6 +1233,54 @@ const Order = () => {
                                         ))}
                                     </>
                                 )}
+                                {/* Add Lunch Additional Services */}
+                                {(
+                                    (data.lunchSoup?.some(item => item.qty > 0) ||
+                                        data.lunchEntree?.some(item => item.qty > 0) ||
+                                        data.lunchAlternative?.some(item => item.qty > 0))
+                                ) && (
+                                        <Box mt={3}>
+                                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                                Additional Services
+                                            </Typography>
+                                            <label style={{ marginRight: 24 }}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={Array.isArray(data.lunch_additional_services) && data.lunch_additional_services.includes('escort')}
+                                                    onChange={e => {
+                                                        setData(prev => {
+                                                            const arr = Array.isArray(prev.lunch_additional_services) ? prev.lunch_additional_services : [];
+                                                            return {
+                                                                ...prev,
+                                                                lunch_additional_services: e.target.checked
+                                                                    ? [...arr, 'escort']
+                                                                    : arr.filter(s => s !== 'escort')
+                                                            };
+                                                        });
+                                                    }}
+                                                />
+                                                Escort Service
+                                            </label>
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={Array.isArray(data.lunch_additional_services) && data.lunch_additional_services.includes('tray')}
+                                                    onChange={e => {
+                                                        setData(prev => {
+                                                            const arr = Array.isArray(prev.lunch_additional_services) ? prev.lunch_additional_services : [];
+                                                            return {
+                                                                ...prev,
+                                                                lunch_additional_services: e.target.checked
+                                                                    ? [...arr, 'tray']
+                                                                    : arr.filter(s => s !== 'tray')
+                                                            };
+                                                        });
+                                                    }}
+                                                />
+                                                Tray Service
+                                            </label>
+                                        </Box>
+                                    )}
                             </Box>
                         )}
 
@@ -1746,7 +1580,57 @@ const Order = () => {
                                         ))}
                                     </>
                                 )}
-                            </Box>)}
+                                {/* Add Dinner Additional Services */}
+                                {/* Add Dinner Additional Services */}
+                                {(
+                                    (data.dinnerSoup?.some(item => item.qty > 0) ||
+                                        data.dinnerEntree?.some(item => item.qty > 0) ||
+                                        data.dinnerAlternative?.some(item => item.qty > 0))
+                                ) && (
+                                        <Box mt={3}>
+                                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                                Additional Services
+                                            </Typography>
+                                            <label style={{ marginRight: 24 }}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={Array.isArray(data.dinner_additional_services) && data.dinner_additional_services.includes('escort')}
+                                                    onChange={e => {
+                                                        setData(prev => {
+                                                            const arr = Array.isArray(prev.dinner_additional_services) ? prev.dinner_additional_services : [];
+                                                            return {
+                                                                ...prev,
+                                                                dinner_additional_services: e.target.checked
+                                                                    ? [...arr, 'escort']
+                                                                    : arr.filter(s => s !== 'escort')
+                                                            };
+                                                        });
+                                                    }}
+                                                />
+                                                Escort Service
+                                            </label>
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={Array.isArray(data.dinner_additional_services) && data.dinner_additional_services.includes('tray')}
+                                                    onChange={e => {
+                                                        setData(prev => {
+                                                            const arr = Array.isArray(prev.dinner_additional_services) ? prev.dinner_additional_services : [];
+                                                            return {
+                                                                ...prev,
+                                                                dinner_additional_services: e.target.checked
+                                                                    ? [...arr, 'tray']
+                                                                    : arr.filter(s => s !== 'tray')
+                                                            };
+                                                        });
+                                                    }}
+                                                />
+                                                Tray Service
+                                            </label>
+                                        </Box>
+                                    )}
+                            </Box>
+                        )}
                     </>
                 )}
             </Box>
