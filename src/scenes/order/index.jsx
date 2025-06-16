@@ -13,7 +13,7 @@ import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
 
 // ...reportData definition remains unchanged...
 let mealData = {
-      "breakfast": [
+    "breakfast": [
         {
             "cat_id": 1,
             "cat_name": "BREAKFAST DAILY SPECIAL",
@@ -383,88 +383,47 @@ const Order = () => {
         fetchReports();
     }, [date]);
 
-    // ...existing code...
-
-  // ...existing code...
-
-function selectFirstOption(options) {
-    if (!options || options.length === 0) return [];
-    return options.map((opt, idx) => ({
-        ...opt,
-        is_selected: idx === 0 ? 1 : 0
-    }));
-}
-
-function transformMealData(mealData) {
-    // Breakfast
-    const breakfastCat = mealData.breakfast?.[0];
-    const breakfast = breakfastCat?.items || [];
-    const breakFastDailySpecialCatName = breakfastCat?.cat_name || "";
-    const breakFastAlternativeCat = breakfast.find(item => item.type === "sub_cat");
-    const breakFastAlternativeCatName = breakFastAlternativeCat?.item_name || "";
-    const breakFastDailySpecial = breakfast
-        .filter(item => item.type === "item")
-        .map(item => ({
-            id: item.item_id,
-            name: item.item_name,
-            chinese_name: item.chinese_name,
-            qty: item.qty,
-            options: selectFirstOption(item.options),
-            preference: item.preference
+    function selectFirstOption(options) {
+        if (!options || options.length === 0) return [];
+        return options.map((opt, idx) => ({
+            ...opt,
+            is_selected: idx === 0 ? 1 : 0
         }));
-    const breakFastAlternative = breakfast
-        .filter(item => item.type === "sub_cat_item")
-        .map(item => ({
-            id: item.item_id,
-            name: item.item_name,
-            chinese_name: item.chinese_name,
-            qty: item.qty,
-            options: selectFirstOption(item.options),
-            preference: item.preference
-        }));
+    }
 
-    const lunchSoupCatName = mealData.lunch?.[0]?.cat_name || "";
-    const lunchEntreeCatName = mealData.lunch?.[1]?.cat_name || "";
-    const lunchAlternativeCat = mealData.lunch?.[1]?.items?.find(item => item.type === "sub_cat");
-    const lunchAlternativeCatName = lunchAlternativeCat?.item_name || "";
-    const lunchSoup = mealData.lunch?.[0]?.items?.map(item => ({
-        id: item.item_id,
-        name: item.item_name,
-        chinese_name: item.chinese_name,
-        qty: item.qty,
-        options: selectFirstOption(item.options),
-        preference: item.preference
-    })) || [];
-    const lunchEntree = mealData.lunch?.[1]?.items
-        ?.filter(item => item.type === "item")
-        .map(item => ({
-            id: item.item_id,
-            name: item.item_name,
-            chinese_name: item.chinese_name,
-            qty: item.qty,
-            options: selectFirstOption(item.options),
-            preference: item.preference
-        })) || [];
-    const lunchAlternative = mealData.lunch?.[1]?.items
-        ?.filter(item => item.type === "sub_cat_item")
-        .map(item => ({
-            id: item.item_id,
-            name: item.item_name,
-            chinese_name: item.chinese_name,
-            qty: item.qty,
-            options: selectFirstOption(item.options),
-            preference: item.preference
-        })) || [];
+    function transformMealData(mealData) {
+        // Breakfast
+        const breakfastCat = mealData.breakfast?.[0];
+        const breakfast = breakfastCat?.items || [];
+        const breakFastDailySpecialCatName = breakfastCat?.cat_name || "";
+        const breakFastAlternativeCat = breakfast.find(item => item.type === "sub_cat");
+        const breakFastAlternativeCatName = breakFastAlternativeCat?.item_name || "";
+        const breakFastDailySpecial = breakfast
+            .filter(item => item.type === "item")
+            .map(item => ({
+                id: item.item_id,
+                name: item.item_name,
+                chinese_name: item.chinese_name,
+                qty: item.qty,
+                options: selectFirstOption(item.options),
+                preference: item.preference
+            }));
+        const breakFastAlternative = breakfast
+            .filter(item => item.type === "sub_cat_item")
+            .map(item => ({
+                id: item.item_id,
+                name: item.item_name,
+                chinese_name: item.chinese_name,
+                qty: item.qty,
+                options: selectFirstOption(item.options),
+                preference: item.preference
+            }));
 
-    // Dinner
-    const dinnerCat = mealData.dinner?.[0];
-    const dinnerEntreeCatName = dinnerCat?.cat_name || "";
-    const dinnerAlternativeCat = dinnerCat?.items?.find(item => item.type === "sub_cat");
-    const dinnerAlternativeCatName = dinnerAlternativeCat?.item_name || "";
-    const dinnerSoup = []; // If you have soup in dinner, extract it here
-    const dinnerEntree = dinnerCat?.items
-        ?.filter(item => item.type === "item")
-        .map(item => ({
+        const lunchSoupCatName = mealData.lunch?.[0]?.cat_name || "";
+        const lunchEntreeCatName = mealData.lunch?.[1]?.cat_name || "";
+        const lunchAlternativeCat = mealData.lunch?.[1]?.items?.find(item => item.type === "sub_cat");
+        const lunchAlternativeCatName = lunchAlternativeCat?.item_name || "";
+        const lunchSoup = mealData.lunch?.[0]?.items?.map(item => ({
             id: item.item_id,
             name: item.item_name,
             chinese_name: item.chinese_name,
@@ -472,39 +431,73 @@ function transformMealData(mealData) {
             options: selectFirstOption(item.options),
             preference: item.preference
         })) || [];
-    const dinnerAlternative = dinnerCat?.items
-        ?.filter(item => item.type === "sub_cat_item")
-        .map(item => ({
-            id: item.item_id,
-            name: item.item_name,
-            chinese_name: item.chinese_name,
-            qty: item.qty,
-            options: selectFirstOption(item.options),
-            preference: item.preference
-        })) || [];
+        const lunchEntree = mealData.lunch?.[1]?.items
+            ?.filter(item => item.type === "item")
+            .map(item => ({
+                id: item.item_id,
+                name: item.item_name,
+                chinese_name: item.chinese_name,
+                qty: item.qty,
+                options: selectFirstOption(item.options),
+                preference: item.preference
+            })) || [];
+        const lunchAlternative = mealData.lunch?.[1]?.items
+            ?.filter(item => item.type === "sub_cat_item")
+            .map(item => ({
+                id: item.item_id,
+                name: item.item_name,
+                chinese_name: item.chinese_name,
+                qty: item.qty,
+                options: selectFirstOption(item.options),
+                preference: item.preference
+            })) || [];
 
-    return {
-        breakFastDailySpecialCatName,
-        breakFastAlternativeCatName,
-        breakFastDailySpecial,
-        breakFastAlternative,
-        lunchSoup,
-        lunchSoupCatName,
-        lunchEntree,
-        lunchEntreeCatName,
-        lunchAlternative,
-        lunchAlternativeCatName,
-        dinnerEntree,
-        dinnerEntreeCatName,
-        dinnerAlternative,
-        dinnerAlternativeCatName,
-        dinnerSoup,
-    };
-}
+        // Dinner
+        const dinnerCat = mealData.dinner?.[0];
+        const dinnerEntreeCatName = dinnerCat?.cat_name || "";
+        const dinnerAlternativeCat = dinnerCat?.items?.find(item => item.type === "sub_cat");
+        const dinnerAlternativeCatName = dinnerAlternativeCat?.item_name || "";
+        const dinnerSoup = []; // If you have soup in dinner, extract it here
+        const dinnerEntree = dinnerCat?.items
+            ?.filter(item => item.type === "item")
+            .map(item => ({
+                id: item.item_id,
+                name: item.item_name,
+                chinese_name: item.chinese_name,
+                qty: item.qty,
+                options: selectFirstOption(item.options),
+                preference: item.preference
+            })) || [];
+        const dinnerAlternative = dinnerCat?.items
+            ?.filter(item => item.type === "sub_cat_item")
+            .map(item => ({
+                id: item.item_id,
+                name: item.item_name,
+                chinese_name: item.chinese_name,
+                qty: item.qty,
+                options: selectFirstOption(item.options),
+                preference: item.preference
+            })) || [];
 
-// ...existing code...
+        return {
+            breakFastDailySpecialCatName,
+            breakFastAlternativeCatName,
+            breakFastDailySpecial,
+            breakFastAlternative,
+            lunchSoup,
+            lunchSoupCatName,
+            lunchEntree,
+            lunchEntreeCatName,
+            lunchAlternative,
+            lunchAlternativeCatName,
+            dinnerEntree,
+            dinnerEntreeCatName,
+            dinnerAlternative,
+            dinnerAlternativeCatName,
+            dinnerSoup,
+        };
+    }
 
-    // ...existing code...
     console.log("Meal data", data)
     return (
         <Box m="20px">
@@ -575,6 +568,7 @@ function transformMealData(mealData) {
                         </Tabs>
                         {tabIndex === 0 && (
                             <Box>
+
                                 {/* Daily Special */}
                                 {data.breakFastDailySpecial && data.breakFastDailySpecial.length > 0 && (
                                     <>
@@ -604,12 +598,13 @@ function transformMealData(mealData) {
                                                                     ...prev,
                                                                     breakFastDailySpecial: prev.breakFastDailySpecial.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
+                                                                            ? { ...i, qty: 0 }
                                                                             : i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
+                                                            disabled={item.qty === 0}
                                                         >
                                                             -
                                                         </button>
@@ -620,12 +615,13 @@ function transformMealData(mealData) {
                                                                     ...prev,
                                                                     breakFastDailySpecial: prev.breakFastDailySpecial.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: (i.qty || 0) + 1 }
-                                                                            : i
+                                                                            ? { ...i, qty: 1 }
+                                                                            : { ...i, qty: 0 } // only single items selected 
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
+                                                            disabled={item.qty >= 1}
                                                         >
                                                             +
                                                         </button>
@@ -703,7 +699,7 @@ function transformMealData(mealData) {
                                     </>
                                 )}
 
-                                {/* Alternatives */}
+                                {/* Alternatives  */}
                                 {data.breakFastAlternative && data.breakFastAlternative.length > 0 && (
                                     <>
                                         <Typography variant="h6" sx={{ mt: 3, mb: 2, fontWeight: 600 }}>
@@ -726,6 +722,7 @@ function transformMealData(mealData) {
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
+                                                            disabled={item.qty === 0}
                                                         >
                                                             -
                                                         </button>
@@ -736,12 +733,13 @@ function transformMealData(mealData) {
                                                                     ...prev,
                                                                     breakFastAlternative: prev.breakFastAlternative.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: (i.qty || 0) + 1 }
-                                                                            : i
+                                                                            ? { ...i, qty: 1 }
+                                                                            : { ...i, qty: 0 } // only single items selected 
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
+                                                            disabled={item.qty >= 1}
                                                         >
                                                             +
                                                         </button>
@@ -817,7 +815,7 @@ function transformMealData(mealData) {
                                         ))}
                                     </>
                                 )}
-                                {/* After all Items Display then if quantity graterthern 0 after show 2 check box like Escort Service and tray Service */}
+                                {/* Add Additional Services */}
                                 {(
                                     (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0))
                                 ) && (
@@ -863,7 +861,38 @@ function transformMealData(mealData) {
                                             </label>
                                         </Box>
                                     )}
-
+                                {/* Add Submit Button for BreakFast DataSubmit */}
+                                {(
+                                    (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0))
+                                ) && (
+                                        <Box mt={3} display="flex" justifyContent="center">
+                                            <button
+                                                style={{
+                                                    padding: "10px 32px",
+                                                    background: colors.greenAccent[600],
+                                                    color: "#fff",
+                                                    border: "none",
+                                                    borderRadius: 4,
+                                                    fontWeight: 600,
+                                                    fontSize: 16,
+                                                    cursor: "pointer"
+                                                }}
+                                                onClick={() => {
+                                                    // Example: handle breakfast data submit
+                                                    const selectedBreakfast = {
+                                                        dailySpecial: data.breakFastDailySpecial?.filter(i => i.qty > 0) || [],
+                                                        alternatives: data.breakFastAlternative?.filter(i => i.qty > 0) || [],
+                                                        additionalServices: data.breakfast_additional_services || []
+                                                    };
+                                                    console.log("Submitting Breakfast Order:", selectedBreakfast);
+                                                    // TODO: Replace with actual submit logic (API call, etc.)
+                                                    alert("Breakfast order submitted!");
+                                                }}
+                                            >
+                                                Submit Order
+                                            </button>
+                                        </Box>
+                                    )}
                             </Box>
                         )}
 
@@ -902,6 +931,7 @@ function transformMealData(mealData) {
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
+                                                            disabled={item.qty === 0}
                                                         >
                                                             -
                                                         </button>
@@ -912,12 +942,13 @@ function transformMealData(mealData) {
                                                                     ...prev,
                                                                     lunchSoup: prev.lunchSoup.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: (i.qty || 0) + 1 }
-                                                                            : i
+                                                                            ? { ...i, qty: 1 }
+                                                                            : { ...i, qty: 0 } // only single items selected i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
+                                                            disabled={item.qty >= 1}
                                                         >
                                                             +
                                                         </button>
@@ -994,7 +1025,7 @@ function transformMealData(mealData) {
                                     </>
                                 )}
 
-                                {/* Entree */}
+                                {/* Entree  */}
                                 {data.lunchEntree && data.lunchEntree.length > 0 && (
                                     <>
                                         <Typography variant="h6"
@@ -1027,6 +1058,7 @@ function transformMealData(mealData) {
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
+                                                            disabled={item.qty === 0}
                                                         >
                                                             -
                                                         </button>
@@ -1037,12 +1069,13 @@ function transformMealData(mealData) {
                                                                     ...prev,
                                                                     lunchEntree: prev.lunchEntree.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: (i.qty || 0) + 1 }
-                                                                            : i
+                                                                            ? { ...i, qty: 1 }
+                                                                            : { ...i, qty: 0 } // only single items selected i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
+                                                            disabled={item.qty >= 1}
                                                         >
                                                             +
                                                         </button>
@@ -1118,8 +1151,7 @@ function transformMealData(mealData) {
                                         ))}
                                     </>
                                 )}
-
-                                {/* Alternatives */}
+                                {/* Alternatives  */}
                                 {data.lunchAlternative && data.lunchAlternative.length > 0 && (
                                     <>
                                         <Typography variant="h6" sx={{ mt: 3, mb: 2, fontWeight: 600 }}>
@@ -1142,6 +1174,7 @@ function transformMealData(mealData) {
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
+                                                            disabled={item.qty === 0}
                                                         >
                                                             -
                                                         </button>
@@ -1152,12 +1185,13 @@ function transformMealData(mealData) {
                                                                     ...prev,
                                                                     lunchAlternative: prev.lunchAlternative.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: (i.qty || 0) + 1 }
-                                                                            : i
+                                                                            ? { ...i, qty: 1 }
+                                                                            :  { ...i, qty: 0 } // only single items selected i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
+                                                            disabled={item.qty >= 1}
                                                         >
                                                             +
                                                         </button>
@@ -1281,11 +1315,65 @@ function transformMealData(mealData) {
                                             </label>
                                         </Box>
                                     )}
+                                {/* Add lunch submit button,  if breakfast not submited then here breakfast and lunch submited */}
+                                {(
+                                    (data.lunchSoup?.some(item => item.qty > 0) ||
+                                        data.lunchEntree?.some(item => item.qty > 0) ||
+                                        data.lunchAlternative?.some(item => item.qty > 0))
+                                ) && (
+                                        <Box mt={3} display="flex" justifyContent="center">
+                                            <button
+                                                style={{
+                                                    padding: "10px 32px",
+                                                    background: colors.greenAccent[600],
+                                                    color: "#fff",
+                                                    border: "none",
+                                                    borderRadius: 4,
+                                                    fontWeight: 600,
+                                                    fontSize: 16,
+                                                    cursor: "pointer"
+                                                }}
+                                                onClick={() => {
+                                                    // Example: handle lunch (and optionally breakfast) data submit
+                                                    const selectedLunch = {
+                                                        soup: data.lunchSoup?.filter(i => i.qty > 0) || [],
+                                                        entree: data.lunchEntree?.filter(i => i.qty > 0) || [],
+                                                        alternatives: data.lunchAlternative?.filter(i => i.qty > 0) || [],
+                                                        additionalServices: data.lunch_additional_services || []
+                                                    };
+                                                    // If breakfast not submitted, include breakfast data as well
+                                                    const selectedBreakfast = (
+                                                        data.breakFastDailySpecial?.some(i => i.qty > 0) ||
+                                                        data.breakFastAlternative?.some(i => i.qty > 0)
+                                                    ) ? {
+                                                        dailySpecial: data.breakFastDailySpecial?.filter(i => i.qty > 0) || [],
+                                                        alternatives: data.breakFastAlternative?.filter(i => i.qty > 0) || [],
+                                                        additionalServices: data.breakfast_additional_services || []
+                                                    } : null;
+
+                                                    if (selectedBreakfast) {
+                                                        console.log("Submitting Breakfast & Lunch Order:", { breakfast: selectedBreakfast, lunch: selectedLunch });
+                                                        alert("Breakfast and Lunch order submitted!");
+                                                    } else {
+                                                        console.log("Submitting Lunch Order:", selectedLunch);
+                                                        alert("Lunch order submitted!");
+                                                    }
+                                                    // TODO: Replace with actual submit logic (API call, etc.)
+                                                }}
+                                            > Submit Order
+                                                {/* {(
+                                                    data.breakFastDailySpecial?.some(i => i.qty > 0) ||
+                                                    data.breakFastAlternative?.some(i => i.qty > 0)
+                                                ) ? "Submit Breakfast & Lunch Order" : "Submit Lunch Order"} */}
+                                            </button>
+                                        </Box>
+                                    )}
                             </Box>
                         )}
 
                         {tabIndex === 2 && (
                             <Box>
+                                {/* Dinner soup */}
                                 {data.dinnerSoup && data.dinnerSoup.length > 0 && (
                                     <>
                                         <Typography variant="h6"
@@ -1317,6 +1405,7 @@ function transformMealData(mealData) {
                                                             }))
                                                         }
                                                         style={{ marginRight: 8 }}
+                                                        disabled={item.qty === 0}
                                                     >
                                                         -
                                                     </button>
@@ -1327,12 +1416,13 @@ function transformMealData(mealData) {
                                                                 ...prev,
                                                                 dinnerSoup: prev.dinnerSoup.map((i) =>
                                                                     i.id === item.id
-                                                                        ? { ...i, qty: (i.qty || 0) + 1 }
-                                                                        : i
+                                                                        ? { ...i, qty: 1 }
+                                                                        :  { ...i, qty: 0 } // only single items selected i
                                                                 ),
                                                             }))
                                                         }
                                                         style={{ marginLeft: 8 }}
+                                                        disabled={item.qty >= 1}
                                                     >
                                                         +
                                                     </button>
@@ -1374,6 +1464,7 @@ function transformMealData(mealData) {
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
+                                                            disabled={item.qty === 0}
                                                         >
                                                             -
                                                         </button>
@@ -1384,12 +1475,13 @@ function transformMealData(mealData) {
                                                                     ...prev,
                                                                     dinnerEntree: prev.dinnerEntree.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: (i.qty || 0) + 1 }
-                                                                            : i
+                                                                            ? { ...i, qty: 1 }
+                                                                            :  { ...i, qty: 0 } // only single items selected i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
+                                                            disabled={item.qty >= 1}
                                                         >
                                                             +
                                                         </button>
@@ -1489,6 +1581,7 @@ function transformMealData(mealData) {
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
+                                                            disabled={item.qty === 0}
                                                         >
                                                             -
                                                         </button>
@@ -1499,12 +1592,13 @@ function transformMealData(mealData) {
                                                                     ...prev,
                                                                     dinnerAlternative: prev.dinnerAlternative.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: (i.qty || 0) + 1 }
-                                                                            : i
+                                                                            ? { ...i, qty: 1 }
+                                                                            :  { ...i, qty: 0 } // only single items selected i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
+                                                            disabled={item.qty >= 1}
                                                         >
                                                             +
                                                         </button>
@@ -1581,7 +1675,6 @@ function transformMealData(mealData) {
                                     </>
                                 )}
                                 {/* Add Dinner Additional Services */}
-                                {/* Add Dinner Additional Services */}
                                 {(
                                     (data.dinnerSoup?.some(item => item.qty > 0) ||
                                         data.dinnerEntree?.some(item => item.qty > 0) ||
@@ -1627,6 +1720,98 @@ function transformMealData(mealData) {
                                                 />
                                                 Tray Service
                                             </label>
+                                        </Box>
+                                    )}
+                                {/* Add Dinner Submit, if lunch and breakfast not submited then here all data submited like breakfast, lunch and dinner */}
+                                {/* Add Dinner Submit, if lunch and breakfast not submited then here all data submited like breakfast, lunch and dinner */}
+                                {(
+                                    (data.dinnerSoup?.some(item => item.qty > 0) ||
+                                        data.dinnerEntree?.some(item => item.qty > 0) ||
+                                        data.dinnerAlternative?.some(item => item.qty > 0))
+                                ) && (
+                                        <Box mt={3} display="flex" justifyContent="center">
+                                            <button
+                                                style={{
+                                                    padding: "10px 32px",
+                                                    background: colors.greenAccent[600],
+                                                    color: "#fff",
+                                                    border: "none",
+                                                    borderRadius: 4,
+                                                    fontWeight: 600,
+                                                    fontSize: 16,
+                                                    cursor: "pointer"
+                                                }}
+                                                onClick={() => {
+                                                    // Gather dinner data
+                                                    const selectedDinner = {
+                                                        soup: data.dinnerSoup?.filter(i => i.qty > 0) || [],
+                                                        entree: data.dinnerEntree?.filter(i => i.qty > 0) || [],
+                                                        alternatives: data.dinnerAlternative?.filter(i => i.qty > 0) || [],
+                                                        additionalServices: data.dinner_additional_services || []
+                                                    };
+                                                    // Gather lunch data if any selected
+                                                    const selectedLunch = (
+                                                        data.lunchSoup?.some(i => i.qty > 0) ||
+                                                        data.lunchEntree?.some(i => i.qty > 0) ||
+                                                        data.lunchAlternative?.some(i => i.qty > 0)
+                                                    ) ? {
+                                                        soup: data.lunchSoup?.filter(i => i.qty > 0) || [],
+                                                        entree: data.lunchEntree?.filter(i => i.qty > 0) || [],
+                                                        alternatives: data.lunchAlternative?.filter(i => i.qty > 0) || [],
+                                                        additionalServices: data.lunch_additional_services || []
+                                                    } : null;
+                                                    // Gather breakfast data if any selected
+                                                    const selectedBreakfast = (
+                                                        data.breakFastDailySpecial?.some(i => i.qty > 0) ||
+                                                        data.breakFastAlternative?.some(i => i.qty > 0)
+                                                    ) ? {
+                                                        dailySpecial: data.breakFastDailySpecial?.filter(i => i.qty > 0) || [],
+                                                        alternatives: data.breakFastAlternative?.filter(i => i.qty > 0) || [],
+                                                        additionalServices: data.breakfast_additional_services || []
+                                                    } : null;
+
+                                                    // Compose submission object
+                                                    const submission = {};
+                                                    if (selectedBreakfast) submission.breakfast = selectedBreakfast;
+                                                    if (selectedLunch) submission.lunch = selectedLunch;
+                                                    submission.dinner = selectedDinner;
+
+                                                    console.log("Submitting Order:", submission);
+                                                    // TODO: Replace with actual submit logic (API call, etc.)
+                                                    alert(
+                                                        selectedBreakfast && selectedLunch
+                                                            ? "Breakfast, Lunch, and Dinner order submitted!"
+                                                            : selectedLunch
+                                                                ? "Lunch and Dinner order submitted!"
+                                                                : selectedBreakfast
+                                                                    ? "Breakfast and Dinner order submitted!"
+                                                                    : "Dinner order submitted!"
+                                                    );
+                                                }}
+                                            >Submit Order
+                                                {/* {(
+                data.breakFastDailySpecial?.some(i => i.qty > 0) ||
+                data.breakFastAlternative?.some(i => i.qty > 0)
+            ) && (
+                data.lunchSoup?.some(i => i.qty > 0) ||
+                data.lunchEntree?.some(i => i.qty > 0) ||
+                data.lunchAlternative?.some(i => i.qty > 0)
+            )
+                ? "Submit Breakfast, Lunch & Dinner Order"
+                : (
+                    data.lunchSoup?.some(i => i.qty > 0) ||
+                    data.lunchEntree?.some(i => i.qty > 0) ||
+                    data.lunchAlternative?.some(i => i.qty > 0)
+                )
+                ? "Submit Lunch & Dinner Order"
+                : (
+                    data.breakFastDailySpecial?.some(i => i.qty > 0) ||
+                    data.breakFastAlternative?.some(i => i.qty > 0)
+                )
+                ? "Submit Breakfast & Dinner Order"
+                : "Submit Dinner Order"
+            } */}
+                                            </button>
                                         </Box>
                                     )}
                             </Box>
