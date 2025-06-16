@@ -25,14 +25,14 @@ import Order from "./scenes/order";
 
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = !!localStorage.getItem("authToken");
-  return isAuthenticated ? children : children;//<Navigate to="/login" />;
+  return isAuthenticated ? children : <Navigate to="/" />; //children;
 };
 
 const AppRouter = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Login />} />
         <Route
           path="/"
           element={

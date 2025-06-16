@@ -9,6 +9,7 @@ import { tokens } from "../../theme";
 import { DownloadOutlined, LoginOutlined } from "@mui/icons-material";
 import logo from "../../assets/images/logo.png";
 import CustomButton from "../../components/CustomButton";
+import AuthServices from "../../services/authServices";
 const Login = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -25,50 +26,58 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate("/home");
-    console.log("navigate")
-    // const newErrors = {};
-    // if (!formData.roomNo) newErrors.roomNo = "Room No is required";
-    // if (!formData.password) newErrors.password = "Password is required";
+    // navigate("/home");
+    console.log("navigate", formData)
+    const newErrors = {};
+    if (!formData.roomNo) newErrors.roomNo = "Room No is required";
+    if (!formData.password) newErrors.password = "Password is required";
 
-    // if (Object.keys(newErrors).length > 0) {
-    //   setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
 
-    //   return;
-    // }
-    // console.log("Form submitted", formData);
+      return;
+    }
 
-    // try {
-    //   setLoading(true);
-    //   let response = await AuthServices.login(formData);
-    //   const { access_token, user } = response;
 
-    //   console.log("response", access_token, user);
-    //   localStorage.setItem("authToken", access_token);
-    //   localStorage.setItem("userData", JSON.stringify(user));
+    try {
+      setLoading(true);
+      let response = await AuthServices.login({ roomNo: formData?.roomNo, password: formData?.password });
+      const { authentication_token, role, user_id, show_dining, show_incident, guideline, guideline_cn,room_id } = response;
+      let userData = {
+        role,
+        user_id,
+        show_dining,
+        show_incident,
+        guideline,
+        guideline_cn,
+        room_id
+      };
+      localStorage.setItem("authToken", authentication_token);
+      localStorage.setItem("userData", JSON.stringify(userData));
+      toast.success("Login Successfully!");
+      setTimeout(() => {
+        if (role === "user") {
+          navigate("/order");
+        } else {
+          navigate("/home");
+        }
+      }, 1000);
 
-    //   // Show success toast
-    //   toast.success("Login Successfully!");
+    } catch (error) {
+      console.error("Error processing login:", error);
 
-    //   // Delay navigation to ensure toast is displayed
-    //   setTimeout(() => {
-    //     navigate("/");
-    //   }, 1000);
-    // } catch (error) {
-    //   console.error("Error processing login:", error);
+      const errorMessage =
+        error.response?.data?.error || "An unexpected error occurred. Please try again.";
+      toast.error(errorMessage);
 
-    //   const errorMessage =
-    //     error.response?.data?.error || "An unexpected error occurred. Please try again.";
-    //   toast.error(errorMessage);
-
-    //   setTimeout(() => {
-    //     setLoading(false);
-    //   }, 1500);
-    // } finally {
-    //   if (!error) {
-    //     setLoading(false);
-    //   }
-    // }
+      setTimeout(() => {
+        setLoading(false);
+      }, 1500);
+    } finally {
+      if (!error) {
+        setLoading(false);
+      }
+    }
   };
 
   return (
@@ -138,7 +147,7 @@ const Login = () => {
           <TextField
             label="Room No"
             name="roomNo"
-            type="number"
+            type="text"
             value={formData.roomNo}
             onChange={handleChange}
             error={!!errors.roomNo}

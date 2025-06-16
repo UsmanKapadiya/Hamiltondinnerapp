@@ -1,363 +1,17 @@
 import {
-    Box, useTheme, Table, TableHead, TableBody, TableRow, TableCell,
-    TableContainer, Paper, Typography, Tabs, Tab
+    Box, useTheme, Typography, Tabs, Tab
 } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { Header } from "../../components";
 import { tokens } from "../../theme";
-import { LocalPizzaOutlined, TagOutlined } from "@mui/icons-material";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
+import OrderServices from "../../services/orderServices";
+import { toast, ToastContainer } from "react-toastify";
 
-// ...reportData definition remains unchanged...
-let mealData = {
-    "breakfast": [
-        {
-            "cat_id": 1,
-            "cat_name": "BREAKFAST DAILY SPECIAL",
-            "chinese_name": "是日精選",
-            "items": [
-                {
-                    "type": "item",
-                    "item_id": 649,
-                    "item_name": "Egg, Turkey Bacon, Hashbrowns, Whole Wheat and Oatmeal & Fruits",
-                    "chinese_name": "雞蛋、火雞培根、土豆餅、全麥和燕麥、水果",
-                    "options": [],
-                    "preference": [],
-                    "item_image": null,
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                },
-                {
-                    "type": "sub_cat",
-                    "item_id": 4,
-                    "item_name": "BREAKFAST ALTERNATIVES",
-                    "chinese_name": "其他早晨選擇",
-                    "options": [],
-                    "preference": [],
-                    "item_image": "",
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                },
-                {
-                    "type": "sub_cat_item",
-                    "item_id": 4,
-                    "item_name": "Choice of Egg",
-                    "chinese_name": "雞蛋",
-                    "item_image": null,
-                    "options": [],
-                    "preference": [],
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                },
-                {
-                    "type": "sub_cat_item",
-                    "item_id": 191,
-                    "item_name": "Toast",
-                    "chinese_name": "吐司",
-                    "item_image": null,
-                    "options": [],
-                    "preference": [],
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                },
-                {
-                    "type": "sub_cat_item",
-                    "item_id": 192,
-                    "item_name": "Oatmeal",
-                    "chinese_name": "麥皮",
-                    "item_image": null,
-                    "options": [],
-                    "preference": [],
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                },
-                {
-                    "type": "sub_cat_item",
-                    "item_id": 193,
-                    "item_name": "Fruit",
-                    "chinese_name": "水果",
-                    "item_image": null,
-                    "options": [],
-                    "preference": [],
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                }
-            ]
-        }
-    ],
-    "lunch": [
-        {
-            "cat_id": 2,
-            "cat_name": "LUNCH SOUP",
-            "chinese_name": "湯",
-            "items": [
-                {
-                    "type": "item",
-                    "item_id": 470,
-                    "item_name": "Soup of the Day",
-                    "chinese_name": null,
-                    "options": [],
-                    "preference": [],
-                    "item_image": null,
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                }
-            ]
-        },
-        {
-            "cat_id": 5,
-            "cat_name": "LUNCH ENTREE",
-            "chinese_name": "主菜",
-            "items": [
-                {
-                    "type": "item",
-                    "item_id": 522,
-                    "item_name": "Chicken With Black Beans on Rice and Steamed Broccoli",
-                    "chinese_name": "豆豉雞飯",
-                    "options": [
-                        {
-                            "id": 1,
-                            "name": "Rice",
-                            "c_name": "Rice",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 3,
-                            "name": "Yam Fries ( extra $5)",
-                            "c_name": "山药薯条 (额外 5 美元)",
-                            "is_selected": 0
-                        }
-                    ],
-                    "preference": [],
-                    "item_image": null,
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                },
-                {
-                    "type": "item",
-                    "item_id": 571,
-                    "item_name": "Tuna & Avocado Sandwich with Salad",
-                    "chinese_name": "吞拿魚蛋黃醬三明治配蕃薯條",
-                    "options": [],
-                    "preference": [
-                        {
-                            "id": 3,
-                            "name": "Less Sugar",
-                            "c_name": "Less Sugar",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 4,
-                            "name": "No Rice",
-                            "c_name": "No Rice",
-                            "is_selected": 0
-                        }
-                    ],
-                    "item_image": null,
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                },
-                {
-                    "type": "sub_cat",
-                    "item_id": 8,
-                    "item_name": "LUNCH ALTERNATIVES",
-                    "chinese_name": "其他午餐選擇",
-                    "options": [],
-                    "preference": [],
-                    "item_image": "",
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                },
-                {
-                    "type": "sub_cat_item",
-                    "item_id": 119,
-                    "item_name": "Egg Salad Sandwich",
-                    "chinese_name": "蛋沙律三文治",
-                    "item_image": null,
-                    "options": [],
-                    "preference": [],
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                },
-                {
-                    "type": "sub_cat_item",
-                    "item_id": 120,
-                    "item_name": "Ham and Cheese Sandwich",
-                    "chinese_name": "火腿芝士三文治",
-                    "item_image": null,
-                    "options": [],
-                    "preference": [],
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                },
-                {
-                    "type": "sub_cat_item",
-                    "item_id": 121,
-                    "item_name": "Turkey Sandwich",
-                    "chinese_name": "火雞三文治",
-                    "item_image": null,
-                    "options": [],
-                    "preference": [],
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                },
-                {
-                    "type": "sub_cat_item",
-                    "item_id": 122,
-                    "item_name": "Cheese Omelette",
-                    "chinese_name": "芝士奄列",
-                    "item_image": null,
-                    "options": [],
-                    "preference": [],
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                }
-            ]
-        }
-    ],
-    "dinner": [
-        {
-            "cat_id": 3,
-            "cat_name": "DINNER ENTREE",
-            "chinese_name": "主菜",
-            "items": [
-                {
-                    "type": "item",
-                    "item_id": 624,
-                    "item_name": "Salt Baked Chicken with Rice and Steamed Bok Choy",
-                    "chinese_name": "鹽焗雞飯配白菜",
-                    "options": [],
-                    "preference": [],
-                    "item_image": null,
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                },
-                {
-                    "type": "item",
-                    "item_id": 642,
-                    "item_name": "White Wine Seafood Pasta (Clam, Shrimp, Baby Scallop) and Broccoli",
-                    "chinese_name": "白酒海鮮意粉（蜆、蝦、帶子）配西蘭花",
-                    "options": [
-                        {
-                            "id": 1,
-                            "name": "Rice",
-                            "c_name": "Rice",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 2,
-                            "name": "Noodles",
-                            "c_name": "Noodles",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 3,
-                            "name": "Yam Fries ( extra $5)",
-                            "c_name": "山药薯条 (额外 5 美元)",
-                            "is_selected": 0
-                        }
-                    ],
-                    "preference": [
-                        {
-                            "id": 1,
-                            "name": "Less oil",
-                            "c_name": "Less oil",
-                            "is_selected": 0
-                        },
-                        {
-                            "id": 2,
-                            "name": "Less Salt",
-                            "c_name": "少盐",
-                            "is_selected": 0
-                        }
-                    ],
-                    "item_image": null,
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                },
-                {
-                    "type": "sub_cat",
-                    "item_id": 11,
-                    "item_name": "DINNER ALTERNATIVES",
-                    "chinese_name": "其他晚餐選擇",
-                    "options": [],
-                    "preference": [],
-                    "item_image": "",
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                },
-                {
-                    "type": "sub_cat_item",
-                    "item_id": 78,
-                    "item_name": "Pan Seared Chicken Breast",
-                    "chinese_name": "香煎雞胸",
-                    "item_image": null,
-                    "options": [],
-                    "preference": [],
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                },
-                {
-                    "type": "sub_cat_item",
-                    "item_id": 159,
-                    "item_name": "Pan Seared Fish",
-                    "chinese_name": "煎魚",
-                    "item_image": null,
-                    "options": [],
-                    "preference": [],
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                },
-                {
-                    "type": "sub_cat_item",
-                    "item_id": 161,
-                    "item_name": "Vegetarian Plate",
-                    "chinese_name": "素食",
-                    "item_image": null,
-                    "options": [],
-                    "preference": [],
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                },
-                {
-                    "type": "sub_cat_item",
-                    "item_id": 162,
-                    "item_name": "Sandwich of the Day",
-                    "chinese_name": "是日三文治",
-                    "item_image": null,
-                    "options": [],
-                    "preference": [],
-                    "qty": 0,
-                    "comment": "",
-                    "order_id": 0
-                }
-            ]
-        }
-    ],
-}
+
 
 
 const Order = () => {
@@ -366,22 +20,33 @@ const Order = () => {
     const [date, setDate] = useState(dayjs());
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState({});
+    const [mealData, setMealData] = useState({});
     const [tabIndex, setTabIndex] = useState(0);
+    const [userData] = useState(() => {
+        const userDatas = localStorage.getItem("userData");
+        return userDatas ? JSON.parse(userDatas) : null;
+    });
+    console.log(userData)
     useEffect(() => {
-        const fetchReports = async () => {
-            try {
-                setLoading(true);
-                // const response = await ReportServices.getReportList(date.format("YYYY-MM-DD"));
-                // setData(mealData);
-                setData(transformMealData(mealData));
-            } catch (error) {
-                console.error("Error fetching menu list:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchReports();
-    }, [date]);
+    const fetchMenuDetails = async () => {
+        try {
+            setLoading(true);
+            const response = await OrderServices.getMenuData(userData?.room_id, date.format("YYYY-MM-DD"));
+            let data = {
+                breakfast: response.breakfast,
+                lunch: response?.lunch,
+                dinner: response?.dinner
+            };
+            setMealData(data); // <-- Add this line
+            setData(transformMealData(data));
+        } catch (error) {
+            console.error("Error fetching menu list:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchMenuDetails();
+}, [date]);
 
     function selectFirstOption(options) {
         if (!options || options.length === 0) return [];
@@ -404,7 +69,7 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                qty: item.qty,
+                qty: 0,
                 options: selectFirstOption(item.options),
                 preference: item.preference
             }));
@@ -414,7 +79,7 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                qty: item.qty,
+                qty: 0,
                 options: selectFirstOption(item.options),
                 preference: item.preference
             }));
@@ -427,7 +92,7 @@ const Order = () => {
             id: item.item_id,
             name: item.item_name,
             chinese_name: item.chinese_name,
-            qty: item.qty,
+             qty: 0,
             options: selectFirstOption(item.options),
             preference: item.preference
         })) || [];
@@ -437,7 +102,7 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                qty: item.qty,
+                qty: 0,
                 options: selectFirstOption(item.options),
                 preference: item.preference
             })) || [];
@@ -447,7 +112,7 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                qty: item.qty,
+                 qty: 0,
                 options: selectFirstOption(item.options),
                 preference: item.preference
             })) || [];
@@ -464,7 +129,7 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                qty: item.qty,
+                 qty: 0,
                 options: selectFirstOption(item.options),
                 preference: item.preference
             })) || [];
@@ -474,7 +139,7 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                qty: item.qty,
+                qty: 0,
                 options: selectFirstOption(item.options),
                 preference: item.preference
             })) || [];
@@ -497,14 +162,76 @@ const Order = () => {
             dinnerSoup,
         };
     }
+    function buildOrderPayload(data, date) {
+        // Helper to flatten and format items
+        const collectItems = (arr = []) =>
+            arr
+                .filter(item => item.qty > 0)
+                .map(item => ({
+                    item_id: item.id,
+                    qty: item.qty,
+                    order_id: item.order_id || 0,
+                    preference: (item.preference || [])
+                        .filter(p => p.is_selected)
+                        .map(p => p.name)
+                        .join(","),
+                    item_options: (item.options || [])
+                        .filter(o => o.is_selected)
+                        .map(o => o.name)
+                        .join(","),
+                }));
 
-    console.log("Meal data", data)
+        // Collect all items
+        const items = [
+            ...collectItems(data.breakFastDailySpecial),
+            ...collectItems(data.breakFastAlternative),
+            ...collectItems(data.lunchSoup),
+            ...collectItems(data.lunchEntree),
+            ...collectItems(data.lunchAlternative),
+            ...collectItems(data.dinnerSoup),
+            ...collectItems(data.dinnerEntree),
+            ...collectItems(data.dinnerAlternative),
+        ];
+
+        // Helper for additional services
+        const hasService = (arr, type) => Array.isArray(arr) && arr.includes(type) ? 1 : 0;
+
+        return [{
+            date: date.format("YYYY-MM-DD"),
+            is_brk_escort_service: hasService(data.breakfast_additional_services, "escort"),
+            is_brk_tray_service: hasService(data.breakfast_additional_services, "tray"),
+            is_lunch_escort_service: hasService(data.lunch_additional_services, "escort"),
+            is_lunch_tray_service: hasService(data.lunch_additional_services, "tray"),
+            is_dinner_escort_service: hasService(data.dinner_additional_services, "escort"),
+            is_dinner_tray_service: hasService(data.dinner_additional_services, "tray"),
+            items,
+        }];
+    }
+
+  const submitData = async (data, date) => {
+    try {
+        const payload = buildOrderPayload(data, date);
+        let response = await OrderServices.submitOrder(payload);
+        if (response.ResponseText === "success") {
+            toast.success("Order submitted successfully!");
+            setData(transformMealData(mealData)); // <-- Now mealData is defined
+        } else {
+            toast.error(response.ResponseText || "Order submission failed.");
+        }
+    } catch (error) {
+        toast.error("An error occurred while submitting the order.");
+        console.error(error);
+    }
+};
+
+
+    // console.log("Meal data", data)
     return (
         <Box m="20px">
             <Header
-                title="Room Number Here"
-                icon={<TagOutlined />}
-            />
+                title={userData?.room_id}
+                icon={""}
+            />   <ToastContainer />
             <Box
                 mt="40px"
                 height="75vh"
@@ -878,15 +605,16 @@ const Order = () => {
                                                     cursor: "pointer"
                                                 }}
                                                 onClick={() => {
+                                                    submitData(data, date)
                                                     // Example: handle breakfast data submit
-                                                    const selectedBreakfast = {
-                                                        dailySpecial: data.breakFastDailySpecial?.filter(i => i.qty > 0) || [],
-                                                        alternatives: data.breakFastAlternative?.filter(i => i.qty > 0) || [],
-                                                        additionalServices: data.breakfast_additional_services || []
-                                                    };
-                                                    console.log("Submitting Breakfast Order:", selectedBreakfast);
-                                                    // TODO: Replace with actual submit logic (API call, etc.)
-                                                    alert("Breakfast order submitted!");
+                                                    // const selectedBreakfast = {
+                                                    //     dailySpecial: data.breakFastDailySpecial?.filter(i => i.qty > 0) || [],
+                                                    //     alternatives: data.breakFastAlternative?.filter(i => i.qty > 0) || [],
+                                                    //     additionalServices: data.breakfast_additional_services || []
+                                                    // };
+                                                    // console.log("Submitting Breakfast Order:", selectedBreakfast);
+                                                    // // TODO: Replace with actual submit logic (API call, etc.)
+                                                    // alert("Breakfast order submitted!");
                                                 }}
                                             >
                                                 Submit Order
@@ -1186,7 +914,7 @@ const Order = () => {
                                                                     lunchAlternative: prev.lunchAlternative.map((i) =>
                                                                         i.id === item.id
                                                                             ? { ...i, qty: 1 }
-                                                                            :  { ...i, qty: 0 } // only single items selected i
+                                                                            : { ...i, qty: 0 } // only single items selected i
                                                                     ),
                                                                 }))
                                                             }
@@ -1334,31 +1062,32 @@ const Order = () => {
                                                     cursor: "pointer"
                                                 }}
                                                 onClick={() => {
+                                                    submitData(data, date)
                                                     // Example: handle lunch (and optionally breakfast) data submit
-                                                    const selectedLunch = {
-                                                        soup: data.lunchSoup?.filter(i => i.qty > 0) || [],
-                                                        entree: data.lunchEntree?.filter(i => i.qty > 0) || [],
-                                                        alternatives: data.lunchAlternative?.filter(i => i.qty > 0) || [],
-                                                        additionalServices: data.lunch_additional_services || []
-                                                    };
-                                                    // If breakfast not submitted, include breakfast data as well
-                                                    const selectedBreakfast = (
-                                                        data.breakFastDailySpecial?.some(i => i.qty > 0) ||
-                                                        data.breakFastAlternative?.some(i => i.qty > 0)
-                                                    ) ? {
-                                                        dailySpecial: data.breakFastDailySpecial?.filter(i => i.qty > 0) || [],
-                                                        alternatives: data.breakFastAlternative?.filter(i => i.qty > 0) || [],
-                                                        additionalServices: data.breakfast_additional_services || []
-                                                    } : null;
+                                                    // const selectedLunch = {
+                                                    //     soup: data.lunchSoup?.filter(i => i.qty > 0) || [],
+                                                    //     entree: data.lunchEntree?.filter(i => i.qty > 0) || [],
+                                                    //     alternatives: data.lunchAlternative?.filter(i => i.qty > 0) || [],
+                                                    //     additionalServices: data.lunch_additional_services || []
+                                                    // };
+                                                    // // If breakfast not submitted, include breakfast data as well
+                                                    // const selectedBreakfast = (
+                                                    //     data.breakFastDailySpecial?.some(i => i.qty > 0) ||
+                                                    //     data.breakFastAlternative?.some(i => i.qty > 0)
+                                                    // ) ? {
+                                                    //     dailySpecial: data.breakFastDailySpecial?.filter(i => i.qty > 0) || [],
+                                                    //     alternatives: data.breakFastAlternative?.filter(i => i.qty > 0) || [],
+                                                    //     additionalServices: data.breakfast_additional_services || []
+                                                    // } : null;
 
-                                                    if (selectedBreakfast) {
-                                                        console.log("Submitting Breakfast & Lunch Order:", { breakfast: selectedBreakfast, lunch: selectedLunch });
-                                                        alert("Breakfast and Lunch order submitted!");
-                                                    } else {
-                                                        console.log("Submitting Lunch Order:", selectedLunch);
-                                                        alert("Lunch order submitted!");
-                                                    }
-                                                    // TODO: Replace with actual submit logic (API call, etc.)
+                                                    // if (selectedBreakfast) {
+                                                    //     console.log("Submitting Breakfast & Lunch Order:", { breakfast: selectedBreakfast, lunch: selectedLunch });
+                                                    //     alert("Breakfast and Lunch order submitted!");
+                                                    // } else {
+                                                    //     console.log("Submitting Lunch Order:", selectedLunch);
+                                                    //     alert("Lunch order submitted!");
+                                                    // }
+
                                                 }}
                                             > Submit Order
                                                 {/* {(
@@ -1417,7 +1146,7 @@ const Order = () => {
                                                                 dinnerSoup: prev.dinnerSoup.map((i) =>
                                                                     i.id === item.id
                                                                         ? { ...i, qty: 1 }
-                                                                        :  { ...i, qty: 0 } // only single items selected i
+                                                                        : { ...i, qty: 0 } // only single items selected i
                                                                 ),
                                                             }))
                                                         }
@@ -1476,7 +1205,7 @@ const Order = () => {
                                                                     dinnerEntree: prev.dinnerEntree.map((i) =>
                                                                         i.id === item.id
                                                                             ? { ...i, qty: 1 }
-                                                                            :  { ...i, qty: 0 } // only single items selected i
+                                                                            : { ...i, qty: 0 } // only single items selected i
                                                                     ),
                                                                 }))
                                                             }
@@ -1593,7 +1322,7 @@ const Order = () => {
                                                                     dinnerAlternative: prev.dinnerAlternative.map((i) =>
                                                                         i.id === item.id
                                                                             ? { ...i, qty: 1 }
-                                                                            :  { ...i, qty: 0 } // only single items selected i
+                                                                            : { ...i, qty: 0 } // only single items selected i
                                                                     ),
                                                                 }))
                                                             }
@@ -1742,75 +1471,54 @@ const Order = () => {
                                                     cursor: "pointer"
                                                 }}
                                                 onClick={() => {
+                                                    submitData(data, date)
                                                     // Gather dinner data
-                                                    const selectedDinner = {
-                                                        soup: data.dinnerSoup?.filter(i => i.qty > 0) || [],
-                                                        entree: data.dinnerEntree?.filter(i => i.qty > 0) || [],
-                                                        alternatives: data.dinnerAlternative?.filter(i => i.qty > 0) || [],
-                                                        additionalServices: data.dinner_additional_services || []
-                                                    };
-                                                    // Gather lunch data if any selected
-                                                    const selectedLunch = (
-                                                        data.lunchSoup?.some(i => i.qty > 0) ||
-                                                        data.lunchEntree?.some(i => i.qty > 0) ||
-                                                        data.lunchAlternative?.some(i => i.qty > 0)
-                                                    ) ? {
-                                                        soup: data.lunchSoup?.filter(i => i.qty > 0) || [],
-                                                        entree: data.lunchEntree?.filter(i => i.qty > 0) || [],
-                                                        alternatives: data.lunchAlternative?.filter(i => i.qty > 0) || [],
-                                                        additionalServices: data.lunch_additional_services || []
-                                                    } : null;
-                                                    // Gather breakfast data if any selected
-                                                    const selectedBreakfast = (
-                                                        data.breakFastDailySpecial?.some(i => i.qty > 0) ||
-                                                        data.breakFastAlternative?.some(i => i.qty > 0)
-                                                    ) ? {
-                                                        dailySpecial: data.breakFastDailySpecial?.filter(i => i.qty > 0) || [],
-                                                        alternatives: data.breakFastAlternative?.filter(i => i.qty > 0) || [],
-                                                        additionalServices: data.breakfast_additional_services || []
-                                                    } : null;
+                                                    // const selectedDinner = {
+                                                    //     soup: data.dinnerSoup?.filter(i => i.qty > 0) || [],
+                                                    //     entree: data.dinnerEntree?.filter(i => i.qty > 0) || [],
+                                                    //     alternatives: data.dinnerAlternative?.filter(i => i.qty > 0) || [],
+                                                    //     additionalServices: data.dinner_additional_services || []
+                                                    // };
+                                                    // // Gather lunch data if any selected
+                                                    // const selectedLunch = (
+                                                    //     data.lunchSoup?.some(i => i.qty > 0) ||
+                                                    //     data.lunchEntree?.some(i => i.qty > 0) ||
+                                                    //     data.lunchAlternative?.some(i => i.qty > 0)
+                                                    // ) ? {
+                                                    //     soup: data.lunchSoup?.filter(i => i.qty > 0) || [],
+                                                    //     entree: data.lunchEntree?.filter(i => i.qty > 0) || [],
+                                                    //     alternatives: data.lunchAlternative?.filter(i => i.qty > 0) || [],
+                                                    //     additionalServices: data.lunch_additional_services || []
+                                                    // } : null;
+                                                    // // Gather breakfast data if any selected
+                                                    // const selectedBreakfast = (
+                                                    //     data.breakFastDailySpecial?.some(i => i.qty > 0) ||
+                                                    //     data.breakFastAlternative?.some(i => i.qty > 0)
+                                                    // ) ? {
+                                                    //     dailySpecial: data.breakFastDailySpecial?.filter(i => i.qty > 0) || [],
+                                                    //     alternatives: data.breakFastAlternative?.filter(i => i.qty > 0) || [],
+                                                    //     additionalServices: data.breakfast_additional_services || []
+                                                    // } : null;
 
-                                                    // Compose submission object
-                                                    const submission = {};
-                                                    if (selectedBreakfast) submission.breakfast = selectedBreakfast;
-                                                    if (selectedLunch) submission.lunch = selectedLunch;
-                                                    submission.dinner = selectedDinner;
+                                                    // // Compose submission object
+                                                    // const submission = {};
+                                                    // if (selectedBreakfast) submission.breakfast = selectedBreakfast;
+                                                    // if (selectedLunch) submission.lunch = selectedLunch;
+                                                    // submission.dinner = selectedDinner;
 
-                                                    console.log("Submitting Order:", submission);
-                                                    // TODO: Replace with actual submit logic (API call, etc.)
-                                                    alert(
-                                                        selectedBreakfast && selectedLunch
-                                                            ? "Breakfast, Lunch, and Dinner order submitted!"
-                                                            : selectedLunch
-                                                                ? "Lunch and Dinner order submitted!"
-                                                                : selectedBreakfast
-                                                                    ? "Breakfast and Dinner order submitted!"
-                                                                    : "Dinner order submitted!"
-                                                    );
+                                                    // console.log("Submitting Order:", submission);
+                                                    // // TODO: Replace with actual submit logic (API call, etc.)
+                                                    // alert(
+                                                    //     selectedBreakfast && selectedLunch
+                                                    //         ? "Breakfast, Lunch, and Dinner order submitted!"
+                                                    //         : selectedLunch
+                                                    //             ? "Lunch and Dinner order submitted!"
+                                                    //             : selectedBreakfast
+                                                    //                 ? "Breakfast and Dinner order submitted!"
+                                                    //                 : "Dinner order submitted!"
+                                                    // );
                                                 }}
                                             >Submit Order
-                                                {/* {(
-                data.breakFastDailySpecial?.some(i => i.qty > 0) ||
-                data.breakFastAlternative?.some(i => i.qty > 0)
-            ) && (
-                data.lunchSoup?.some(i => i.qty > 0) ||
-                data.lunchEntree?.some(i => i.qty > 0) ||
-                data.lunchAlternative?.some(i => i.qty > 0)
-            )
-                ? "Submit Breakfast, Lunch & Dinner Order"
-                : (
-                    data.lunchSoup?.some(i => i.qty > 0) ||
-                    data.lunchEntree?.some(i => i.qty > 0) ||
-                    data.lunchAlternative?.some(i => i.qty > 0)
-                )
-                ? "Submit Lunch & Dinner Order"
-                : (
-                    data.breakFastDailySpecial?.some(i => i.qty > 0) ||
-                    data.breakFastAlternative?.some(i => i.qty > 0)
-                )
-                ? "Submit Breakfast & Dinner Order"
-                : "Submit Dinner Order"
-            } */}
                                             </button>
                                         </Box>
                                     )}

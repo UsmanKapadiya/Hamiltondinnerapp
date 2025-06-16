@@ -2,7 +2,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 
 const instance = axios.create({
-  baseURL: `http://hamiltondinnerapp.staging.intelligrp.com/api/admin/`,
+  baseURL: `http://hamiltondinnerapp.staging.intelligrp.com/api/`,
   timeout: 50000,
   headers: {
     Accept: 'application/json',
@@ -14,23 +14,21 @@ const instance = axios.create({
 instance.interceptors.request.use(
   function (config) {
     let token;
-    if (Cookies.get('userToken')) {
-      token = JSON.parse(Cookies.get('userToken')).token; // Ensure you're accessing the correct field
+    if (Cookies.get('authToken')) {
+      token = JSON.parse(Cookies.get('authToken')).token;
     }
-    const isAuthenticated = localStorage.getItem('authToken'); // Use the correct key for the token
-    console.log("TOKEN ====>>", token);
-
-    if (isAuthenticated && !config.headers['Authorization']) {
-      config.headers['Authorization'] = `Bearer ${isAuthenticated}`;
+    // Use cookie token if available, otherwise fallback to localStorage
+    const authToken = token || localStorage.getItem('authToken');
+    if (authToken && !config.headers['Authorization']) {
+      config.headers['Authorization'] = `${authToken}`;
     }
-
     return config;
   },
   function (error) {
-    // Handle request errors
     return Promise.reject(error);
   }
 );
+
 
 // Response Interceptor
 instance.interceptors.response.use(

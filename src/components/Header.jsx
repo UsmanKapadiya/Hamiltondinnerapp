@@ -40,7 +40,7 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
             </Icon>
           )}
           <Typography
-            variant="h2"
+            variant="h6"
             fontWeight="bold"
             color={colors.gray[100]}
             sx={{
@@ -48,7 +48,7 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
               alignItems: "center",
             }}
           >
-            {title}
+          # {title}
           </Typography>
         </Box>
         {buttons && (

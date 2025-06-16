@@ -1,72 +1,34 @@
 import React, { useState } from "react";
-import { Box, TextField, Button, Typography, useTheme, useMediaQuery, FormControlLabel, Checkbox, IconButton } from "@mui/material";
-// import shipImage from "../../assets/images/ship.jpg";
-// import AuthServices from "../../services/authServices";
+import { Box, Typography, useTheme, useMediaQuery, IconButton } from "@mui/material";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { use } from "react";
 import { tokens } from "../../theme";
-import { DownloadOutlined, DynamicFormOutlined, LoginOutlined, LogoutOutlined, RestaurantMenuOutlined } from "@mui/icons-material";
+import { DynamicFormOutlined, LogoutOutlined, RestaurantMenuOutlined } from "@mui/icons-material";
 import logo from "../../assets/images/logo.png";
 import CustomButton from "../../components/CustomButton";
+
 const Home = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const isMdDevices = useMediaQuery("(min-width: 724px)");
-    const [formData, setFormData] = useState({ roomNo: "", password: "" });
-    const [errors, setErrors] = useState({ roomNo: "", password: "" });
     const [loading, setLoading] = useState(false);
+    const [data] = useState(() => {
+        const userData = localStorage.getItem("userData");
+        return userData ? JSON.parse(userData) : null;
+    });
     const navigate = useNavigate();
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const newErrors = {};
-        if (!formData.roomNo) newErrors.roomNo = "Room No is required";
-        if (!formData.password) newErrors.password = "Password is required";
-
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            return;
-        }
-
-        console.log("Form submitted", formData);
-
-        // try {
-        //   setLoading(true);
-        //   let response = await AuthServices.login(formData);
-        //   const { access_token, user } = response;
-
-        //   console.log("response", access_token, user);
-        //   localStorage.setItem("authToken", access_token);
-        //   localStorage.setItem("userData", JSON.stringify(user));
-
-        //   // Show success toast
-        //   toast.success("Login Successfully!");
-
-        //   // Delay navigation to ensure toast is displayed
-        //   setTimeout(() => {
-        //     navigate("/");
-        //   }, 1000);
-        // } catch (error) {
-        //   console.error("Error processing login:", error);
-
-        //   const errorMessage =
-        //     error.response?.data?.error || "An unexpected error occurred. Please try again.";
-        //   toast.error(errorMessage);
-
-        //   setTimeout(() => {
-        //     setLoading(false);
-        //   }, 1500);
-        // } finally {
-        //   if (!error) {
-        //     setLoading(false);
-        //   }
-        // }
+       
+        toast.success("Logged out!");
+        setLoading(true);
+        setTimeout(() => {
+            setLoading(false);
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("userData");
+            navigate("/");
+        }, 1000);
     };
 
     return (
@@ -99,8 +61,23 @@ const Home = () => {
                     backgroundColor: "white",
                     height: "100vh",
                     width: "100%",
+                    position: "relative",
                 }}
             >
+                {/* Top right align */}
+                <Box
+                    sx={{
+                        position: "absolute",
+                        top: 16,
+                        right: 24,
+                        zIndex: 1,
+                    }}
+                >
+                    <Typography variant="caption" sx={{ textAlign: "right" }}>
+                        Logged in as {data?.role === "admin" ? "Admin" : data?.role}
+                    </Typography>
+                </Box>
+
                 <Box
                     component="form"
                     onSubmit={handleSubmit}
@@ -115,7 +92,6 @@ const Home = () => {
                         margin: "0 auto",
                     }}
                 >
-                    {/* Top side logo set */}
                     {/* Logo */}
                     <img
                         src={logo}
@@ -131,40 +107,44 @@ const Home = () => {
                         gap={5}
                         sx={{ marginTop: 7, marginBottom: 7 }}
                     >
-                        <Box display="flex" flexDirection="column" alignItems="center">
-                            <IconButton
-                                onClick={() => { navigate("/room"); }}
-                                sx={{
-                                    color: colors.blueAccent[700],
-                                    transition: "color 0.3s",
-                                    "&:hover": {
-                                        color: colors.blueAccent[800],
-                                    },
-                                }}
-                            >
-                                <RestaurantMenuOutlined sx={{ fontSize: 40 }} />
-                            </IconButton>
-                            <Typography variant="caption" sx={{ mt: 1 }}>
-                                Dinning
-                            </Typography>
-                        </Box>
-                        <Box display="flex" flexDirection="column" alignItems="center">
-                            <IconButton
-                                onClick={() => { /* handle DynamicForm click */ }}
-                                sx={{
-                                    color: colors.blueAccent[700],
-                                    transition: "color 0.3s",
-                                    "&:hover": {
-                                        color: colors.blueAccent[800],
-                                    },
-                                }}
-                            >
-                                <DynamicFormOutlined sx={{ fontSize: 40 }} />
-                            </IconButton>
-                            <Typography variant="caption" sx={{ mt: 1 }}>
-                                Incident
-                            </Typography>
-                        </Box>
+                        {data?.show_dining == 1 && (
+                            <Box display="flex" flexDirection="column" alignItems="center">
+                                <IconButton
+                                    onClick={() => { navigate("/room"); }}
+                                    sx={{
+                                        color: colors.blueAccent[700],
+                                        transition: "color 0.3s",
+                                        "&:hover": {
+                                            color: colors.blueAccent[800],
+                                        },
+                                    }}
+                                >
+                                    <RestaurantMenuOutlined sx={{ fontSize: 40 }} />
+                                </IconButton>
+                                <Typography variant="caption" sx={{ mt: 1 }}>
+                                    Dinning
+                                </Typography>
+                            </Box>
+                        )}
+                        {data?.show_incident == 1 && (
+                            <Box display="flex" flexDirection="column" alignItems="center">
+                                <IconButton
+                                    onClick={() => { /* handle DynamicForm click */ }}
+                                    sx={{
+                                        color: colors.blueAccent[700],
+                                        transition: "color 0.3s",
+                                        "&:hover": {
+                                            color: colors.blueAccent[800],
+                                        },
+                                    }}
+                                >
+                                    <DynamicFormOutlined sx={{ fontSize: 40 }} />
+                                </IconButton>
+                                <Typography variant="caption" sx={{ mt: 1 }}>
+                                    Incident
+                                </Typography>
+                            </Box>
+                        )}
                     </Box>
                     <Box>
                         <CustomButton
@@ -190,7 +170,7 @@ const Home = () => {
                     </Box>
                 </Box>
             </Box>
-        </Box >
+        </Box>
     );
 };
 
