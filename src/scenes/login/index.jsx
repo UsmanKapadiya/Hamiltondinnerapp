@@ -74,9 +74,7 @@ const Login = () => {
         setLoading(false);
       }, 1500);
     } finally {
-      if (!error) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   };
 
