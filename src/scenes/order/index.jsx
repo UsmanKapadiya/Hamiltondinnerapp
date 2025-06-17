@@ -13,10 +13,13 @@ import { toast, ToastContainer } from "react-toastify";
 import { useLocation } from "react-router-dom";
 import CustomButton from "../../components/CustomButton";
 
-
+let breakFastEndTime = 10;
+let lunchEndTime = 15;
+let dinnerEndTime = 24;
 
 
 const Order = () => {
+
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const location = useLocation();
@@ -25,7 +28,25 @@ const Order = () => {
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState({});
     const [mealData, setMealData] = useState({});
-    const [tabIndex, setTabIndex] = useState(0);
+
+    const getDefaultTabIndex = () => {
+        const now = dayjs();
+        if (now.hour() > lunchEndTime || (now.hour() === lunchEndTime && now.minute() > 0)) {
+            return 2; // Dinner
+        } else if (now.hour() > breakFastEndTime || (now.hour() === breakFastEndTime && now.minute() > 0)) {
+            return 1; // Lunch
+        }
+        return 0; // Breakfast
+    };
+
+    const [tabIndex, setTabIndex] = useState(getDefaultTabIndex());
+    const isToday = date.isSame(dayjs(), 'day');
+    const isPast = date.isBefore(dayjs(), 'day');
+    const isAfter10AM = isToday && (dayjs().hour() > breakFastEndTime || (dayjs().hour() === breakFastEndTime && dayjs().minute() > 0));
+    const isAfter3PM = isToday && (dayjs().hour() > lunchEndTime || (dayjs().hour() === lunchEndTime && dayjs().minute() > 0));
+    const isAfter12PM = isToday && (dayjs().hour() > dinnerEndTime || (dayjs().hour() === dinnerEndTime && dayjs().minute() > 0));
+
+
     const [userData] = useState(() => {
         const userDatas = localStorage.getItem("userData");
         return userDatas ? JSON.parse(userDatas) : null;
@@ -336,7 +357,7 @@ const Order = () => {
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
-                                                            disabled={item.qty === 0}
+                                                            disabled={item.qty === 0 || isAfter10AM || isPast}
                                                         >
                                                             -
                                                         </button>
@@ -353,7 +374,7 @@ const Order = () => {
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1}
+                                                            disabled={item.qty >= 1 || isAfter10AM || isPast}
                                                         >
                                                             +
                                                         </button>
@@ -454,7 +475,7 @@ const Order = () => {
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
-                                                            disabled={item.qty === 0}
+                                                            disabled={item.qty === 0 || isAfter10AM || isPast}
                                                         >
                                                             -
                                                         </button>
@@ -471,7 +492,7 @@ const Order = () => {
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1}
+                                                            disabled={item.qty >= 1 || isAfter10AM || isPast}
                                                         >
                                                             +
                                                         </button>
@@ -637,11 +658,12 @@ const Order = () => {
                                                     fontWeight: 600,
                                                     fontSize: 16,
                                                     cursor: "pointer",
-                                                    width:'auto'
+                                                    width: 'auto'
                                                 }}
                                                 onClick={() => {
                                                     submitData(data, date)
                                                 }}
+                                                disabled={isAfter10AM || isPast}
                                             >
                                                 Submit Order
                                             </CustomButton>
@@ -686,7 +708,7 @@ const Order = () => {
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
-                                                            disabled={item.qty === 0}
+                                                            disabled={item.qty === 0 || isAfter3PM || isPast}
                                                         >
                                                             -
                                                         </button>
@@ -703,7 +725,7 @@ const Order = () => {
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1}
+                                                            disabled={item.qty >= 1 || isAfter3PM || isPast}
                                                         >
                                                             +
                                                         </button>
@@ -813,7 +835,7 @@ const Order = () => {
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
-                                                            disabled={item.qty === 0}
+                                                            disabled={item.qty === 0 || isAfter3PM || isPast}
                                                         >
                                                             -
                                                         </button>
@@ -830,7 +852,7 @@ const Order = () => {
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1}
+                                                            disabled={item.qty >= 1 || isAfter3PM || isPast}
                                                         >
                                                             +
                                                         </button>
@@ -929,7 +951,7 @@ const Order = () => {
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
-                                                            disabled={item.qty === 0}
+                                                            disabled={item.qty === 0 || isAfter3PM || isPast}
                                                         >
                                                             -
                                                         </button>
@@ -946,7 +968,7 @@ const Order = () => {
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1}
+                                                            disabled={item.qty >= 1 || isAfter3PM || isPast}
                                                         >
                                                             +
                                                         </button>
@@ -1076,7 +1098,7 @@ const Order = () => {
                                         data.lunchEntree?.some(item => item.qty > 0) ||
                                         data.lunchAlternative?.some(item => item.qty > 0))
                                 ) && (
-                                       <Box mt={3} display="flex" justifyContent="center">
+                                        <Box mt={3} display="flex" justifyContent="center">
                                             <CustomButton
                                                 sx={{
                                                     padding: "10px 32px",
@@ -1087,8 +1109,9 @@ const Order = () => {
                                                     fontWeight: 600,
                                                     fontSize: 16,
                                                     cursor: "pointer",
-                                                    width:'auto'
+                                                    width: 'auto'
                                                 }}
+                                                disabled={isAfter3PM}
                                                 onClick={() => {
                                                     submitData(data, date)
                                                 }}
@@ -1134,7 +1157,7 @@ const Order = () => {
                                                             }))
                                                         }
                                                         style={{ marginRight: 8 }}
-                                                        disabled={item.qty === 0}
+                                                        disabled={item.qty === 0 || isAfter12PM || isPast}
                                                     >
                                                         -
                                                     </button>
@@ -1151,7 +1174,7 @@ const Order = () => {
                                                             }))
                                                         }
                                                         style={{ marginLeft: 8 }}
-                                                        disabled={item.qty >= 1}
+                                                        disabled={item.qty >= 1 || isAfter12PM || isPast}
                                                     >
                                                         +
                                                     </button>
@@ -1193,7 +1216,7 @@ const Order = () => {
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
-                                                            disabled={item.qty === 0}
+                                                            disabled={item.qty === 0 || isAfter12PM || isPast}
                                                         >
                                                             -
                                                         </button>
@@ -1210,7 +1233,7 @@ const Order = () => {
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1}
+                                                            disabled={item.qty >= 1 || isAfter12PM || isPast}
                                                         >
                                                             +
                                                         </button>
@@ -1310,7 +1333,7 @@ const Order = () => {
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
-                                                            disabled={item.qty === 0}
+                                                            disabled={item.qty === 0 || isAfter12PM || isPast}
                                                         >
                                                             -
                                                         </button>
@@ -1327,7 +1350,7 @@ const Order = () => {
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1}
+                                                            disabled={item.qty >= 1 || isAfter12PM || isPast}
                                                         >
                                                             +
                                                         </button>
@@ -1469,8 +1492,9 @@ const Order = () => {
                                                     fontWeight: 600,
                                                     fontSize: 16,
                                                     cursor: "pointer",
-                                                    width:'auto'
+                                                    width: 'auto'
                                                 }}
+                                                disabled={isAfter12PM || isPast}
                                                 onClick={() => {
                                                     submitData(data, date)
                                                 }}
