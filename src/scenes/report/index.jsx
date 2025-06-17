@@ -46,6 +46,7 @@ const Report = () => {
         <Box m="20px">
             <Header
                 title="Report"
+                profileScreen={true}
             />
             <Box
                 mt="40px"

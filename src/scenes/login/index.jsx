@@ -38,44 +38,43 @@ const Login = () => {
       return;
     }
 
-
     try {
       setLoading(true);
       let response = await AuthServices.login({ roomNo: formData?.roomNo, password: formData?.password });
-      const { authentication_token, role, user_id, show_dining, show_incident, guideline, guideline_cn,room_id } = response;
-      let userData = {
-        role,
-        user_id,
-        show_dining,
-        show_incident,
-        guideline,
-        guideline_cn,
-        room_id
-      };
-      localStorage.setItem("authToken", authentication_token);
-      localStorage.setItem("userData", JSON.stringify(userData));
-      toast.success("Login Successfully!");
-      setTimeout(() => {
-        if (role === "user") {
-          navigate("/order");
-        } else {
-          navigate("/home");
-        }
-      }, 1000);
 
+      if (response.ResponseCode === "1") {
+        const { authentication_token, role, user_id, show_dining, show_incident, guideline, guideline_cn, room_id } = response;
+        let userData = {
+          role,
+          user_id,
+          show_dining,
+          show_incident,
+          guideline,
+          guideline_cn,
+          room_id
+        };
+        localStorage.setItem("authToken", authentication_token);
+        localStorage.setItem("userData", JSON.stringify(userData));
+        toast.success(response.ResponseText || "Successfully Login");
+        setTimeout(() => {
+          if (role === "user") {
+            navigate("/order");
+          } else {
+            navigate("/home");
+          }
+        }, 1000);
+      } else {
+        toast.error(response.ResponseText || "Login failed. Please try again.");
+      }
     } catch (error) {
       console.error("Error processing login:", error);
-
       const errorMessage =
         error.response?.data?.error || "An unexpected error occurred. Please try again.";
       toast.error(errorMessage);
-
-      setTimeout(() => {
-        setLoading(false);
-      }, 1500);
     } finally {
       setLoading(false);
     }
+
   };
 
   return (

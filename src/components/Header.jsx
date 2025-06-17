@@ -12,6 +12,7 @@ import {
 } from "@mui/icons-material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 
 
 const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, deleteButton, profileScreen }) => {
@@ -31,13 +32,18 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
 
   const handleProfile = () => {
     handleUserMenuClose();
-    navigate("/profile"); // Change to your profile route
+    // navigate("/profile"); // Change to your profile route
   };
 
   const handleLogout = () => {
     handleUserMenuClose();
-    localStorage.clear();
-    navigate("/");
+    toast.success("Logged out!");
+            setTimeout(() => {
+                localStorage.clear();
+                localStorage.removeItem("authToken");
+                localStorage.removeItem("userData");
+                navigate("/");
+            }, 1000);
   };
   return (
     <Box mb="30px">
@@ -136,6 +142,7 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
           </Box>
         )}
       </Box>
+       <ToastContainer />
     </Box>
   );
 };
