@@ -35,16 +35,6 @@ const Report = () => {
         fetchReports();
     }, [date]);
 
-    // Helper to safely get columns for mapping
-    const getColumns = useCallback(
-        (idx) =>
-            Array.isArray(data?.columns) && Array.isArray(data.columns[idx])
-                ? data.columns[idx]
-                : [],
-        [data]
-    );
-
-    // Handle date change and close calendar after selection
     const handleDateChange = (newValue) => {
         if (newValue && !newValue.isSame(date, 'day')) {
             setDate(newValue);
@@ -84,7 +74,6 @@ const Report = () => {
                     },
                 }}
             >
-                {/* Calendar opens automatically on mount */}
                 <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
@@ -158,7 +147,7 @@ const Report = () => {
                                         <TableCell
                                             key={`lunch-${idx}`}
                                             align="center"
-                                            sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}                                            
+                                            sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
                                         >
                                             <Tooltip title={item.real_item_name} arrow>
                                                 <span>{item.item_name}</span>
@@ -180,44 +169,63 @@ const Report = () => {
                             </TableHead>
 
                             <TableBody>
+                                <TableRow sx={{ backgroundColor: colors.blueAccent[800] }}>
+                                    <TableCell align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)' }}>
+                                        Total
+                                    </TableCell>
+                                    {/* Breakfast  */}
+                                    {data?.breakfast_item_list?.map((_, i) => {
+                                        const total = data?.report_breakfast_list?.reduce((sum, row) => sum + (row.quantity[i] || 0), 0);
+                                        return (
+                                            <TableCell key={`btot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)' }}>
+                                                {total}
+                                            </TableCell>
+                                        );
+                                    })}
+
+                                    {data?.lunch_item_list?.map((_, i) => {
+                                        const total = data?.report_lunch_list?.reduce((sum, row) => sum + (row.quantity[i] || 0), 0);
+                                        return (
+                                            <TableCell key={`ltot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)' }}>
+                                                {total}
+                                            </TableCell>
+                                        );
+                                    })}
+
+                                    {data?.dinner_item_list?.map((_, i) => {
+                                        const total = data?.report_dinner_list?.reduce((sum, row) => sum + (row.quantity[i] || 0), 0);
+                                        return (
+                                            <TableCell key={`dtot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)' }}>
+                                                {total}
+                                            </TableCell>
+                                        );
+                                    })}
+                                </TableRow>
+
+                                {/* Data displayed*/}
                                 {data?.report_breakfast_list?.map((breakfastRow, idx) => {
                                     const lunchRow = data?.report_lunch_list?.find(l => l.room_no === breakfastRow.room_no) || { quantity: [] };
                                     const dinnerRow = data?.report_dinner_list?.find(d => d.room_no === breakfastRow.room_no) || { quantity: [] };
                                     return (
                                         <TableRow key={breakfastRow.room_no}>
-                                            <TableCell
-                                                align="center"
-                                                sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
-                                            >
+                                            <TableCell align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
                                                 {breakfastRow.room_no}
                                             </TableCell>
                                             {/* Breakfast quantities */}
                                             {breakfastRow.quantity.map((qty, i) => (
-                                                <TableCell
-                                                    key={`b-${i}`}
-                                                    align="center"
-                                                    sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
-                                                >
+                                                <TableCell key={`b-${i}`} align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
                                                     {qty}
                                                 </TableCell>
                                             ))}
                                             {/* Lunch quantities */}
                                             {lunchRow.quantity.map((qty, i) => (
-                                                <TableCell
-                                                    key={`l-${i}`}
-                                                    align="center"
-                                                    sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
-                                                >
+                                                <TableCell key={`l-${i}`} align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
                                                     {qty}
                                                 </TableCell>
                                             ))}
                                             {/* Dinner quantities */}
                                             {dinnerRow.quantity.map((qty, i) => (
-                                                <TableCell
-                                                    key={`d-${i}`}
-                                                    align="center"
-                                                    sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
-                                                >
+                                                <TableCell key={`d-${i}`} align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
                                                     {qty}
                                                 </TableCell>
                                             ))}
