@@ -7,7 +7,7 @@ const CustomLoadingOverlay = () => (
     alignItems="center"
     height="100%"
   >
-    <CircularProgress color="secondary" />
+    <CircularProgress color="primary" />
   </Box>
 );
 
