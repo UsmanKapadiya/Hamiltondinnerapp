@@ -10,6 +10,8 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
 import OrderServices from "../../services/orderServices";
 import { toast, ToastContainer } from "react-toastify";
+import { useLocation } from "react-router-dom";
+import CustomButton from "../../components/CustomButton";
 
 
 
@@ -17,6 +19,8 @@ import { toast, ToastContainer } from "react-toastify";
 const Order = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
+    const location = useLocation();
+    const roomNo = location.state?.roomNo;
     const [date, setDate] = useState(dayjs());
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState({});
@@ -26,27 +30,27 @@ const Order = () => {
         const userDatas = localStorage.getItem("userData");
         return userDatas ? JSON.parse(userDatas) : null;
     });
-    console.log(userData)
+
     useEffect(() => {
-    const fetchMenuDetails = async () => {
-        try {
-            setLoading(true);
-            const response = await OrderServices.getMenuData(userData?.room_id, date.format("YYYY-MM-DD"));
-            let data = {
-                breakfast: response.breakfast,
-                lunch: response?.lunch,
-                dinner: response?.dinner
-            };
-            setMealData(data); // <-- Add this line
-            setData(transformMealData(data));
-        } catch (error) {
-            console.error("Error fetching menu list:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-    fetchMenuDetails();
-}, [date]);
+        const fetchMenuDetails = async () => {
+            try {
+                setLoading(true);
+                const response = await OrderServices.getMenuData(roomNo ? roomNo : userData?.room_id, date.format("YYYY-MM-DD"));
+                let data = {
+                    breakfast: response.breakfast,
+                    lunch: response?.lunch,
+                    dinner: response?.dinner
+                };
+                setMealData(data); // <-- Add this line
+                setData(transformMealData(data));
+            } catch (error) {
+                console.error("Error fetching menu list:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchMenuDetails();
+    }, [date]);
 
     function selectFirstOption(options) {
         if (!options || options.length === 0) return [];
@@ -92,7 +96,7 @@ const Order = () => {
             id: item.item_id,
             name: item.item_name,
             chinese_name: item.chinese_name,
-             qty: 0,
+            qty: 0,
             options: selectFirstOption(item.options),
             preference: item.preference
         })) || [];
@@ -112,7 +116,7 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                 qty: 0,
+                qty: 0,
                 options: selectFirstOption(item.options),
                 preference: item.preference
             })) || [];
@@ -129,7 +133,7 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                 qty: 0,
+                qty: 0,
                 options: selectFirstOption(item.options),
                 preference: item.preference
             })) || [];
@@ -208,29 +212,30 @@ const Order = () => {
         }];
     }
 
-  const submitData = async (data, date) => {
-    try {
-        const payload = buildOrderPayload(data, date);
-        let response = await OrderServices.submitOrder(payload);
-        if (response.ResponseText === "success") {
-            toast.success("Order submitted successfully!");
-            setData(transformMealData(mealData)); // <-- Now mealData is defined
-        } else {
-            toast.error(response.ResponseText || "Order submission failed.");
+    const submitData = async (data, date) => {
+        try {
+            const payload = buildOrderPayload(data, date);
+            let response = await OrderServices.submitOrder(payload);
+            if (response.ResponseText === "success") {
+                toast.success("Order submitted successfully!");
+                setData(transformMealData(mealData)); // <-- Now mealData is defined
+            } else {
+                toast.error(response.ResponseText || "Order submission failed.");
+            }
+        } catch (error) {
+            toast.error("An error occurred while submitting the order.");
+            console.error(error);
         }
-    } catch (error) {
-        toast.error("An error occurred while submitting the order.");
-        console.error(error);
-    }
-};
+    };
 
 
     // console.log("Meal data", data)
     return (
         <Box m="20px">
             <Header
-                title={userData?.room_id}
+                title={roomNo ? roomNo : userData?.room_id}
                 icon={""}
+                profileScreen={true}
             />   <ToastContainer />
             <Box
                 mt="40px"
@@ -592,34 +597,56 @@ const Order = () => {
                                 {(
                                     (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0))
                                 ) && (
+                                        // <Box mt={3} display="flex" justifyContent="center">
+                                        //     <button
+                                        //         style={{
+                                        //             padding: "10px 32px",
+                                        //             background: colors.greenAccent[600],
+                                        //             color: "#fff",
+                                        //             border: "none",
+                                        //             borderRadius: 4,
+                                        //             fontWeight: 600,
+                                        //             fontSize: 16,
+                                        //             cursor: "pointer"
+                                        //         }}
+                                        //         onClick={() => {
+                                        //             submitData(data, date)
+                                        //             // Example: handle breakfast data submit
+                                        //             // const selectedBreakfast = {
+                                        //             //     dailySpecial: data.breakFastDailySpecial?.filter(i => i.qty > 0) || [],
+                                        //             //     alternatives: data.breakFastAlternative?.filter(i => i.qty > 0) || [],
+                                        //             //     additionalServices: data.breakfast_additional_services || []
+                                        //             // };
+                                        //             // console.log("Submitting Breakfast Order:", selectedBreakfast);
+                                        //             // // TODO: Replace with actual submit logic (API call, etc.)
+                                        //             // alert("Breakfast order submitted!");
+                                        //         }}
+                                        //     >
+                                        //         Submit Order
+                                        //     </button>
+                                        // </Box>
+                                        // ...existing code...
                                         <Box mt={3} display="flex" justifyContent="center">
-                                            <button
-                                                style={{
+                                            <CustomButton
+                                                sx={{
                                                     padding: "10px 32px",
-                                                    background: colors.greenAccent[600],
-                                                    color: "#fff",
+                                                    bgcolor: colors.blueAccent[700],
+                                                    color: "#fcfcfc",
                                                     border: "none",
                                                     borderRadius: 4,
                                                     fontWeight: 600,
                                                     fontSize: 16,
-                                                    cursor: "pointer"
+                                                    cursor: "pointer",
+                                                    width:'auto'
                                                 }}
                                                 onClick={() => {
                                                     submitData(data, date)
-                                                    // Example: handle breakfast data submit
-                                                    // const selectedBreakfast = {
-                                                    //     dailySpecial: data.breakFastDailySpecial?.filter(i => i.qty > 0) || [],
-                                                    //     alternatives: data.breakFastAlternative?.filter(i => i.qty > 0) || [],
-                                                    //     additionalServices: data.breakfast_additional_services || []
-                                                    // };
-                                                    // console.log("Submitting Breakfast Order:", selectedBreakfast);
-                                                    // // TODO: Replace with actual submit logic (API call, etc.)
-                                                    // alert("Breakfast order submitted!");
                                                 }}
                                             >
                                                 Submit Order
-                                            </button>
+                                            </CustomButton>
                                         </Box>
+                                        // ...existing code...
                                     )}
                             </Box>
                         )}
@@ -1049,52 +1076,25 @@ const Order = () => {
                                         data.lunchEntree?.some(item => item.qty > 0) ||
                                         data.lunchAlternative?.some(item => item.qty > 0))
                                 ) && (
-                                        <Box mt={3} display="flex" justifyContent="center">
-                                            <button
-                                                style={{
+                                       <Box mt={3} display="flex" justifyContent="center">
+                                            <CustomButton
+                                                sx={{
                                                     padding: "10px 32px",
-                                                    background: colors.greenAccent[600],
-                                                    color: "#fff",
+                                                    bgcolor: colors.blueAccent[700],
+                                                    color: "#fcfcfc",
                                                     border: "none",
                                                     borderRadius: 4,
                                                     fontWeight: 600,
                                                     fontSize: 16,
-                                                    cursor: "pointer"
+                                                    cursor: "pointer",
+                                                    width:'auto'
                                                 }}
                                                 onClick={() => {
                                                     submitData(data, date)
-                                                    // Example: handle lunch (and optionally breakfast) data submit
-                                                    // const selectedLunch = {
-                                                    //     soup: data.lunchSoup?.filter(i => i.qty > 0) || [],
-                                                    //     entree: data.lunchEntree?.filter(i => i.qty > 0) || [],
-                                                    //     alternatives: data.lunchAlternative?.filter(i => i.qty > 0) || [],
-                                                    //     additionalServices: data.lunch_additional_services || []
-                                                    // };
-                                                    // // If breakfast not submitted, include breakfast data as well
-                                                    // const selectedBreakfast = (
-                                                    //     data.breakFastDailySpecial?.some(i => i.qty > 0) ||
-                                                    //     data.breakFastAlternative?.some(i => i.qty > 0)
-                                                    // ) ? {
-                                                    //     dailySpecial: data.breakFastDailySpecial?.filter(i => i.qty > 0) || [],
-                                                    //     alternatives: data.breakFastAlternative?.filter(i => i.qty > 0) || [],
-                                                    //     additionalServices: data.breakfast_additional_services || []
-                                                    // } : null;
-
-                                                    // if (selectedBreakfast) {
-                                                    //     console.log("Submitting Breakfast & Lunch Order:", { breakfast: selectedBreakfast, lunch: selectedLunch });
-                                                    //     alert("Breakfast and Lunch order submitted!");
-                                                    // } else {
-                                                    //     console.log("Submitting Lunch Order:", selectedLunch);
-                                                    //     alert("Lunch order submitted!");
-                                                    // }
-
                                                 }}
-                                            > Submit Order
-                                                {/* {(
-                                                    data.breakFastDailySpecial?.some(i => i.qty > 0) ||
-                                                    data.breakFastAlternative?.some(i => i.qty > 0)
-                                                ) ? "Submit Breakfast & Lunch Order" : "Submit Lunch Order"} */}
-                                            </button>
+                                            >
+                                                Submit Order
+                                            </CustomButton>
                                         </Box>
                                     )}
                             </Box>
@@ -1459,67 +1459,24 @@ const Order = () => {
                                         data.dinnerAlternative?.some(item => item.qty > 0))
                                 ) && (
                                         <Box mt={3} display="flex" justifyContent="center">
-                                            <button
-                                                style={{
+                                            <CustomButton
+                                                sx={{
                                                     padding: "10px 32px",
-                                                    background: colors.greenAccent[600],
-                                                    color: "#fff",
+                                                    bgcolor: colors.blueAccent[700],
+                                                    color: "#fcfcfc",
                                                     border: "none",
                                                     borderRadius: 4,
                                                     fontWeight: 600,
                                                     fontSize: 16,
-                                                    cursor: "pointer"
+                                                    cursor: "pointer",
+                                                    width:'auto'
                                                 }}
                                                 onClick={() => {
                                                     submitData(data, date)
-                                                    // Gather dinner data
-                                                    // const selectedDinner = {
-                                                    //     soup: data.dinnerSoup?.filter(i => i.qty > 0) || [],
-                                                    //     entree: data.dinnerEntree?.filter(i => i.qty > 0) || [],
-                                                    //     alternatives: data.dinnerAlternative?.filter(i => i.qty > 0) || [],
-                                                    //     additionalServices: data.dinner_additional_services || []
-                                                    // };
-                                                    // // Gather lunch data if any selected
-                                                    // const selectedLunch = (
-                                                    //     data.lunchSoup?.some(i => i.qty > 0) ||
-                                                    //     data.lunchEntree?.some(i => i.qty > 0) ||
-                                                    //     data.lunchAlternative?.some(i => i.qty > 0)
-                                                    // ) ? {
-                                                    //     soup: data.lunchSoup?.filter(i => i.qty > 0) || [],
-                                                    //     entree: data.lunchEntree?.filter(i => i.qty > 0) || [],
-                                                    //     alternatives: data.lunchAlternative?.filter(i => i.qty > 0) || [],
-                                                    //     additionalServices: data.lunch_additional_services || []
-                                                    // } : null;
-                                                    // // Gather breakfast data if any selected
-                                                    // const selectedBreakfast = (
-                                                    //     data.breakFastDailySpecial?.some(i => i.qty > 0) ||
-                                                    //     data.breakFastAlternative?.some(i => i.qty > 0)
-                                                    // ) ? {
-                                                    //     dailySpecial: data.breakFastDailySpecial?.filter(i => i.qty > 0) || [],
-                                                    //     alternatives: data.breakFastAlternative?.filter(i => i.qty > 0) || [],
-                                                    //     additionalServices: data.breakfast_additional_services || []
-                                                    // } : null;
-
-                                                    // // Compose submission object
-                                                    // const submission = {};
-                                                    // if (selectedBreakfast) submission.breakfast = selectedBreakfast;
-                                                    // if (selectedLunch) submission.lunch = selectedLunch;
-                                                    // submission.dinner = selectedDinner;
-
-                                                    // console.log("Submitting Order:", submission);
-                                                    // // TODO: Replace with actual submit logic (API call, etc.)
-                                                    // alert(
-                                                    //     selectedBreakfast && selectedLunch
-                                                    //         ? "Breakfast, Lunch, and Dinner order submitted!"
-                                                    //         : selectedLunch
-                                                    //             ? "Lunch and Dinner order submitted!"
-                                                    //             : selectedBreakfast
-                                                    //                 ? "Breakfast and Dinner order submitted!"
-                                                    //                 : "Dinner order submitted!"
-                                                    // );
                                                 }}
-                                            >Submit Order
-                                            </button>
+                                            >
+                                                Submit Order
+                                            </CustomButton>
                                         </Box>
                                     )}
                             </Box>

@@ -2,13 +2,12 @@ import React, { useState } from "react";
 import {
     Box,
     TextField,
-    Button,
     Typography,
     useTheme,
     useMediaQuery,
     IconButton
 } from "@mui/material";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { tokens } from "../../theme";
 import {
@@ -22,8 +21,8 @@ const RoomEnter = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const isMdDevices = useMediaQuery("(min-width: 724px)");
-    const [formData, setFormData] = useState({ roomNo: "", password: "" });
-    const [errors, setErrors] = useState({ roomNo: "", password: "" });
+    const [formData, setFormData] = useState({ roomNo: "" });
+    const [errors] = useState({ roomNo: "" });
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
@@ -33,50 +32,8 @@ const RoomEnter = () => {
     };
 
     const handleSubmit = async (e) => {
-        if (e) e.preventDefault();
-        navigate("/order")
-        // const newErrors = {};
-        // if (!formData.roomNo) newErrors.roomNo = "Room No is required";
-        // if (!formData.password) newErrors.password = "Password is required";
-
-        // if (Object.keys(newErrors).length > 0) {
-        //     setErrors(newErrors);
-        //     return;
-        // }
-
-        // Example: handle login logic here
-        // setLoading(true);
-        // try {
-        //   let response = await AuthServices.login(formData);
-        //   // ...handle response...
-        //   toast.success("Login Successfully!");
-        //   setTimeout(() => navigate("/"), 1000);
-        // } catch (error) {
-        //   toast.error("Login failed");
-        // } finally {
-        //   setLoading(false);
-        // }
-        toast.success("Form submitted!");
-    };
-
-    // Reusable styles
-    const inputButtonSx = {
-        borderRadius: "30px",
-        background: colors.blueAccent[50],
-        color: colors.blueAccent[700],
-        boxShadow: "none",
-        px: 3,
-        py: 1.5,
-        fontWeight: 600,
-        fontSize: "1rem",
-        textTransform: "none",
-        "&:hover": {
-            background: colors.blueAccent[100],
-            color: colors.blueAccent[800],
-            boxShadow: "none"
-        },
-        width: "60%",
-        margin: "16px 0"
+        e.preventDefault();
+        navigate("/order", { state: { roomNo: formData?.roomNo } });
     };
 
     return (
