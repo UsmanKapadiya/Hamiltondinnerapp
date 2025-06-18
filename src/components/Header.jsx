@@ -239,6 +239,7 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
                   vertical: "top",
                   horizontal: "right",
                 }}
+                disableScrollLock
               >
                 <MenuItem onClick={handleProfile}>Profile</MenuItem>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
