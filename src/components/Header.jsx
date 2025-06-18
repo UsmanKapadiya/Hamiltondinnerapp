@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import OrderServices from "../services/orderServices";
+import CustomButton from "./CustomButton";
 
 const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, deleteButton, profileScreen, editRoomsDetails, editIcon, handleRoomUpdate }) => {
   const theme = useTheme();
@@ -127,12 +128,31 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
               fullWidth
             />
             <Box display="flex" justifyContent="flex-end" gap={1} mt={2}>
-              <Button onClick={handleCloseModal} color="secondary" variant="outlined">
+              <CustomButton
+                onClick={handleCloseModal}
+                color="secondary"
+                variant="outlined"
+              >
                 Cancel
-              </Button>
-              <Button onClick={handleModalSubmit} variant="contained">
+              </CustomButton>
+              <CustomButton
+                onClick={handleModalSubmit}
+                variant="contained"
+                sx={{
+                  bgcolor: colors.blueAccent[700],
+                  color: "#fcfcfc",
+                  fontSize: isMdDevices ? "14px" : "10px",
+                  fontWeight: "bold",
+                  p: "10px 20px",
+                  mt: "18px",
+                  transition: ".3s ease",
+                  ":hover": {
+                    bgcolor: colors.blueAccent[800],
+                  },
+                }}
+              >
                 Submit
-              </Button>
+              </CustomButton>
             </Box>
           </Box>
         </Box>
