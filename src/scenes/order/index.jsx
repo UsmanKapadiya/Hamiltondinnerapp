@@ -12,6 +12,7 @@ import OrderServices from "../../services/orderServices";
 import { toast, ToastContainer } from "react-toastify";
 import { useLocation } from "react-router-dom";
 import CustomButton from "../../components/CustomButton";
+import { EditOutlined } from "@mui/icons-material";
 
 let breakFastEndTime = 10;
 let lunchEndTime = 15;
@@ -45,7 +46,6 @@ const Order = () => {
     const isAfter10AM = isToday && (dayjs().hour() > breakFastEndTime || (dayjs().hour() === breakFastEndTime && dayjs().minute() > 0));
     const isAfter3PM = isToday && (dayjs().hour() > lunchEndTime || (dayjs().hour() === lunchEndTime && dayjs().minute() > 0));
     const isAfter12PM = isToday && (dayjs().hour() > dinnerEndTime || (dayjs().hour() === dinnerEndTime && dayjs().minute() > 0));
-
 
     const [userData] = useState(() => {
         const userDatas = localStorage.getItem("userData");
@@ -248,16 +248,63 @@ const Order = () => {
             console.error(error);
         }
     };
+    // const roomUpdate = async (data) => {
+    //     if (data?.selectedUser?.id) {
+    //         try {
+    //             const response = await OrderServices.updateRoomDetails(data?.selectedUser?.id,data?.specialInstruction, data?.foodTexture);
+    //             if (response.ResponseCode === "1") {
+    //                 toast.success(response?.ResponseText || "Room Details Updated Successfully")
+    //             } else {
+    //                 toast.error(response.ResponseText || "Room Details Updated failed. Please try again.");
+    //             }
+    //         } catch (error) {
+    //             console.error("Error processing Room Details Updated failed:", error);
+    //             const errorMessage =
+    //                 error.response?.data?.error || "An unexpected error occurred. Please try again.";
+    //             toast.error(errorMessage);
+    //         }
+    //     }
+    // };
+    const roomUpdate = async (data) => {
+    if (data?.selectedUser?.id) {
+        try {
+            // Ensure both fields are strings and trimmed
+            const specialInstruction = (data?.specialInstruction ?? "").toString().trim();
+            const foodTexture = (data?.foodTexture ?? "").toString().trim();
 
+            const response = await OrderServices.updateRoomDetails(
+                data.selectedUser.id,
+                specialInstruction,
+                foodTexture
+            );
 
-    // console.log("Meal data", data)
+            if (response.ResponseCode === "1") {
+                toast.success(response?.ResponseText || "Room Details Updated Successfully");
+            } else {
+                toast.error(response.ResponseText || "Room Details Update failed. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error processing Room Details Update failed:", error);
+            const errorMessage =
+                error?.response?.data?.error || "An unexpected error occurred. Please try again.";
+            toast.error(errorMessage);
+        }
+    } else {
+        toast.error("No user selected for room update.");
+    }
+};
+
     return (
         <Box m="20px">
             <Header
                 title={roomNo ? roomNo : userData?.room_id}
                 icon={""}
+                editRoomsDetails={userData?.role !== "kitchen" ? true : false}
+                editIcon={<EditOutlined />}
+                handleRoomUpdate={roomUpdate}
                 profileScreen={true}
-            />   <ToastContainer />
+            />
+            <ToastContainer />
             <Box
                 mt="40px"
                 height="75vh"

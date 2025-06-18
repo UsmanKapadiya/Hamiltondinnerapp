@@ -9,6 +9,21 @@ const OrderServices = {
   },
   getReportList: async (date) => {
     return requests.post(`get-report-data?date=${date}`)
-  }
+  },
+
+  // Rooms Api's
+  getRoomDetails: async (id) => {
+    return requests.get(`${id}/get-room-details`)
+  },
+  updateRoomDetails: async (id,specialInstrucations,foodTexture) => {
+       return requests.post(
+        `${id}/update-room-details`,
+        {
+            special_instrucations: specialInstrucations,
+            food_texture: foodTexture
+        }
+    );
+  },
+
 }
 export default OrderServices;

@@ -1,27 +1,31 @@
-/* eslint-disable react/prop-types */
-import { Box, Typography, useTheme, Button, useMediaQuery, IconButton, Menu, MenuItem } from "@mui/material";
+import { Box, Typography, useTheme, Button, useMediaQuery, IconButton, Menu, MenuItem, Modal, TextField } from "@mui/material";
 import { tokens } from "../theme";
 import { Icon } from "@mui/material";
 import {
   AccountCircle,
   AddOutlined,
   DeleteOutline,
-  MenuOutlined,
-  VisibilityOffOutlined,
-  VisibilityOutlined,
 } from "@mui/icons-material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
+import OrderServices from "../services/orderServices";
 
-
-const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, deleteButton, profileScreen }) => {
+const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, deleteButton, profileScreen, editRoomsDetails, editIcon, handleRoomUpdate }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const navigate = useNavigate();
   const isMdDevices = useMediaQuery("(min-width: 724px)");
-  const [showDeleted, setShowDeleted] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  const navigate = useNavigate(); // Initialize useNavigate
+  const [openModal, setOpenModal] = useState(false);
+  const [foodTexture, setFoodTexture] = useState("");
+  const [specialInstruction, setSpecialInstruction] = useState("");
+  const [selectedUser, setSelectedUser] = useState("")
+  const [userData] = useState(() => {
+    const userDatas = localStorage.getItem("userData");
+    return userDatas ? JSON.parse(userDatas) : null;
+  });
+
   const handleUserMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -38,112 +42,213 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
   const handleLogout = () => {
     handleUserMenuClose();
     toast.success("Logged out!");
-            setTimeout(() => {
-                localStorage.clear();
-                localStorage.removeItem("authToken");
-                localStorage.removeItem("userData");
-                navigate("/");
-            }, 1000);
+    setTimeout(() => {
+      localStorage.clear();
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userData");
+      navigate("/");
+    }, 1000);
+  };
+  const fetchRoomDetails = async () => {
+    const selectedUserData = userData?.rooms?.find((x) => x?.name === title);
+    setFoodTexture("");
+    setSpecialInstruction("");
+    setSelectedUser(selectedUserData);
+    if (selectedUserData?.id) {
+      try {
+        const response = await OrderServices.getRoomDetails(selectedUserData.id);
+        if (response.ResponseCode === "1") {
+          setFoodTexture(response?.Data?.food_texture || "");
+          setSpecialInstruction(response?.Data?.special_instrucations || "");
+        } else {
+          toast.error(response.ResponseText || "Login failed. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error processing login:", error);
+        const errorMessage =
+          error.response?.data?.error || "An unexpected error occurred. Please try again.";
+        toast.error(errorMessage);
+      }
+    }
+  };
+
+  const handleOpenModal = () => {
+    setOpenModal(true);
+    fetchRoomDetails();
+  };
+
+  const handleCloseModal = () => setOpenModal(false);
+
+  const handleModalSubmit = () => {
+    setOpenModal(false);
+    if (handleRoomUpdate) {
+      handleRoomUpdate({
+        foodTexture,
+        specialInstruction,
+        selectedUser
+      });
+    }
   };
   return (
-    <Box mb="30px">
-      <Box display="flex" alignItems="center" justifyContent="space-between">
-        <Box display="flex" alignItems="center">
-          {icon && (
-            <Icon
+    <>
+      <Modal open={openModal} onClose={handleCloseModal}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+            minWidth: 350,
+            outline: 'none'
+          }}
+        >
+          <Typography variant="h6" mb={2}>
+            Edit Room Details
+          </Typography>
+          <Box display="flex" flexDirection="column" gap={2}>
+            <TextField
+              label="Food Texture"
+              multiline
+              minRows={2}
+              value={foodTexture}
+              onChange={e => setFoodTexture(e.target.value)}
+              fullWidth
+            />
+            <TextField
+              label="Special Instruction"
+              multiline
+              minRows={2}
+              value={specialInstruction}
+              onChange={e => setSpecialInstruction(e.target.value)}
+              fullWidth
+            />
+            <Box display="flex" justifyContent="flex-end" gap={1} mt={2}>
+              <Button onClick={handleCloseModal} color="secondary" variant="outlined">
+                Cancel
+              </Button>
+              <Button onClick={handleModalSubmit} variant="contained">
+                Submit
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+      </Modal>
+      <Box mb="30px">
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          <Box display="flex" alignItems="center">
+            {icon && (
+              <Icon
+                sx={{
+                  color: colors.gray[100],
+                  fontSize: "32px",
+                  marginRight: "10px",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                {icon}
+              </Icon>
+            )}
+            <Typography
+              variant="h6"
+              fontWeight="bold"
+              color={colors.gray[100]}
               sx={{
-                color: colors.gray[100],
-                fontSize: "32px",
-                marginRight: "10px",
                 display: "flex",
                 alignItems: "center",
               }}
             >
-              {icon}
-            </Icon>
+              # {title}
+            </Typography>
+          </Box>
+          {editRoomsDetails && (
+            <Box display="flex" gap="5px" ml="10px">
+              <IconButton onClick={handleOpenModal} sx={{ color: colors.gray[100] }}>
+                <Icon
+                  sx={{
+                    color: colors.gray[100],
+                  }}
+                >
+                  {editIcon}
+                </Icon>
+              </IconButton>
+            </Box>
           )}
-          <Typography
-            variant="h6"
-            fontWeight="bold"
-            color={colors.gray[100]}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            # {title}
-          </Typography>
-        </Box>
-        {buttons && (
-          <Box display="flex" gap="8px" ml="30px">
-            {[
-              {
-                label: "Add New",
-                color: colors.greenAccent[700],
-                hoverColor: colors.greenAccent[800],
-                icon: <AddOutlined />,
-                onClick: addNewClick,
-                disabled: !addButton,
-              },
-              {
-                label: "Bulk Delete",
-                color: colors.redAccent[700],
-                hoverColor: colors.redAccent[800],
-                icon: <DeleteOutline />,
-                onClick: addBulkDelete,
-                disabled: !deleteButton,
-              },
-            ].map((button, index) => (
-              <Button
-                key={index}
-                variant="contained"
-                onClick={button.onClick || (() => { })}
-                sx={{
-                  bgcolor: button.color,
-                  color: "#fcfcfc",
-                  fontSize: isMdDevices ? "12px" : "10px",
-                  fontWeight: "bold",
-                  p: "6px 12px",
-                  transition: ".3s ease",
-                  ":hover": {
-                    bgcolor: button.hoverColor,
-                  },
+          {buttons && (
+            <Box display="flex" gap="8px" ml="30px">
+              {[
+                {
+                  label: "Add New",
+                  color: colors.greenAccent[700],
+                  hoverColor: colors.greenAccent[800],
+                  icon: <AddOutlined />,
+                  onClick: addNewClick,
+                  disabled: !addButton,
+                },
+                {
+                  label: "Bulk Delete",
+                  color: colors.redAccent[700],
+                  hoverColor: colors.redAccent[800],
+                  icon: <DeleteOutline />,
+                  onClick: addBulkDelete,
+                  disabled: !deleteButton,
+                },
+              ].map((button, index) => (
+                <Button
+                  key={index}
+                  variant="contained"
+                  onClick={button.onClick || (() => { })}
+                  sx={{
+                    bgcolor: button.color,
+                    color: "#fcfcfc",
+                    fontSize: isMdDevices ? "12px" : "10px",
+                    fontWeight: "bold",
+                    p: "6px 12px",
+                    transition: ".3s ease",
+                    ":hover": {
+                      bgcolor: button.hoverColor,
+                    },
+                  }}
+                  startIcon={button.icon}
+                  disabled={button?.disabled}
+                >
+                  {button.label}
+                </Button>
+              ))}
+            </Box>
+          )}
+          {/* Right Align User Icon */}
+          {profileScreen && (
+            <Box ml="auto">
+              <IconButton onClick={handleUserMenuOpen} sx={{ color: colors.gray[100] }}>
+                <AccountCircle fontSize="large" />
+              </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleUserMenuClose}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "right",
                 }}
-                startIcon={button.icon}
-                disabled={button?.disabled}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
               >
-                {button.label}
-              </Button>
-            ))}
-          </Box>
-        )}
-        {/* Right Align User Icon */}
-        {profileScreen && (
-          <Box ml="auto">
-            <IconButton onClick={handleUserMenuOpen} sx={{ color: colors.gray[100] }}>
-              <AccountCircle fontSize="large" />
-            </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleUserMenuClose}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "right",
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-            >
-              <MenuItem onClick={handleProfile}>Profile</MenuItem>
-              <MenuItem onClick={handleLogout}>Logout</MenuItem>
-            </Menu>
-          </Box>
-        )}
+                <MenuItem onClick={handleProfile}>Profile</MenuItem>
+                <MenuItem onClick={handleLogout}>Logout</MenuItem>
+              </Menu>
+            </Box>
+          )}
+        </Box>
+        <ToastContainer />
       </Box>
-       <ToastContainer />
-    </Box>
+    </>
   );
 };
 
