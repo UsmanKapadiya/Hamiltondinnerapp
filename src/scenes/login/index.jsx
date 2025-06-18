@@ -43,7 +43,7 @@ const Login = () => {
       let response = await AuthServices.login({ roomNo: formData?.roomNo, password: formData?.password });
 
       if (response.ResponseCode === "1") {
-        const { authentication_token, role, user_id, show_dining, show_incident, guideline, guideline_cn, room_id } = response;
+        const { authentication_token, role, user_id, show_dining, show_incident, guideline, guideline_cn, room_id,rooms } = response;
         let userData = {
           role,
           user_id,
@@ -51,7 +51,8 @@ const Login = () => {
           show_incident,
           guideline,
           guideline_cn,
-          room_id
+          room_id,
+          rooms
         };
         localStorage.setItem("authToken", authentication_token);
         localStorage.setItem("userData", JSON.stringify(userData));

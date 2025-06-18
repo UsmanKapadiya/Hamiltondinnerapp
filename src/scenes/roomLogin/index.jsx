@@ -7,7 +7,7 @@ import {
     useMediaQuery,
     IconButton
 } from "@mui/material";
-import { ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { tokens } from "../../theme";
 import {
@@ -25,6 +25,10 @@ const RoomEnter = () => {
     const [errors] = useState({ roomNo: "" });
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const [userData] = useState(() => {
+        const userDatas = localStorage.getItem("userData");
+        return userDatas ? JSON.parse(userDatas) : null;
+    });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -32,10 +36,27 @@ const RoomEnter = () => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        navigate("/order", { state: { roomNo: formData?.roomNo } });
+        e.preventDefault();    
+        const roomNo = formData?.roomNo?.toString();
+        const rooms = userData?.rooms || [];
+        const found = rooms.some(room => room.name === roomNo);
+        if (found) {
+            navigate("/order", { state: { roomNo: formData?.roomNo } });
+        } else {
+            toast.error("Room number not found!");
+        }
     };
 
+    const handleLogout = () => {
+        toast.success("Logged out!");
+        setLoading(true);
+        setTimeout(() => {
+            setLoading(false);
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("userData");
+            navigate("/");
+        }, 1000);
+    }
     return (
         <Box
             display="flex"
@@ -154,6 +175,7 @@ const RoomEnter = () => {
                             type="submit"
                             disabled={loading}
                             startIcon={<LogoutOutlined />}
+                            onClick={handleLogout}
                             sx={{
                                 width: "100%",
                                 bgcolor: colors.blueAccent[700],
