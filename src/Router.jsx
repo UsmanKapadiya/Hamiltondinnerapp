@@ -1,20 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import App from "./App";
-import {
-  Dashboard,
-  Team,
-  Invoices,
-  Contacts,
-  Form,
-  Bar,
-  Line,
-  Pie,
-  FAQ,
-  Geography,
-  Calendar,
-  Stream,
-} from "./scenes";
 import StaticForms from "./scenes/staticForms";
 import StaticFormCreate from "./scenes/staticForms/staticFormCreate";
 import Login from "./scenes/login";
