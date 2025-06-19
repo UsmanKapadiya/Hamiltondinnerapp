@@ -1,5 +1,6 @@
 import {
-    Box, useTheme, Typography, Tabs, Tab
+    Box, useTheme, Typography, Tabs, Tab,
+    Button
 } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { Header } from "../../components";
@@ -10,7 +11,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
 import OrderServices from "../../services/orderServices";
 import { toast, ToastContainer } from "react-toastify";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import CustomButton from "../../components/CustomButton";
 import { EditOutlined, EmojiPeopleOutlined } from "@mui/icons-material";
 
@@ -19,14 +20,14 @@ let lunchEndTime = 15;
 let dinnerEndTime = 24;
 
 
-const Order = () => {
+const GuestOrder = () => {
 
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const location = useLocation();
-    const navigate = useNavigate();
     const roomNo = location.state?.roomNo;
-    const [date, setDate] = useState(dayjs());
+    const selectedDate = location.state?.selectedDate
+    const [date, setDate] = useState(selectedDate ? dayjs(selectedDate) : dayjs());
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState({});
     const [mealData, setMealData] = useState({});
@@ -52,18 +53,31 @@ const Order = () => {
         const userDatas = localStorage.getItem("userData");
         return userDatas ? JSON.parse(userDatas) : null;
     });
+    const [guestCount, setGuestCount] = useState(1);
+    const handleIncrement = () => setGuestCount(prev => prev + 1);
+    const handleDecrement = () => setGuestCount(prev => (prev > 1 ? prev - 1 : 1));
+
 
     useEffect(() => {
         const fetchMenuDetails = async () => {
             try {
                 setLoading(true);
-                const response = await OrderServices.getMenuData(roomNo ? roomNo : userData?.room_id, date.format("YYYY-MM-DD"));
+                const payload = {
+                    date: date.format("YYYY-MM-DD"),
+                    room_id: roomNo ? roomNo : userData?.room_id
+                }
+                const response = await OrderServices.guestOrderListData(payload);
                 let data = {
                     breakfast: response.breakfast,
                     lunch: response?.lunch,
-                    dinner: response?.dinner
+                    dinner: response?.dinner,
+                    is_dinner_tray_service: response?.is_dinner_tray_service,
+                    is_brk_tray_service: response?.is_brk_tray_service,
+                    is_lunch_tray_service: response?.is_lunch_tray_service
                 };
-                setMealData(data); // <-- Add this line
+        
+                setGuestCount(response?.occupancy)
+                setMealData(data);
                 setData(transformMealData(data));
             } catch (error) {
                 console.error("Error fetching menu list:", error);
@@ -95,7 +109,7 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                qty: 0,
+                qty: item.qty,
                 options: selectFirstOption(item.options),
                 preference: item.preference
             }));
@@ -105,10 +119,11 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                qty: 0,
+                qty: item.qty,
                 options: selectFirstOption(item.options),
                 preference: item.preference
             }));
+        const is_brk_tray_service = mealData?.is_brk_tray_service
 
         const lunchSoupCatName = mealData.lunch?.[0]?.cat_name || "";
         const lunchEntreeCatName = mealData.lunch?.[1]?.cat_name || "";
@@ -118,7 +133,7 @@ const Order = () => {
             id: item.item_id,
             name: item.item_name,
             chinese_name: item.chinese_name,
-            qty: 0,
+            qty: item.qty,
             options: selectFirstOption(item.options),
             preference: item.preference
         })) || [];
@@ -128,7 +143,7 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                qty: 0,
+                qty: item.qty,
                 options: selectFirstOption(item.options),
                 preference: item.preference
             })) || [];
@@ -138,10 +153,11 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                qty: 0,
+                qty: item.qty,
                 options: selectFirstOption(item.options),
                 preference: item.preference
             })) || [];
+        const is_lunch_tray_service = mealData?.is_lunch_tray_service
 
         // Dinner
         const dinnerCat = mealData.dinner?.[0];
@@ -155,7 +171,7 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                qty: 0,
+                qty: item.qty,
                 options: selectFirstOption(item.options),
                 preference: item.preference
             })) || [];
@@ -165,10 +181,12 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                qty: 0,
+                qty: item.qty,
                 options: selectFirstOption(item.options),
                 preference: item.preference
             })) || [];
+        const is_dinner_tray_service = mealData?.is_dinner_tray_service
+
 
         return {
             breakFastDailySpecialCatName,
@@ -186,24 +204,31 @@ const Order = () => {
             dinnerAlternative,
             dinnerAlternativeCatName,
             dinnerSoup,
+            is_brk_tray_service,
+            is_lunch_tray_service,
+            is_dinner_tray_service,
         };
     }
     function buildOrderPayload(data, date) {
+        console.log("data", data)
         // Helper to flatten and format items
         const collectItems = (arr = []) =>
             arr
-                .filter(item => item.qty > 0)
+                // .filter(item => item.qty > 0)
                 .map(item => ({
                     item_id: item.id,
                     qty: item.qty,
                     order_id: item.order_id || 0,
+                    //preference : "1,2,3"
                     preference: (item.preference || [])
                         .filter(p => p.is_selected)
-                        .map(p => p.name)
+                        .map(p => p.id)
                         .join(","),
+                        //item_options: "3"
+
                     item_options: (item.options || [])
                         .filter(o => o.is_selected)
-                        .map(o => o.name)
+                        .map(o => o.id)
                         .join(","),
                 }));
 
@@ -218,112 +243,47 @@ const Order = () => {
             ...collectItems(data.dinnerEntree),
             ...collectItems(data.dinnerAlternative),
         ];
+        console.log("items items", items)
 
         // Helper for additional services
         const hasService = (arr, type) => Array.isArray(arr) && arr.includes(type) ? 1 : 0;
 
         return {
             date: date.format("YYYY-MM-DD"),
-            is_brk_escort_service: hasService(data.breakfast_additional_services, "escort"),
-            is_brk_tray_service: hasService(data.breakfast_additional_services, "tray"),
-            is_lunch_escort_service: hasService(data.lunch_additional_services, "escort"),
-            is_lunch_tray_service: hasService(data.lunch_additional_services, "tray"),
-            is_dinner_escort_service: hasService(data.dinner_additional_services, "escort"),
-            is_dinner_tray_service: hasService(data.dinner_additional_services, "tray"),
-            items,
+            room_id: roomNo,
+            orders_to_change: JSON.stringify(items), // JSON RawString
+            occupancy: guestCount,
+            is_for_guest: 1,
+            is_brk_tray_service:  data?.is_brk_tray_service, //hasService(data.is_brk_tray_service, "tray") ? 1 : 0,
+            is_lunch_tray_service: data?.is_lunch_tray_service, //hasService(data.is_lunch_tray_service, "tray") ? 1 : 0,
+            is_dinner_tray_service: data?.is_dinner_tray_service //hasService(data.is_dinner_tray_service, "tray") ? 1 : 0,
         };
     }
 
     const submitData = async (data, date) => {
         try {
             const payload = buildOrderPayload(data, date);
-            let response = await OrderServices.submitOrder(payload);
+            console.log("payload", payload)
+            let response = await OrderServices.updateGusetOrder(payload);
             if (response.ResponseText === "success") {
-                toast.success("Order submitted successfully!");
-                setData(transformMealData(mealData)); // <-- Now mealData is defined
+                toast.success("Guest Order submitted successfully!");
+                // setData(transformMealData(mealData)); // <-- Now mealData is defined
             } else {
-                toast.error(response.ResponseText || "Order submission failed.");
+                toast.error(response.ResponseText || "Guest Order submission failed.");
             }
         } catch (error) {
             toast.error("An error occurred while submitting the order.");
             console.error(error);
         }
     };
-    // const roomUpdate = async (data) => {
-    //     if (data?.selectedUser?.id) {
-    //         try {
-    //             const response = await OrderServices.updateRoomDetails(data?.selectedUser?.id,data?.specialInstruction, data?.foodTexture);
-    //             if (response.ResponseCode === "1") {
-    //                 toast.success(response?.ResponseText || "Room Details Updated Successfully")
-    //             } else {
-    //                 toast.error(response.ResponseText || "Room Details Updated failed. Please try again.");
-    //             }
-    //         } catch (error) {
-    //             console.error("Error processing Room Details Updated failed:", error);
-    //             const errorMessage =
-    //                 error.response?.data?.error || "An unexpected error occurred. Please try again.";
-    //             toast.error(errorMessage);
-    //         }
-    //     }
-    // };
-    const roomUpdate = async (data) => {
-        if (data?.selectedUser?.id) {
-            try {
-                // Ensure both fields are strings and trimmed
-                const specialInstruction = (data?.specialInstruction ?? "").toString().trim();
-                const foodTexture = (data?.foodTexture ?? "").toString().trim();
-
-                const response = await OrderServices.updateRoomDetails(
-                    data.selectedUser.id,
-                    specialInstruction,
-                    foodTexture
-                );
-
-                if (response.ResponseCode === "1") {
-                    toast.success(response?.ResponseText || "Room Details Updated Successfully");
-                } else {
-                    toast.error(response.ResponseText || "Room Details Update failed. Please try again.");
-                }
-            } catch (error) {
-                console.error("Error processing Room Details Update failed:", error);
-                const errorMessage =
-                    error?.response?.data?.error || "An unexpected error occurred. Please try again.";
-                toast.error(errorMessage);
-            }
-        } else {
-            toast.error("No user selected for room update.");
-        }
-    };
-
-    const handleGuestOrderClick = () => {
-        const formattedDate = date.format("YYYY-MM-DD");
-        const room = roomNo ? roomNo : userData?.room_id;
-
-        navigate("/guestOrder", {
-             state: { roomNo: room, selectedDate: formattedDate } 
-            // state: {
-            //     date: date,
-            //     room: room,
-            //     isToday:isToday,
-            //     isPast:isPast,
-            //     isAfter10AM:isAfter10AM,
-            //     isAfter3PM:isAfter3PM,
-            //     isAfter12PM:isAfter12PM,
-            // },
-        });
-    };
-
+    console.log("is_dinner_tray_service", data)
     return (
         <Box m="20px">
             <Header
                 title={roomNo ? roomNo : userData?.room_id}
                 icon={""}
-                editRoomsDetails={userData?.role !== "kitchen" ? true : false}
-                editIcon={<EditOutlined />}
-                isGuest={true}
-                handleGuestClick={handleGuestOrderClick}
-                isGuestIcon={<EmojiPeopleOutlined />}
-                handleRoomUpdate={roomUpdate}
+                editRoomsDetails={false}
+                isGuest={false}
                 profileScreen={true}
             />
             <ToastContainer />
@@ -355,22 +315,34 @@ const Order = () => {
                 }}
             >
                 {/* Calendar opens automatically on mount */}
-                <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DatePicker
-                            label="Date"
-                            value={date}
-                            onChange={(newValue) => setDate(newValue)}
-                            renderInput={(params) => (
-                                <TextField
-                                    {...params}
-                                    fullWidth
-                                    variant="filled"
-                                    sx={{ gridColumn: "span 1" }}
-                                />
-                            )}
-                        />
-                    </LocalizationProvider>
+
+                <Box sx={{ textAlign: "center" }}>
+                    <Typography variant="h6" sx={{ mt: 3, mb: 2, fontWeight: 600 }}>
+                        {dayjs(selectedDate).format("MMMM D, YYYY")}
+                    </Typography>
+                </Box>
+                <Box
+                    sx={{
+                        bgcolor: "#f5f5f5",
+                        borderRadius: 2,
+                        p: 1,
+                    }}
+                >
+                    <Box display="flex" alignItems="center" justifyContent="space-between">
+                        <Typography
+                            variant="h6"
+                            sx={{
+                                fontWeight: 600,
+                            }}
+                        >
+                            No of Guest
+                        </Typography>
+                        <Box display="flex" alignItems="center">
+                            <Button variant="outlined" sx={{ minWidth: 36, mx: 1 }} onClick={handleDecrement}>-</Button>
+                            <Typography sx={{ mx: 1 }}>{guestCount}</Typography>
+                            <Button variant="outlined" sx={{ minWidth: 36, mx: 1 }} onClick={handleIncrement}>+</Button>
+                        </Box>
+                    </Box>
                 </Box>
                 {/* Table Section */}
                 {loading ? (
@@ -437,13 +409,13 @@ const Order = () => {
                                                                     ...prev,
                                                                     breakFastDailySpecial: prev.breakFastDailySpecial.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: 1 }
+                                                                            ? { ...i, qty: (i.qty || 0) + 1 } //{ ...i, qty: 1 }
                                                                             : { ...i, qty: 0 } // only single items selected 
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1 || isAfter10AM || isPast}
+                                                            disabled={item.qty >= guestCount || isAfter10AM || isPast}
                                                         >
                                                             +
                                                         </button>
@@ -555,13 +527,13 @@ const Order = () => {
                                                                     ...prev,
                                                                     breakFastAlternative: prev.breakFastAlternative.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: 1 }
+                                                                            ? { ...i, qty: (i.qty || 0) + 1 } //{ ...i, qty: 1 }
                                                                             : { ...i, qty: 0 } // only single items selected 
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1 || isAfter10AM || isPast}
+                                                            disabled={item.qty >= guestCount || isAfter10AM || isPast}
                                                         >
                                                             +
                                                         </button>
@@ -645,38 +617,16 @@ const Order = () => {
                                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
                                                 Additional Services
                                             </Typography>
-                                            <label style={{ marginRight: 24 }}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={Array.isArray(data.breakfast_additional_services) && data.breakfast_additional_services.includes('escort')}
-                                                    onChange={e => {
-                                                        setData(prev => {
-                                                            const arr = Array.isArray(prev.breakfast_additional_services) ? prev.breakfast_additional_services : [];
-                                                            return {
-                                                                ...prev,
-                                                                breakfast_additional_services: e.target.checked
-                                                                    ? [...arr, 'escort']
-                                                                    : arr.filter(s => s !== 'escort')
-                                                            };
-                                                        });
-                                                    }}
-                                                />
-                                                Escort Service
-                                            </label>
+
                                             <label>
                                                 <input
                                                     type="checkbox"
-                                                    checked={Array.isArray(data.breakfast_additional_services) && data.breakfast_additional_services.includes('tray')}
+                                                    checked={data.is_brk_tray_service === 1}
                                                     onChange={e => {
-                                                        setData(prev => {
-                                                            const arr = Array.isArray(prev.breakfast_additional_services) ? prev.breakfast_additional_services : [];
-                                                            return {
-                                                                ...prev,
-                                                                breakfast_additional_services: e.target.checked
-                                                                    ? [...arr, 'tray']
-                                                                    : arr.filter(s => s !== 'tray')
-                                                            };
-                                                        });
+                                                        setData(prev => ({
+                                                            ...prev,
+                                                            is_brk_tray_service: e.target.checked ? 1 : 0
+                                                        }));
                                                     }}
                                                 />
                                                 Tray Service
@@ -687,35 +637,6 @@ const Order = () => {
                                 {(
                                     (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0))
                                 ) && (
-                                        // <Box mt={3} display="flex" justifyContent="center">
-                                        //     <button
-                                        //         style={{
-                                        //             padding: "10px 32px",
-                                        //             background: colors.greenAccent[600],
-                                        //             color: "#fff",
-                                        //             border: "none",
-                                        //             borderRadius: 4,
-                                        //             fontWeight: 600,
-                                        //             fontSize: 16,
-                                        //             cursor: "pointer"
-                                        //         }}
-                                        //         onClick={() => {
-                                        //             submitData(data, date)
-                                        //             // Example: handle breakfast data submit
-                                        //             // const selectedBreakfast = {
-                                        //             //     dailySpecial: data.breakFastDailySpecial?.filter(i => i.qty > 0) || [],
-                                        //             //     alternatives: data.breakFastAlternative?.filter(i => i.qty > 0) || [],
-                                        //             //     additionalServices: data.breakfast_additional_services || []
-                                        //             // };
-                                        //             // console.log("Submitting Breakfast Order:", selectedBreakfast);
-                                        //             // // TODO: Replace with actual submit logic (API call, etc.)
-                                        //             // alert("Breakfast order submitted!");
-                                        //         }}
-                                        //     >
-                                        //         Submit Order
-                                        //     </button>
-                                        // </Box>
-                                        // ...existing code...
                                         <Box mt={3} display="flex" justifyContent="center">
                                             <CustomButton
                                                 sx={{
@@ -788,13 +709,13 @@ const Order = () => {
                                                                     ...prev,
                                                                     lunchSoup: prev.lunchSoup.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: 1 }
-                                                                            : { ...i, qty: 0 } // only single items selected i
+                                                                            ? { ...i, qty: (i.qty || 0) + 1 }
+                                                                            : { ...i, qty: 0 }
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1 || isAfter3PM || isPast}
+                                                            disabled={item.qty >= guestCount || isAfter3PM || isPast}
                                                         >
                                                             +
                                                         </button>
@@ -915,13 +836,13 @@ const Order = () => {
                                                                     ...prev,
                                                                     lunchEntree: prev.lunchEntree.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: 1 }
+                                                                            ? { ...i, qty: (i.qty || 0) + 1 } //{ ...i, qty: 1 }
                                                                             : { ...i, qty: 0 } // only single items selected i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1 || isAfter3PM || isPast}
+                                                            disabled={item.qty >= guestCount || isAfter3PM || isPast}
                                                         >
                                                             +
                                                         </button>
@@ -1031,13 +952,13 @@ const Order = () => {
                                                                     ...prev,
                                                                     lunchAlternative: prev.lunchAlternative.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: 1 }
+                                                                            ? { ...i, qty: (i.qty || 0) + 1 }
                                                                             : { ...i, qty: 0 } // only single items selected i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1 || isAfter3PM || isPast}
+                                                            disabled={item.qty >= guestCount || isAfter3PM || isPast}
                                                         >
                                                             +
                                                         </button>
@@ -1123,38 +1044,15 @@ const Order = () => {
                                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
                                                 Additional Services
                                             </Typography>
-                                            <label style={{ marginRight: 24 }}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={Array.isArray(data.lunch_additional_services) && data.lunch_additional_services.includes('escort')}
-                                                    onChange={e => {
-                                                        setData(prev => {
-                                                            const arr = Array.isArray(prev.lunch_additional_services) ? prev.lunch_additional_services : [];
-                                                            return {
-                                                                ...prev,
-                                                                lunch_additional_services: e.target.checked
-                                                                    ? [...arr, 'escort']
-                                                                    : arr.filter(s => s !== 'escort')
-                                                            };
-                                                        });
-                                                    }}
-                                                />
-                                                Escort Service
-                                            </label>
                                             <label>
                                                 <input
                                                     type="checkbox"
-                                                    checked={Array.isArray(data.lunch_additional_services) && data.lunch_additional_services.includes('tray')}
+                                                    checked={data.is_lunch_tray_service === 1}
                                                     onChange={e => {
-                                                        setData(prev => {
-                                                            const arr = Array.isArray(prev.lunch_additional_services) ? prev.lunch_additional_services : [];
-                                                            return {
-                                                                ...prev,
-                                                                lunch_additional_services: e.target.checked
-                                                                    ? [...arr, 'tray']
-                                                                    : arr.filter(s => s !== 'tray')
-                                                            };
-                                                        });
+                                                        setData(prev => ({
+                                                            ...prev,
+                                                            is_lunch_tray_service: e.target.checked ? 1 : 0
+                                                        }));
                                                     }}
                                                 />
                                                 Tray Service
@@ -1237,13 +1135,13 @@ const Order = () => {
                                                                 ...prev,
                                                                 dinnerSoup: prev.dinnerSoup.map((i) =>
                                                                     i.id === item.id
-                                                                        ? { ...i, qty: 1 }
+                                                                        ? { ...i, qty: (i.qty || 0) + 1 } // { ...i, qty: 1 }
                                                                         : { ...i, qty: 0 } // only single items selected i
                                                                 ),
                                                             }))
                                                         }
                                                         style={{ marginLeft: 8 }}
-                                                        disabled={item.qty >= 1 || isAfter12PM || isPast}
+                                                        disabled={item.qty >= guestCount || isAfter12PM || isPast}
                                                     >
                                                         +
                                                     </button>
@@ -1296,13 +1194,13 @@ const Order = () => {
                                                                     ...prev,
                                                                     dinnerEntree: prev.dinnerEntree.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: 1 }
+                                                                            ? { ...i, qty: (i.qty || 0) + 1 } //{ ...i, qty: 1 }
                                                                             : { ...i, qty: 0 } // only single items selected i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1 || isAfter12PM || isPast}
+                                                            disabled={item.qty >= guestCount || isAfter12PM || isPast}
                                                         >
                                                             +
                                                         </button>
@@ -1413,13 +1311,13 @@ const Order = () => {
                                                                     ...prev,
                                                                     dinnerAlternative: prev.dinnerAlternative.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: 1 }
-                                                                            : { ...i, qty: 0 } // only single items selected i
+                                                                            ? { ...i, qty: (i.qty || 0) + 1 } //{ ...i, qty: 1 }
+                                                                            : i //{ ...i, qty: 0 } // only single items selected i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1 || isAfter12PM || isPast}
+                                                            disabled={item.qty >= guestCount || isAfter12PM || isPast}
                                                         >
                                                             +
                                                         </button>
@@ -1505,38 +1403,15 @@ const Order = () => {
                                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
                                                 Additional Services
                                             </Typography>
-                                            <label style={{ marginRight: 24 }}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={Array.isArray(data.dinner_additional_services) && data.dinner_additional_services.includes('escort')}
-                                                    onChange={e => {
-                                                        setData(prev => {
-                                                            const arr = Array.isArray(prev.dinner_additional_services) ? prev.dinner_additional_services : [];
-                                                            return {
-                                                                ...prev,
-                                                                dinner_additional_services: e.target.checked
-                                                                    ? [...arr, 'escort']
-                                                                    : arr.filter(s => s !== 'escort')
-                                                            };
-                                                        });
-                                                    }}
-                                                />
-                                                Escort Service
-                                            </label>
                                             <label>
                                                 <input
                                                     type="checkbox"
-                                                    checked={Array.isArray(data.dinner_additional_services) && data.dinner_additional_services.includes('tray')}
+                                                    checked={data.is_dinner_tray_service === 1}
                                                     onChange={e => {
-                                                        setData(prev => {
-                                                            const arr = Array.isArray(prev.dinner_additional_services) ? prev.dinner_additional_services : [];
-                                                            return {
-                                                                ...prev,
-                                                                dinner_additional_services: e.target.checked
-                                                                    ? [...arr, 'tray']
-                                                                    : arr.filter(s => s !== 'tray')
-                                                            };
-                                                        });
+                                                        setData(prev => ({
+                                                            ...prev,
+                                                            is_dinner_tray_service: e.target.checked ? 1 : 0
+                                                        }));
                                                     }}
                                                 />
                                                 Tray Service
@@ -1581,4 +1456,4 @@ const Order = () => {
     );
 };
 
-export default Order;
+export default GuestOrder;

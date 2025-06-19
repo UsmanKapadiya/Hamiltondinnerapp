@@ -22,6 +22,7 @@ import Home from "./scenes/Home";
 import RoomEnter from "./scenes/roomLogin";
 import Report from "./scenes/report";
 import Order from "./scenes/order";
+import GuestOrder from "./scenes/guestOrder";
 
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = !!localStorage.getItem("authToken");
@@ -44,6 +45,7 @@ const AppRouter = () => {
           <Route path="/home" element={<Home />} />
           <Route path="/room" element={<RoomEnter />} />
           <Route path="/order" element={<Order />} />
+          <Route path="/guestOrder" element={<GuestOrder />} />
           <Route path="/report" element={<Report />} />
           <Route path="/staticForms" element={<StaticForms />} />
           <Route path="/staticForms/staticForm-create" element={<StaticFormCreate />} />

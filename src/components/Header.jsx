@@ -12,7 +12,7 @@ import { toast, ToastContainer } from "react-toastify";
 import OrderServices from "../services/orderServices";
 import CustomButton from "./CustomButton";
 
-const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, deleteButton, profileScreen, editRoomsDetails, editIcon, handleRoomUpdate }) => {
+const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, deleteButton, profileScreen, editRoomsDetails, editIcon, handleRoomUpdate, isGuest, isGuestIcon, handleGuestClick }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const navigate = useNavigate();
@@ -90,6 +90,12 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
       });
     }
   };
+  const handleGuestOnClick = () =>{
+    console.log("Working handleGuestOnClick")
+    handleGuestClick()
+  }
+
+  
   return (
     <>
       <Modal open={openModal} onClose={handleCloseModal}>
@@ -194,6 +200,19 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
                   }}
                 >
                   {editIcon}
+                </Icon>
+              </IconButton>
+            </Box>
+          )}
+          {isGuest &&(
+              <Box display="flex" gap="5px" ml="7px">
+              <IconButton onClick={handleGuestOnClick} sx={{ color: colors.gray[100] }}>
+                <Icon
+                  sx={{
+                    color: colors.gray[100],
+                  }}
+                >
+                  {isGuestIcon}
                 </Icon>
               </IconButton>
             </Box>
