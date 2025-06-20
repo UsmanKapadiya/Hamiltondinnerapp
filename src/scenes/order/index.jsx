@@ -57,11 +57,18 @@ const Order = () => {
         const fetchMenuDetails = async () => {
             try {
                 setLoading(true);
-                const response = await OrderServices.getMenuData(roomNo ? roomNo : userData?.room_id, date.format("YYYY-MM-DD"));
+                let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
+                const response = await OrderServices.getMenuData(selectedObj ? selectedObj?.id : userData?.room_id, date.format("YYYY-MM-DD"));
                 let data = {
                     breakfast: response.breakfast,
                     lunch: response?.lunch,
-                    dinner: response?.dinner
+                    dinner: response?.dinner,
+                    is_brk_escort_service: response?.is_brk_escort_service,
+                    is_brk_tray_service: response?.is_brk_tray_service,
+                    is_lunch_escort_service: response?.is_lunch_escort_service,
+                    is_lunch_tray_service: response?.is_lunch_tray_service,
+                    is_dinner_escort_service: response?.is_dinner_escort_service,
+                    is_dinner_tray_service: response?.is_dinner_tray_service,
                 };
                 setMealData(data); // <-- Add this line
                 setData(transformMealData(data));
@@ -76,6 +83,10 @@ const Order = () => {
 
     function selectFirstOption(options) {
         if (!options || options.length === 0) return [];
+        const anySelected = options.some(opt => opt.is_selected === 1);
+        if (anySelected) {
+            return options;
+        }
         return options.map((opt, idx) => ({
             ...opt,
             is_selected: idx === 0 ? 1 : 0
@@ -95,9 +106,10 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                qty: 0,
+                qty: item.qty,
                 options: selectFirstOption(item.options),
-                preference: item.preference
+                preference: item.preference,
+                order_id: item?.order_id
             }));
         const breakFastAlternative = breakfast
             .filter(item => item.type === "sub_cat_item")
@@ -105,10 +117,13 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                qty: 0,
+                qty: item.qty,
                 options: selectFirstOption(item.options),
-                preference: item.preference
+                preference: item.preference,
+                order_id: item?.order_id
             }));
+        const is_brk_escort_service = mealData?.is_brk_escort_service
+        const is_brk_tray_service = mealData?.is_brk_tray_service
 
         const lunchSoupCatName = mealData.lunch?.[0]?.cat_name || "";
         const lunchEntreeCatName = mealData.lunch?.[1]?.cat_name || "";
@@ -118,9 +133,10 @@ const Order = () => {
             id: item.item_id,
             name: item.item_name,
             chinese_name: item.chinese_name,
-            qty: 0,
+            qty: item.qty,
             options: selectFirstOption(item.options),
-            preference: item.preference
+            preference: item.preference,
+            order_id: item?.order_id
         })) || [];
         const lunchEntree = mealData.lunch?.[1]?.items
             ?.filter(item => item.type === "item")
@@ -128,9 +144,10 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                qty: 0,
+                qty: item.qty,
                 options: selectFirstOption(item.options),
-                preference: item.preference
+                preference: item.preference,
+                order_id: item?.order_id
             })) || [];
         const lunchAlternative = mealData.lunch?.[1]?.items
             ?.filter(item => item.type === "sub_cat_item")
@@ -138,10 +155,14 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                qty: 0,
+                qty: item.qty,
                 options: selectFirstOption(item.options),
-                preference: item.preference
+                preference: item.preference,
+                order_id: item?.order_id
             })) || [];
+        const is_lunch_escort_service = mealData?.is_lunch_escort_service
+        const is_lunch_tray_service = mealData?.is_lunch_tray_service
+
 
         // Dinner
         const dinnerCat = mealData.dinner?.[0];
@@ -155,9 +176,10 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                qty: 0,
+                qty: item.qty,
                 options: selectFirstOption(item.options),
-                preference: item.preference
+                preference: item.preference,
+                order_id: item?.order_id
             })) || [];
         const dinnerAlternative = dinnerCat?.items
             ?.filter(item => item.type === "sub_cat_item")
@@ -165,10 +187,14 @@ const Order = () => {
                 id: item.item_id,
                 name: item.item_name,
                 chinese_name: item.chinese_name,
-                qty: 0,
+                qty: item.qty,
                 options: selectFirstOption(item.options),
-                preference: item.preference
+                preference: item.preference,
+                order_id: item?.order_id
             })) || [];
+        const is_dinner_escort_service = mealData?.is_dinner_escort_service
+        const is_dinner_tray_service = mealData?.is_dinner_tray_service
+
 
         return {
             breakFastDailySpecialCatName,
@@ -186,24 +212,30 @@ const Order = () => {
             dinnerAlternative,
             dinnerAlternativeCatName,
             dinnerSoup,
+            is_brk_escort_service,
+            is_brk_tray_service,
+            is_lunch_escort_service,
+            is_lunch_tray_service,
+            is_dinner_escort_service,
+            is_dinner_tray_service,
         };
     }
     function buildOrderPayload(data, date) {
         // Helper to flatten and format items
         const collectItems = (arr = []) =>
             arr
-                .filter(item => item.qty > 0)
+                // .filter(item => item.qty > 0)
                 .map(item => ({
                     item_id: item.id,
                     qty: item.qty,
                     order_id: item.order_id || 0,
                     preference: (item.preference || [])
                         .filter(p => p.is_selected)
-                        .map(p => p.name)
+                        .map(p => p.id)
                         .join(","),
                     item_options: (item.options || [])
                         .filter(o => o.is_selected)
-                        .map(o => o.name)
+                        .map(o => o.id)
                         .join(","),
                 }));
 
@@ -220,18 +252,19 @@ const Order = () => {
         ];
 
         // Helper for additional services
-        const hasService = (arr, type) => Array.isArray(arr) && arr.includes(type) ? 1 : 0;
-
-        return {
+        let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
+        return [{
             date: date.format("YYYY-MM-DD"),
-            is_brk_escort_service: hasService(data.breakfast_additional_services, "escort"),
-            is_brk_tray_service: hasService(data.breakfast_additional_services, "tray"),
-            is_lunch_escort_service: hasService(data.lunch_additional_services, "escort"),
-            is_lunch_tray_service: hasService(data.lunch_additional_services, "tray"),
-            is_dinner_escort_service: hasService(data.dinner_additional_services, "escort"),
-            is_dinner_tray_service: hasService(data.dinner_additional_services, "tray"),
-            items,
-        };
+            room_id: selectedObj?.id,
+            // orders_to_change: JSON.stringify(items),
+            is_brk_escort_service: data?.is_brk_escort_service, //hasService(data.breakfast_additional_services, "escort"),
+            is_brk_tray_service: data?.is_brk_tray_service,
+            is_lunch_escort_service: data?.is_lunch_escort_service,
+            is_lunch_tray_service: data?.is_lunch_tray_service,
+            is_dinner_escort_service: data?.is_dinner_escort_service,
+            is_dinner_tray_service: data?.is_dinner_tray_service,
+            items
+        }];
     }
 
     const submitData = async (data, date) => {
@@ -240,7 +273,7 @@ const Order = () => {
             let response = await OrderServices.submitOrder(payload);
             if (response.ResponseText === "success") {
                 toast.success("Order submitted successfully!");
-                setData(transformMealData(mealData)); // <-- Now mealData is defined
+                // setData(transformMealData(mealData)); // <-- Now mealData is defined
             } else {
                 toast.error(response.ResponseText || "Order submission failed.");
             }
@@ -249,23 +282,7 @@ const Order = () => {
             console.error(error);
         }
     };
-    // const roomUpdate = async (data) => {
-    //     if (data?.selectedUser?.id) {
-    //         try {
-    //             const response = await OrderServices.updateRoomDetails(data?.selectedUser?.id,data?.specialInstruction, data?.foodTexture);
-    //             if (response.ResponseCode === "1") {
-    //                 toast.success(response?.ResponseText || "Room Details Updated Successfully")
-    //             } else {
-    //                 toast.error(response.ResponseText || "Room Details Updated failed. Please try again.");
-    //             }
-    //         } catch (error) {
-    //             console.error("Error processing Room Details Updated failed:", error);
-    //             const errorMessage =
-    //                 error.response?.data?.error || "An unexpected error occurred. Please try again.";
-    //             toast.error(errorMessage);
-    //         }
-    //     }
-    // };
+
     const roomUpdate = async (data) => {
         if (data?.selectedUser?.id) {
             try {
@@ -300,7 +317,7 @@ const Order = () => {
         const room = roomNo ? roomNo : userData?.room_id;
 
         navigate("/guestOrder", {
-             state: { roomNo: room, selectedDate: formattedDate } 
+            state: { roomNo: room, selectedDate: formattedDate }
             // state: {
             //     date: date,
             //     room: room,
@@ -312,6 +329,22 @@ const Order = () => {
             // },
         });
     };
+
+    const maxBreakfastQty = 2;
+    const maxLunchQty = 2;
+    const maxDinnerQty = 2;
+
+    const totalBreakfastQty =
+        (data.breakFastDailySpecial || []).reduce((sum, i) => sum + (i.qty || 0), 0) +
+        (data.breakFastAlternative || []).reduce((sum, i) => sum + (i.qty || 0), 0);
+    const totalLunchSoupQty = (data.lunchSoup || []).reduce((sum, i) => sum + (i.qty || 0), 0);
+    const totalLunchQty =
+        (data.lunchEntree || []).reduce((sum, i) => sum + (i.qty || 0), 0) +
+        (data.lunchAlternative || []).reduce((sum, i) => sum + (i.qty || 0), 0);
+    const totalDinnerSoupQty = (data.dinnerSoup || []).reduce((sum, i) => sum + (i.qty || 0), 0);
+    const totalDinnerQty =
+        (data.dinnerEntree || []).reduce((sum, i) => sum + (i.qty || 0), 0) +
+        (data.dinnerAlternative || []).reduce((sum, i) => sum + (i.qty || 0), 0);
 
     return (
         <Box m="20px">
@@ -431,7 +464,7 @@ const Order = () => {
                                                             -
                                                         </button>
                                                         <Typography>{item.qty || 0}</Typography>
-                                                        <button
+                                                        {/* <button
                                                             onClick={() =>
                                                                 setData((prev) => ({
                                                                     ...prev,
@@ -444,6 +477,25 @@ const Order = () => {
                                                             }
                                                             style={{ marginLeft: 8 }}
                                                             disabled={item.qty >= 1 || isAfter10AM || isPast}
+                                                        >
+                                                            +
+                                                        </button> */}
+                                                        <button
+                                                            onClick={() =>
+                                                                setData((prev) => ({
+                                                                    ...prev,
+                                                                    breakFastDailySpecial: prev.breakFastDailySpecial.map((i) =>
+                                                                        i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
+                                                                    ),
+                                                                }))
+                                                            }
+                                                            style={{ marginLeft: 8 }}
+                                                            disabled={
+                                                                item.qty >= maxBreakfastQty ||
+                                                                totalBreakfastQty >= maxBreakfastQty ||
+                                                                isAfter10AM ||
+                                                                isPast
+                                                            }
                                                         >
                                                             +
                                                         </button>
@@ -549,7 +601,7 @@ const Order = () => {
                                                             -
                                                         </button>
                                                         <Typography>{item.qty || 0}</Typography>
-                                                        <button
+                                                        {/* <button
                                                             onClick={() =>
                                                                 setData((prev) => ({
                                                                     ...prev,
@@ -562,6 +614,25 @@ const Order = () => {
                                                             }
                                                             style={{ marginLeft: 8 }}
                                                             disabled={item.qty >= 1 || isAfter10AM || isPast}
+                                                        >
+                                                            +
+                                                        </button> */}
+                                                        <button
+                                                            onClick={() =>
+                                                                setData((prev) => ({
+                                                                    ...prev,
+                                                                    breakFastAlternative: prev.breakFastAlternative.map((i) =>
+                                                                        i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
+                                                                    ),
+                                                                }))
+                                                            }
+                                                            style={{ marginLeft: 8 }}
+                                                            disabled={
+                                                                item.qty >= maxBreakfastQty ||
+                                                                totalBreakfastQty >= maxBreakfastQty ||
+                                                                isAfter10AM ||
+                                                                isPast
+                                                            }
                                                         >
                                                             +
                                                         </button>
@@ -645,20 +716,15 @@ const Order = () => {
                                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
                                                 Additional Services
                                             </Typography>
-                                            <label style={{ marginRight: 24 }}>
+                                            <label>
                                                 <input
                                                     type="checkbox"
-                                                    checked={Array.isArray(data.breakfast_additional_services) && data.breakfast_additional_services.includes('escort')}
+                                                    checked={data.is_brk_escort_service === 1}
                                                     onChange={e => {
-                                                        setData(prev => {
-                                                            const arr = Array.isArray(prev.breakfast_additional_services) ? prev.breakfast_additional_services : [];
-                                                            return {
-                                                                ...prev,
-                                                                breakfast_additional_services: e.target.checked
-                                                                    ? [...arr, 'escort']
-                                                                    : arr.filter(s => s !== 'escort')
-                                                            };
-                                                        });
+                                                        setData(prev => ({
+                                                            ...prev,
+                                                            is_brk_escort_service: e.target.checked ? 1 : 0
+                                                        }));
                                                     }}
                                                 />
                                                 Escort Service
@@ -666,17 +732,12 @@ const Order = () => {
                                             <label>
                                                 <input
                                                     type="checkbox"
-                                                    checked={Array.isArray(data.breakfast_additional_services) && data.breakfast_additional_services.includes('tray')}
+                                                    checked={data.is_brk_tray_service === 1}
                                                     onChange={e => {
-                                                        setData(prev => {
-                                                            const arr = Array.isArray(prev.breakfast_additional_services) ? prev.breakfast_additional_services : [];
-                                                            return {
-                                                                ...prev,
-                                                                breakfast_additional_services: e.target.checked
-                                                                    ? [...arr, 'tray']
-                                                                    : arr.filter(s => s !== 'tray')
-                                                            };
-                                                        });
+                                                        setData(prev => ({
+                                                            ...prev,
+                                                            is_brk_tray_service: e.target.checked ? 1 : 0
+                                                        }));
                                                     }}
                                                 />
                                                 Tray Service
@@ -687,35 +748,6 @@ const Order = () => {
                                 {(
                                     (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0))
                                 ) && (
-                                        // <Box mt={3} display="flex" justifyContent="center">
-                                        //     <button
-                                        //         style={{
-                                        //             padding: "10px 32px",
-                                        //             background: colors.greenAccent[600],
-                                        //             color: "#fff",
-                                        //             border: "none",
-                                        //             borderRadius: 4,
-                                        //             fontWeight: 600,
-                                        //             fontSize: 16,
-                                        //             cursor: "pointer"
-                                        //         }}
-                                        //         onClick={() => {
-                                        //             submitData(data, date)
-                                        //             // Example: handle breakfast data submit
-                                        //             // const selectedBreakfast = {
-                                        //             //     dailySpecial: data.breakFastDailySpecial?.filter(i => i.qty > 0) || [],
-                                        //             //     alternatives: data.breakFastAlternative?.filter(i => i.qty > 0) || [],
-                                        //             //     additionalServices: data.breakfast_additional_services || []
-                                        //             // };
-                                        //             // console.log("Submitting Breakfast Order:", selectedBreakfast);
-                                        //             // // TODO: Replace with actual submit logic (API call, etc.)
-                                        //             // alert("Breakfast order submitted!");
-                                        //         }}
-                                        //     >
-                                        //         Submit Order
-                                        //     </button>
-                                        // </Box>
-                                        // ...existing code...
                                         <Box mt={3} display="flex" justifyContent="center">
                                             <CustomButton
                                                 sx={{
@@ -782,7 +814,7 @@ const Order = () => {
                                                             -
                                                         </button>
                                                         <Typography>{item.qty || 0}</Typography>
-                                                        <button
+                                                        {/* <button
                                                             onClick={() =>
                                                                 setData((prev) => ({
                                                                     ...prev,
@@ -795,6 +827,25 @@ const Order = () => {
                                                             }
                                                             style={{ marginLeft: 8 }}
                                                             disabled={item.qty >= 1 || isAfter3PM || isPast}
+                                                        >
+                                                            +
+                                                        </button> */}
+                                                        <button
+                                                            onClick={() =>
+                                                                setData((prev) => ({
+                                                                    ...prev,
+                                                                    lunchSoup: prev.lunchSoup.map((i) =>
+                                                                        i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
+                                                                    ),
+                                                                }))
+                                                            }
+                                                            style={{ marginLeft: 8 }}
+                                                            disabled={
+                                                                item.qty >= maxLunchQty ||
+                                                                totalLunchSoupQty >= maxLunchQty ||
+                                                                isAfter3PM ||
+                                                                isPast
+                                                            }
                                                         >
                                                             +
                                                         </button>
@@ -909,19 +960,37 @@ const Order = () => {
                                                             -
                                                         </button>
                                                         <Typography>{item.qty || 0}</Typography>
+                                                        {/* <button
+                                                            onClick={() =>
+                                                                setData((prev) => ({
+                                                                    ...prev,
+                                                                    lunchEntree: prev.lunchEntree.map((i) =>
+                                                                        i.id === item.id ? { ...i, qty: 1 } : { ...i, qty: 0 }
+                                                                    ),
+                                                                    lunchAlternative: prev.lunchAlternative.map((i) => ({ ...i, qty: 0 })),
+                                                                }))
+                                                            }
+                                                            style={{ marginLeft: 8 }}
+                                                            disabled={item.qty >= 1 || isAfter3PM || isPast}
+                                                        >
+                                                            +
+                                                        </button> */}
                                                         <button
                                                             onClick={() =>
                                                                 setData((prev) => ({
                                                                     ...prev,
                                                                     lunchEntree: prev.lunchEntree.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? { ...i, qty: 1 }
-                                                                            : { ...i, qty: 0 } // only single items selected i
+                                                                        i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1 || isAfter3PM || isPast}
+                                                            disabled={
+                                                                item.qty >= maxLunchQty ||
+                                                                totalLunchQty >= maxLunchQty ||
+                                                                isAfter3PM ||
+                                                                isPast
+                                                            }
                                                         >
                                                             +
                                                         </button>
@@ -1025,19 +1094,37 @@ const Order = () => {
                                                             -
                                                         </button>
                                                         <Typography>{item.qty || 0}</Typography>
+                                                        {/* <button
+                                                            onClick={() =>
+                                                                setData((prev) => ({
+                                                                    ...prev,
+                                                                    lunchAlternative: prev.lunchAlternative.map((i) =>
+                                                                        i.id === item.id ? { ...i, qty: 1 } : { ...i, qty: 0 }
+                                                                    ),
+                                                                    lunchEntree: prev.lunchEntree.map((i) => ({ ...i, qty: 0 })),
+                                                                }))
+                                                            }
+                                                            style={{ marginLeft: 8 }}
+                                                            disabled={item.qty >= 1 || isAfter3PM || isPast}
+                                                        >
+                                                            +
+                                                        </button> */}
                                                         <button
                                                             onClick={() =>
                                                                 setData((prev) => ({
                                                                     ...prev,
                                                                     lunchAlternative: prev.lunchAlternative.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? { ...i, qty: 1 }
-                                                                            : { ...i, qty: 0 } // only single items selected i
+                                                                        i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1 || isAfter3PM || isPast}
+                                                            disabled={
+                                                                item.qty >= maxLunchQty ||
+                                                                totalLunchQty >= maxLunchQty ||
+                                                                isAfter3PM ||
+                                                                isPast
+                                                            }
                                                         >
                                                             +
                                                         </button>
@@ -1123,20 +1210,15 @@ const Order = () => {
                                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
                                                 Additional Services
                                             </Typography>
-                                            <label style={{ marginRight: 24 }}>
+                                            <label>
                                                 <input
                                                     type="checkbox"
-                                                    checked={Array.isArray(data.lunch_additional_services) && data.lunch_additional_services.includes('escort')}
+                                                    checked={data.is_lunch_escort_service === 1}
                                                     onChange={e => {
-                                                        setData(prev => {
-                                                            const arr = Array.isArray(prev.lunch_additional_services) ? prev.lunch_additional_services : [];
-                                                            return {
-                                                                ...prev,
-                                                                lunch_additional_services: e.target.checked
-                                                                    ? [...arr, 'escort']
-                                                                    : arr.filter(s => s !== 'escort')
-                                                            };
-                                                        });
+                                                        setData(prev => ({
+                                                            ...prev,
+                                                            is_lunch_escort_service: e.target.checked ? 1 : 0
+                                                        }));
                                                     }}
                                                 />
                                                 Escort Service
@@ -1144,17 +1226,12 @@ const Order = () => {
                                             <label>
                                                 <input
                                                     type="checkbox"
-                                                    checked={Array.isArray(data.lunch_additional_services) && data.lunch_additional_services.includes('tray')}
+                                                    checked={data.is_lunch_tray_service === 1}
                                                     onChange={e => {
-                                                        setData(prev => {
-                                                            const arr = Array.isArray(prev.lunch_additional_services) ? prev.lunch_additional_services : [];
-                                                            return {
-                                                                ...prev,
-                                                                lunch_additional_services: e.target.checked
-                                                                    ? [...arr, 'tray']
-                                                                    : arr.filter(s => s !== 'tray')
-                                                            };
-                                                        });
+                                                        setData(prev => ({
+                                                            ...prev,
+                                                            is_lunch_tray_service: e.target.checked ? 1 : 0
+                                                        }));
                                                     }}
                                                 />
                                                 Tray Service
@@ -1231,7 +1308,7 @@ const Order = () => {
                                                         -
                                                     </button>
                                                     <Typography>{item.qty || 0}</Typography>
-                                                    <button
+                                                    {/* <button
                                                         onClick={() =>
                                                             setData((prev) => ({
                                                                 ...prev,
@@ -1244,6 +1321,26 @@ const Order = () => {
                                                         }
                                                         style={{ marginLeft: 8 }}
                                                         disabled={item.qty >= 1 || isAfter12PM || isPast}
+                                                    >
+                                                        +
+                                                    </button> */}
+
+                                                    <button
+                                                        onClick={() =>
+                                                            setData((prev) => ({
+                                                                ...prev,
+                                                                dinnerSoup: prev.dinnerSoup.map((i) =>
+                                                                    i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
+                                                                ),
+                                                            }))
+                                                        }
+                                                        style={{ marginLeft: 8 }}
+                                                        disabled={
+                                                            item.qty >= maxDinnerQty ||
+                                                            totalDinnerSoupQty >= maxDinnerQty ||
+                                                            isAfter12PM ||
+                                                            isPast
+                                                        }
                                                     >
                                                         +
                                                     </button>
@@ -1290,19 +1387,38 @@ const Order = () => {
                                                             -
                                                         </button>
                                                         <Typography>{item.qty || 0}</Typography>
+                                                        {/* <button
+                                                            onClick={() =>
+                                                                setData((prev) => ({
+                                                                    ...prev,
+                                                                    dinnerEntree: prev.dinnerEntree.map((i) =>
+                                                                        i.id === item.id ? { ...i, qty: 1 } : { ...i, qty: 0 }
+                                                                    ),
+                                                                    //  DinnerAlternative Items Remove
+                                                                    dinnerAlternative: prev.dinnerAlternative.map((i) => ({ ...i, qty: 0 })),
+                                                                }))
+                                                            }
+                                                            style={{ marginLeft: 8 }}
+                                                            disabled={item.qty >= 1 || isAfter12PM || isPast}
+                                                        >
+                                                            +
+                                                        </button> */}
                                                         <button
                                                             onClick={() =>
                                                                 setData((prev) => ({
                                                                     ...prev,
                                                                     dinnerEntree: prev.dinnerEntree.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? { ...i, qty: 1 }
-                                                                            : { ...i, qty: 0 } // only single items selected i
+                                                                        i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1 || isAfter12PM || isPast}
+                                                            disabled={
+                                                                item.qty >= maxDinnerQty ||
+                                                                totalDinnerQty >= maxDinnerQty ||
+                                                                isAfter12PM ||
+                                                                isPast
+                                                            }
                                                         >
                                                             +
                                                         </button>
@@ -1407,19 +1523,38 @@ const Order = () => {
                                                             -
                                                         </button>
                                                         <Typography>{item.qty || 0}</Typography>
+                                                        {/* <button
+                                                            onClick={() =>
+                                                                setData((prev) => ({
+                                                                    ...prev,
+                                                                    dinnerAlternative: prev.dinnerAlternative.map((i) =>
+                                                                        i.id === item.id ? { ...i, qty: 1 } : { ...i, qty: 0 }
+                                                                    ),
+                                                                    //  DinnerEntrese Items Remove
+                                                                    dinnerEntree: prev.dinnerEntree.map((i) => ({ ...i, qty: 0 })),
+                                                                }))
+                                                            }
+                                                            style={{ marginLeft: 8 }}
+                                                            disabled={item.qty >= 1 || isAfter12PM || isPast}
+                                                        >
+                                                            +
+                                                        </button> */}
                                                         <button
                                                             onClick={() =>
                                                                 setData((prev) => ({
                                                                     ...prev,
                                                                     dinnerAlternative: prev.dinnerAlternative.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? { ...i, qty: 1 }
-                                                                            : { ...i, qty: 0 } // only single items selected i
+                                                                        i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1 || isAfter12PM || isPast}
+                                                            disabled={
+                                                                item.qty >= maxDinnerQty ||
+                                                                totalDinnerQty >= maxDinnerQty ||
+                                                                isAfter12PM ||
+                                                                isPast
+                                                            }
                                                         >
                                                             +
                                                         </button>
@@ -1505,20 +1640,15 @@ const Order = () => {
                                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
                                                 Additional Services
                                             </Typography>
-                                            <label style={{ marginRight: 24 }}>
+                                            <label>
                                                 <input
                                                     type="checkbox"
-                                                    checked={Array.isArray(data.dinner_additional_services) && data.dinner_additional_services.includes('escort')}
+                                                    checked={data.is_dinner_escort_service === 1}
                                                     onChange={e => {
-                                                        setData(prev => {
-                                                            const arr = Array.isArray(prev.dinner_additional_services) ? prev.dinner_additional_services : [];
-                                                            return {
-                                                                ...prev,
-                                                                dinner_additional_services: e.target.checked
-                                                                    ? [...arr, 'escort']
-                                                                    : arr.filter(s => s !== 'escort')
-                                                            };
-                                                        });
+                                                        setData(prev => ({
+                                                            ...prev,
+                                                            is_dinner_escort_service: e.target.checked ? 1 : 0
+                                                        }));
                                                     }}
                                                 />
                                                 Escort Service
@@ -1526,17 +1656,12 @@ const Order = () => {
                                             <label>
                                                 <input
                                                     type="checkbox"
-                                                    checked={Array.isArray(data.dinner_additional_services) && data.dinner_additional_services.includes('tray')}
+                                                    checked={data.is_dinner_tray_service === 1}
                                                     onChange={e => {
-                                                        setData(prev => {
-                                                            const arr = Array.isArray(prev.dinner_additional_services) ? prev.dinner_additional_services : [];
-                                                            return {
-                                                                ...prev,
-                                                                dinner_additional_services: e.target.checked
-                                                                    ? [...arr, 'tray']
-                                                                    : arr.filter(s => s !== 'tray')
-                                                            };
-                                                        });
+                                                        setData(prev => ({
+                                                            ...prev,
+                                                            is_dinner_tray_service: e.target.checked ? 1 : 0
+                                                        }));
                                                     }}
                                                 />
                                                 Tray Service
