@@ -453,7 +453,20 @@ const Order = () => {
                                                                     ...prev,
                                                                     breakFastDailySpecial: prev.breakFastDailySpecial.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: 0 }
+                                                                            ? {
+                                                                                ...i,
+                                                                                qty: 0,
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt, idx) => ({
+                                                                                        ...opt,
+                                                                                        is_selected: idx === 0 ? 1 : 0,
+                                                                                    }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({
+                                                                                    ...p,
+                                                                                    is_selected: 0,
+                                                                                })),
+                                                                            }
                                                                             : i
                                                                     ),
                                                                 }))
@@ -590,7 +603,20 @@ const Order = () => {
                                                                     ...prev,
                                                                     breakFastAlternative: prev.breakFastAlternative.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
+                                                                            ? {
+                                                                                ...i,
+                                                                                qty: Math.max((i.qty || 0) - 1, 0),
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt, idx) => ({
+                                                                                        ...opt,
+                                                                                        is_selected: idx === 0 ? 1 : 0,
+                                                                                    }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({
+                                                                                    ...p,
+                                                                                    is_selected: 0,
+                                                                                })),
+                                                                            }
                                                                             : i
                                                                     ),
                                                                 }))
@@ -803,7 +829,20 @@ const Order = () => {
                                                                     ...prev,
                                                                     lunchSoup: prev.lunchSoup.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
+                                                                            ? {
+                                                                                ...i,
+                                                                                qty: Math.max((i.qty || 0) - 1, 0),
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt, idx) => ({
+                                                                                        ...opt,
+                                                                                        is_selected: idx === 0 ? 1 : 0,
+                                                                                    }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({
+                                                                                    ...p,
+                                                                                    is_selected: 0,
+                                                                                })),
+                                                                            }
                                                                             : i
                                                                     ),
                                                                 }))
@@ -814,22 +853,6 @@ const Order = () => {
                                                             -
                                                         </button>
                                                         <Typography>{item.qty || 0}</Typography>
-                                                        {/* <button
-                                                            onClick={() =>
-                                                                setData((prev) => ({
-                                                                    ...prev,
-                                                                    lunchSoup: prev.lunchSoup.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? { ...i, qty: 1 }
-                                                                            : { ...i, qty: 0 } // only single items selected i
-                                                                    ),
-                                                                }))
-                                                            }
-                                                            style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1 || isAfter3PM || isPast}
-                                                        >
-                                                            +
-                                                        </button> */}
                                                         <button
                                                             onClick={() =>
                                                                 setData((prev) => ({
@@ -949,7 +972,20 @@ const Order = () => {
                                                                     ...prev,
                                                                     lunchEntree: prev.lunchEntree.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
+                                                                            ? {
+                                                                                ...i,
+                                                                                qty: Math.max((i.qty || 0) - 1, 0),
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt, idx) => ({
+                                                                                        ...opt,
+                                                                                        is_selected: idx === 0 ? 1 : 0,
+                                                                                    }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({
+                                                                                    ...p,
+                                                                                    is_selected: 0,
+                                                                                })),
+                                                                            }
                                                                             : i
                                                                     ),
                                                                 }))
@@ -1083,7 +1119,20 @@ const Order = () => {
                                                                     ...prev,
                                                                     lunchAlternative: prev.lunchAlternative.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
+                                                                            ? {
+                                                                                ...i,
+                                                                                qty: Math.max((i.qty || 0) - 1, 0),
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt, idx) => ({
+                                                                                        ...opt,
+                                                                                        is_selected: idx === 0 ? 1 : 0,
+                                                                                    }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({
+                                                                                    ...p,
+                                                                                    is_selected: 0,
+                                                                                })),
+                                                                            }
                                                                             : i
                                                                     ),
                                                                 }))
@@ -1308,23 +1357,6 @@ const Order = () => {
                                                         -
                                                     </button>
                                                     <Typography>{item.qty || 0}</Typography>
-                                                    {/* <button
-                                                        onClick={() =>
-                                                            setData((prev) => ({
-                                                                ...prev,
-                                                                dinnerSoup: prev.dinnerSoup.map((i) =>
-                                                                    i.id === item.id
-                                                                        ? { ...i, qty: 1 }
-                                                                        : { ...i, qty: 0 } // only single items selected i
-                                                                ),
-                                                            }))
-                                                        }
-                                                        style={{ marginLeft: 8 }}
-                                                        disabled={item.qty >= 1 || isAfter12PM || isPast}
-                                                    >
-                                                        +
-                                                    </button> */}
-
                                                     <button
                                                         onClick={() =>
                                                             setData((prev) => ({
@@ -1372,11 +1404,32 @@ const Order = () => {
                                                     <Box display="flex" alignItems="center">
                                                         <button
                                                             onClick={() =>
+                                                                // setData((prev) => ({
+                                                                //     ...prev,
+                                                                //     dinnerEntree: prev.dinnerEntree.map((i) =>
+                                                                //         i.id === item.id
+                                                                //             ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
+                                                                //             : i
+                                                                //     ),
+                                                                // }))
                                                                 setData((prev) => ({
                                                                     ...prev,
                                                                     dinnerEntree: prev.dinnerEntree.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
+                                                                            ? {
+                                                                                ...i,
+                                                                                qty: Math.max((i.qty || 0) - 1, 0),
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt, idx) => ({
+                                                                                        ...opt,
+                                                                                        is_selected: idx === 0 ? 1 : 0,
+                                                                                    }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({
+                                                                                    ...p,
+                                                                                    is_selected: 0,
+                                                                                })),
+                                                                            }
                                                                             : i
                                                                     ),
                                                                 }))
@@ -1387,22 +1440,6 @@ const Order = () => {
                                                             -
                                                         </button>
                                                         <Typography>{item.qty || 0}</Typography>
-                                                        {/* <button
-                                                            onClick={() =>
-                                                                setData((prev) => ({
-                                                                    ...prev,
-                                                                    dinnerEntree: prev.dinnerEntree.map((i) =>
-                                                                        i.id === item.id ? { ...i, qty: 1 } : { ...i, qty: 0 }
-                                                                    ),
-                                                                    //  DinnerAlternative Items Remove
-                                                                    dinnerAlternative: prev.dinnerAlternative.map((i) => ({ ...i, qty: 0 })),
-                                                                }))
-                                                            }
-                                                            style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1 || isAfter12PM || isPast}
-                                                        >
-                                                            +
-                                                        </button> */}
                                                         <button
                                                             onClick={() =>
                                                                 setData((prev) => ({
@@ -1508,11 +1545,32 @@ const Order = () => {
                                                     <Box display="flex" alignItems="center">
                                                         <button
                                                             onClick={() =>
+                                                                // setData((prev) => ({
+                                                                //     ...prev,
+                                                                //     dinnerAlternative: prev.dinnerAlternative.map((i) =>
+                                                                //         i.id === item.id
+                                                                //             ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
+                                                                //             : i
+                                                                //     ),
+                                                                // }))
                                                                 setData((prev) => ({
                                                                     ...prev,
                                                                     dinnerAlternative: prev.dinnerAlternative.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
+                                                                            ? {
+                                                                                ...i,
+                                                                                qty: Math.max((i.qty || 0) - 1, 0),
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt, idx) => ({
+                                                                                        ...opt,
+                                                                                        is_selected: idx === 0 ? 1 : 0,
+                                                                                    }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({
+                                                                                    ...p,
+                                                                                    is_selected: 0,
+                                                                                })),
+                                                                            }
                                                                             : i
                                                                     ),
                                                                 }))
