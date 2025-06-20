@@ -62,9 +62,10 @@ const GuestOrder = () => {
         const fetchMenuDetails = async () => {
             try {
                 setLoading(true);
+                let selectedObj = userData?.rooms.find((x)=> x.name ===roomNo);
                 const payload = {
                     date: date.format("YYYY-MM-DD"),
-                    room_id: roomNo ? roomNo : userData?.room_id
+                    room_id: selectedObj ? selectedObj?.id : userData?.room_id
                 }
                 const response = await OrderServices.guestOrderListData(payload);
                 let data = {
@@ -89,14 +90,19 @@ const GuestOrder = () => {
     }, [date]);
 
     function selectFirstOption(options) {
-        if (!options || options.length === 0) return [];
-        return options.map((opt, idx) => ({
-            ...opt,
-            is_selected: idx === 0 ? 1 : 0
-        }));
+    if (!options || options.length === 0) return [];
+    const anySelected = options.some(opt => opt.is_selected === 1);
+    if (anySelected) {
+        return options;
     }
+    return options.map((opt, idx) => ({
+        ...opt,
+        is_selected: idx === 0 ? 1 : 0
+    }));
+}
 
     function transformMealData(mealData) {
+        console.log("MEAL DATA ==>",mealData)
         // Breakfast
         const breakfastCat = mealData.breakfast?.[0];
         const breakfast = breakfastCat?.items || [];
@@ -111,7 +117,9 @@ const GuestOrder = () => {
                 chinese_name: item.chinese_name,
                 qty: item.qty,
                 options: selectFirstOption(item.options),
-                preference: item.preference
+                preference: item.preference,
+                order_id:item?.order_id
+
             }));
         const breakFastAlternative = breakfast
             .filter(item => item.type === "sub_cat_item")
@@ -121,7 +129,8 @@ const GuestOrder = () => {
                 chinese_name: item.chinese_name,
                 qty: item.qty,
                 options: selectFirstOption(item.options),
-                preference: item.preference
+                preference: item.preference,
+                order_id:item?.order_id
             }));
         const is_brk_tray_service = mealData?.is_brk_tray_service
 
@@ -135,7 +144,8 @@ const GuestOrder = () => {
             chinese_name: item.chinese_name,
             qty: item.qty,
             options: selectFirstOption(item.options),
-            preference: item.preference
+            preference: item.preference,
+            order_id:item?.order_id
         })) || [];
         const lunchEntree = mealData.lunch?.[1]?.items
             ?.filter(item => item.type === "item")
@@ -145,7 +155,8 @@ const GuestOrder = () => {
                 chinese_name: item.chinese_name,
                 qty: item.qty,
                 options: selectFirstOption(item.options),
-                preference: item.preference
+                preference: item.preference,
+                order_id:item?.order_id
             })) || [];
         const lunchAlternative = mealData.lunch?.[1]?.items
             ?.filter(item => item.type === "sub_cat_item")
@@ -155,7 +166,8 @@ const GuestOrder = () => {
                 chinese_name: item.chinese_name,
                 qty: item.qty,
                 options: selectFirstOption(item.options),
-                preference: item.preference
+                preference: item.preference,
+                order_id:item?.order_id
             })) || [];
         const is_lunch_tray_service = mealData?.is_lunch_tray_service
 
@@ -173,7 +185,8 @@ const GuestOrder = () => {
                 chinese_name: item.chinese_name,
                 qty: item.qty,
                 options: selectFirstOption(item.options),
-                preference: item.preference
+                preference: item.preference,
+                order_id:item?.order_id
             })) || [];
         const dinnerAlternative = dinnerCat?.items
             ?.filter(item => item.type === "sub_cat_item")
@@ -183,7 +196,8 @@ const GuestOrder = () => {
                 chinese_name: item.chinese_name,
                 qty: item.qty,
                 options: selectFirstOption(item.options),
-                preference: item.preference
+                preference: item.preference,
+                order_id:item?.order_id
             })) || [];
         const is_dinner_tray_service = mealData?.is_dinner_tray_service
 
@@ -247,10 +261,10 @@ const GuestOrder = () => {
 
         // Helper for additional services
         const hasService = (arr, type) => Array.isArray(arr) && arr.includes(type) ? 1 : 0;
-
+        let selectedObj = userData?.rooms.find((x)=> x.name ===roomNo);
         return {
             date: date.format("YYYY-MM-DD"),
-            room_id: roomNo,
+            room_id: selectedObj?.id,
             orders_to_change: JSON.stringify(items), // JSON RawString
             occupancy: guestCount,
             is_for_guest: 1,
@@ -261,9 +275,10 @@ const GuestOrder = () => {
     }
 
     const submitData = async (data, date) => {
+        console.log("data", data)
         try {
             const payload = buildOrderPayload(data, date);
-            console.log("payload", payload)
+            console.log("Submit Guest payload ", payload)
             let response = await OrderServices.updateGusetOrder(payload);
             if (response.ResponseText === "success") {
                 toast.success("Guest Order submitted successfully!");
@@ -276,7 +291,7 @@ const GuestOrder = () => {
             console.error(error);
         }
     };
-    console.log("is_dinner_tray_service", data)
+    console.log(" DATA ==>", data)
     return (
         <Box m="20px">
             <Header
@@ -836,8 +851,8 @@ const GuestOrder = () => {
                                                                     ...prev,
                                                                     lunchEntree: prev.lunchEntree.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: (i.qty || 0) + 1 } //{ ...i, qty: 1 }
-                                                                            : { ...i, qty: 0 } // only single items selected i
+                                                                            ? { ...i, qty: (i.qty || 0) + 1 } 
+                                                                            : { ...i, qty: 0 } 
                                                                     ),
                                                                 }))
                                                             }
@@ -1312,7 +1327,7 @@ const GuestOrder = () => {
                                                                     dinnerAlternative: prev.dinnerAlternative.map((i) =>
                                                                         i.id === item.id
                                                                             ? { ...i, qty: (i.qty || 0) + 1 } //{ ...i, qty: 1 }
-                                                                            : i //{ ...i, qty: 0 } // only single items selected i
+                                                                            :  { ...i, qty: 0 } // only single items selected i
                                                                     ),
                                                                 }))
                                                             }
