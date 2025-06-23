@@ -62,12 +62,13 @@ const GuestOrder = () => {
         const fetchMenuDetails = async () => {
             try {
                 setLoading(true);
-                let selectedObj = userData?.rooms.find((x)=> x.name ===roomNo);
+                let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
                 const payload = {
                     date: date.format("YYYY-MM-DD"),
                     room_id: selectedObj ? selectedObj?.id : userData?.room_id
                 }
                 const response = await OrderServices.guestOrderListData(payload);
+                console.log(response)
                 let data = {
                     breakfast: response.breakfast,
                     lunch: response?.lunch,
@@ -76,7 +77,7 @@ const GuestOrder = () => {
                     is_brk_tray_service: response?.is_brk_tray_service,
                     is_lunch_tray_service: response?.is_lunch_tray_service
                 };
-        
+
                 setGuestCount(response?.occupancy)
                 setMealData(data);
                 setData(transformMealData(data));
@@ -90,19 +91,19 @@ const GuestOrder = () => {
     }, [date]);
 
     function selectFirstOption(options) {
-    if (!options || options.length === 0) return [];
-    const anySelected = options.some(opt => opt.is_selected === 1);
-    if (anySelected) {
-        return options;
+        if (!options || options.length === 0) return [];
+        const anySelected = options.some(opt => opt.is_selected === 1);
+        if (anySelected) {
+            return options;
+        }
+        return options.map((opt, idx) => ({
+            ...opt,
+            is_selected: idx === 0 ? 1 : 0
+        }));
     }
-    return options.map((opt, idx) => ({
-        ...opt,
-        is_selected: idx === 0 ? 1 : 0
-    }));
-}
 
     function transformMealData(mealData) {
-        console.log("MEAL DATA ==>",mealData)
+        console.log("MEAL DATA ==>", mealData)
         // Breakfast
         const breakfastCat = mealData.breakfast?.[0];
         const breakfast = breakfastCat?.items || [];
@@ -118,7 +119,7 @@ const GuestOrder = () => {
                 qty: item.qty,
                 options: selectFirstOption(item.options),
                 preference: item.preference,
-                order_id:item?.order_id
+                order_id: item?.order_id
 
             }));
         const breakFastAlternative = breakfast
@@ -130,7 +131,7 @@ const GuestOrder = () => {
                 qty: item.qty,
                 options: selectFirstOption(item.options),
                 preference: item.preference,
-                order_id:item?.order_id
+                order_id: item?.order_id
             }));
         const is_brk_tray_service = mealData?.is_brk_tray_service
 
@@ -145,7 +146,7 @@ const GuestOrder = () => {
             qty: item.qty,
             options: selectFirstOption(item.options),
             preference: item.preference,
-            order_id:item?.order_id
+            order_id: item?.order_id
         })) || [];
         const lunchEntree = mealData.lunch?.[1]?.items
             ?.filter(item => item.type === "item")
@@ -156,7 +157,7 @@ const GuestOrder = () => {
                 qty: item.qty,
                 options: selectFirstOption(item.options),
                 preference: item.preference,
-                order_id:item?.order_id
+                order_id: item?.order_id
             })) || [];
         const lunchAlternative = mealData.lunch?.[1]?.items
             ?.filter(item => item.type === "sub_cat_item")
@@ -167,7 +168,7 @@ const GuestOrder = () => {
                 qty: item.qty,
                 options: selectFirstOption(item.options),
                 preference: item.preference,
-                order_id:item?.order_id
+                order_id: item?.order_id
             })) || [];
         const is_lunch_tray_service = mealData?.is_lunch_tray_service
 
@@ -186,7 +187,7 @@ const GuestOrder = () => {
                 qty: item.qty,
                 options: selectFirstOption(item.options),
                 preference: item.preference,
-                order_id:item?.order_id
+                order_id: item?.order_id
             })) || [];
         const dinnerAlternative = dinnerCat?.items
             ?.filter(item => item.type === "sub_cat_item")
@@ -197,7 +198,7 @@ const GuestOrder = () => {
                 qty: item.qty,
                 options: selectFirstOption(item.options),
                 preference: item.preference,
-                order_id:item?.order_id
+                order_id: item?.order_id
             })) || [];
         const is_dinner_tray_service = mealData?.is_dinner_tray_service
 
@@ -238,7 +239,7 @@ const GuestOrder = () => {
                         .filter(p => p.is_selected)
                         .map(p => p.id)
                         .join(","),
-                        //item_options: "3"
+                    //item_options: "3"
 
                     item_options: (item.options || [])
                         .filter(o => o.is_selected)
@@ -261,14 +262,14 @@ const GuestOrder = () => {
 
         // Helper for additional services
         const hasService = (arr, type) => Array.isArray(arr) && arr.includes(type) ? 1 : 0;
-        let selectedObj = userData?.rooms.find((x)=> x.name ===roomNo);
+        let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
         return {
             date: date.format("YYYY-MM-DD"),
             room_id: selectedObj?.id,
             orders_to_change: JSON.stringify(items), // JSON RawString
             occupancy: guestCount,
             is_for_guest: 1,
-            is_brk_tray_service:  data?.is_brk_tray_service, //hasService(data.is_brk_tray_service, "tray") ? 1 : 0,
+            is_brk_tray_service: data?.is_brk_tray_service, //hasService(data.is_brk_tray_service, "tray") ? 1 : 0,
             is_lunch_tray_service: data?.is_lunch_tray_service, //hasService(data.is_lunch_tray_service, "tray") ? 1 : 0,
             is_dinner_tray_service: data?.is_dinner_tray_service //hasService(data.is_dinner_tray_service, "tray") ? 1 : 0,
         };
@@ -292,6 +293,23 @@ const GuestOrder = () => {
         }
     };
     console.log(" DATA ==>", data)
+
+    const maxBreakfastQty = 2;
+    const maxLunchQty = 2;
+    const maxDinnerQty = 2;
+
+    const totalBreakfastQty =
+        (data.breakFastDailySpecial || []).reduce((sum, i) => sum + (i.qty || 0), 0) +
+        (data.breakFastAlternative || []).reduce((sum, i) => sum + (i.qty || 0), 0);
+    const totalLunchSoupQty = (data.lunchSoup || []).reduce((sum, i) => sum + (i.qty || 0), 0);
+    const totalLunchQty =
+        (data.lunchEntree || []).reduce((sum, i) => sum + (i.qty || 0), 0) +
+        (data.lunchAlternative || []).reduce((sum, i) => sum + (i.qty || 0), 0);
+    const totalDinnerSoupQty = (data.dinnerSoup || []).reduce((sum, i) => sum + (i.qty || 0), 0);
+    const totalDinnerQty =
+        (data.dinnerEntree || []).reduce((sum, i) => sum + (i.qty || 0), 0) +
+        (data.dinnerAlternative || []).reduce((sum, i) => sum + (i.qty || 0), 0);
+
     return (
         <Box m="20px">
             <Header
@@ -407,7 +425,20 @@ const GuestOrder = () => {
                                                                     ...prev,
                                                                     breakFastDailySpecial: prev.breakFastDailySpecial.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: 0 }
+                                                                            ? {
+                                                                                ...i,
+                                                                                qty: 0,
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt, idx) => ({
+                                                                                        ...opt,
+                                                                                        is_selected: idx === 0 ? 1 : 0,
+                                                                                    }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({
+                                                                                    ...p,
+                                                                                    is_selected: 0,
+                                                                                })),
+                                                                            }
                                                                             : i
                                                                     ),
                                                                 }))
@@ -423,14 +454,17 @@ const GuestOrder = () => {
                                                                 setData((prev) => ({
                                                                     ...prev,
                                                                     breakFastDailySpecial: prev.breakFastDailySpecial.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? { ...i, qty: (i.qty || 0) + 1 } //{ ...i, qty: 1 }
-                                                                            : { ...i, qty: 0 } // only single items selected 
+                                                                        i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= guestCount || isAfter10AM || isPast}
+                                                            disabled={
+                                                                item.qty >= maxBreakfastQty ||
+                                                                totalBreakfastQty >= maxBreakfastQty ||
+                                                                isAfter10AM ||
+                                                                isPast
+                                                            }
                                                         >
                                                             +
                                                         </button>
@@ -525,7 +559,20 @@ const GuestOrder = () => {
                                                                     ...prev,
                                                                     breakFastAlternative: prev.breakFastAlternative.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
+                                                                            ? {
+                                                                                ...i,
+                                                                                qty: Math.max((i.qty || 0) - 1, 0),
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt, idx) => ({
+                                                                                        ...opt,
+                                                                                        is_selected: idx === 0 ? 1 : 0,
+                                                                                    }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({
+                                                                                    ...p,
+                                                                                    is_selected: 0,
+                                                                                })),
+                                                                            }
                                                                             : i
                                                                     ),
                                                                 }))
@@ -541,14 +588,17 @@ const GuestOrder = () => {
                                                                 setData((prev) => ({
                                                                     ...prev,
                                                                     breakFastAlternative: prev.breakFastAlternative.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? { ...i, qty: (i.qty || 0) + 1 } //{ ...i, qty: 1 }
-                                                                            : { ...i, qty: 0 } // only single items selected 
+                                                                        i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= guestCount || isAfter10AM || isPast}
+                                                            disabled={
+                                                                item.qty >= maxBreakfastQty ||
+                                                                totalBreakfastQty >= maxBreakfastQty ||
+                                                                isAfter10AM ||
+                                                                isPast
+                                                            }
                                                         >
                                                             +
                                                         </button>
@@ -707,7 +757,20 @@ const GuestOrder = () => {
                                                                     ...prev,
                                                                     lunchSoup: prev.lunchSoup.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
+                                                                            ? {
+                                                                                ...i,
+                                                                                qty: Math.max((i.qty || 0) - 1, 0),
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt, idx) => ({
+                                                                                        ...opt,
+                                                                                        is_selected: idx === 0 ? 1 : 0,
+                                                                                    }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({
+                                                                                    ...p,
+                                                                                    is_selected: 0,
+                                                                                })),
+                                                                            }
                                                                             : i
                                                                     ),
                                                                 }))
@@ -723,14 +786,17 @@ const GuestOrder = () => {
                                                                 setData((prev) => ({
                                                                     ...prev,
                                                                     lunchSoup: prev.lunchSoup.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? { ...i, qty: (i.qty || 0) + 1 }
-                                                                            : { ...i, qty: 0 }
+                                                                        i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= guestCount || isAfter3PM || isPast}
+                                                            disabled={
+                                                                item.qty >= maxLunchQty ||
+                                                                totalLunchSoupQty >= maxLunchQty ||
+                                                                isAfter3PM ||
+                                                                isPast
+                                                            }
                                                         >
                                                             +
                                                         </button>
@@ -828,13 +894,26 @@ const GuestOrder = () => {
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
                                                     <Typography>{item.name}</Typography>
                                                     <Box display="flex" alignItems="center">
-                                                        <button
+                                                       <button
                                                             onClick={() =>
                                                                 setData((prev) => ({
                                                                     ...prev,
                                                                     lunchEntree: prev.lunchEntree.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
+                                                                            ? {
+                                                                                ...i,
+                                                                                qty: Math.max((i.qty || 0) - 1, 0),
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt, idx) => ({
+                                                                                        ...opt,
+                                                                                        is_selected: idx === 0 ? 1 : 0,
+                                                                                    }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({
+                                                                                    ...p,
+                                                                                    is_selected: 0,
+                                                                                })),
+                                                                            }
                                                                             : i
                                                                     ),
                                                                 }))
@@ -845,19 +924,37 @@ const GuestOrder = () => {
                                                             -
                                                         </button>
                                                         <Typography>{item.qty || 0}</Typography>
+                                                        {/* <button
+                                                            onClick={() =>
+                                                                setData((prev) => ({
+                                                                    ...prev,
+                                                                    lunchEntree: prev.lunchEntree.map((i) =>
+                                                                        i.id === item.id ? { ...i, qty: 1 } : { ...i, qty: 0 }
+                                                                    ),
+                                                                    lunchAlternative: prev.lunchAlternative.map((i) => ({ ...i, qty: 0 })),
+                                                                }))
+                                                            }
+                                                            style={{ marginLeft: 8 }}
+                                                            disabled={item.qty >= 1 || isAfter3PM || isPast}
+                                                        >
+                                                            +
+                                                        </button> */}
                                                         <button
                                                             onClick={() =>
                                                                 setData((prev) => ({
                                                                     ...prev,
                                                                     lunchEntree: prev.lunchEntree.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? { ...i, qty: (i.qty || 0) + 1 } 
-                                                                            : { ...i, qty: 0 } 
+                                                                        i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= guestCount || isAfter3PM || isPast}
+                                                            disabled={
+                                                                item.qty >= maxLunchQty ||
+                                                                totalLunchQty >= maxLunchQty ||
+                                                                isAfter3PM ||
+                                                                isPast
+                                                            }
                                                         >
                                                             +
                                                         </button>
@@ -950,7 +1047,20 @@ const GuestOrder = () => {
                                                                     ...prev,
                                                                     lunchAlternative: prev.lunchAlternative.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
+                                                                            ? {
+                                                                                ...i,
+                                                                                qty: Math.max((i.qty || 0) - 1, 0),
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt, idx) => ({
+                                                                                        ...opt,
+                                                                                        is_selected: idx === 0 ? 1 : 0,
+                                                                                    }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({
+                                                                                    ...p,
+                                                                                    is_selected: 0,
+                                                                                })),
+                                                                            }
                                                                             : i
                                                                     ),
                                                                 }))
@@ -961,19 +1071,37 @@ const GuestOrder = () => {
                                                             -
                                                         </button>
                                                         <Typography>{item.qty || 0}</Typography>
+                                                        {/* <button
+                                                            onClick={() =>
+                                                                setData((prev) => ({
+                                                                    ...prev,
+                                                                    lunchAlternative: prev.lunchAlternative.map((i) =>
+                                                                        i.id === item.id ? { ...i, qty: 1 } : { ...i, qty: 0 }
+                                                                    ),
+                                                                    lunchEntree: prev.lunchEntree.map((i) => ({ ...i, qty: 0 })),
+                                                                }))
+                                                            }
+                                                            style={{ marginLeft: 8 }}
+                                                            disabled={item.qty >= 1 || isAfter3PM || isPast}
+                                                        >
+                                                            +
+                                                        </button> */}
                                                         <button
                                                             onClick={() =>
                                                                 setData((prev) => ({
                                                                     ...prev,
                                                                     lunchAlternative: prev.lunchAlternative.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? { ...i, qty: (i.qty || 0) + 1 }
-                                                                            : { ...i, qty: 0 } // only single items selected i
+                                                                        i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= guestCount || isAfter3PM || isPast}
+                                                            disabled={
+                                                                item.qty >= maxLunchQty ||
+                                                                totalLunchQty >= maxLunchQty ||
+                                                                isAfter3PM ||
+                                                                isPast
+                                                            }
                                                         >
                                                             +
                                                         </button>
@@ -1149,14 +1277,17 @@ const GuestOrder = () => {
                                                             setData((prev) => ({
                                                                 ...prev,
                                                                 dinnerSoup: prev.dinnerSoup.map((i) =>
-                                                                    i.id === item.id
-                                                                        ? { ...i, qty: (i.qty || 0) + 1 } // { ...i, qty: 1 }
-                                                                        : { ...i, qty: 0 } // only single items selected i
+                                                                    i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
                                                                 ),
                                                             }))
                                                         }
                                                         style={{ marginLeft: 8 }}
-                                                        disabled={item.qty >= guestCount || isAfter12PM || isPast}
+                                                        disabled={
+                                                            item.qty >= maxDinnerQty ||
+                                                            totalDinnerSoupQty >= maxDinnerQty ||
+                                                            isAfter12PM ||
+                                                            isPast
+                                                        }
                                                     >
                                                         +
                                                     </button>
@@ -1188,11 +1319,32 @@ const GuestOrder = () => {
                                                     <Box display="flex" alignItems="center">
                                                         <button
                                                             onClick={() =>
+                                                                // setData((prev) => ({
+                                                                //     ...prev,
+                                                                //     dinnerEntree: prev.dinnerEntree.map((i) =>
+                                                                //         i.id === item.id
+                                                                //             ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
+                                                                //             : i
+                                                                //     ),
+                                                                // }))
                                                                 setData((prev) => ({
                                                                     ...prev,
                                                                     dinnerEntree: prev.dinnerEntree.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
+                                                                            ? {
+                                                                                ...i,
+                                                                                qty: Math.max((i.qty || 0) - 1, 0),
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt, idx) => ({
+                                                                                        ...opt,
+                                                                                        is_selected: idx === 0 ? 1 : 0,
+                                                                                    }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({
+                                                                                    ...p,
+                                                                                    is_selected: 0,
+                                                                                })),
+                                                                            }
                                                                             : i
                                                                     ),
                                                                 }))
@@ -1208,14 +1360,17 @@ const GuestOrder = () => {
                                                                 setData((prev) => ({
                                                                     ...prev,
                                                                     dinnerEntree: prev.dinnerEntree.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? { ...i, qty: (i.qty || 0) + 1 } //{ ...i, qty: 1 }
-                                                                            : { ...i, qty: 0 } // only single items selected i
+                                                                        i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= guestCount || isAfter12PM || isPast}
+                                                            disabled={
+                                                                item.qty >= maxDinnerQty ||
+                                                                totalDinnerQty >= maxDinnerQty ||
+                                                                isAfter12PM ||
+                                                                isPast
+                                                            }
                                                         >
                                                             +
                                                         </button>
@@ -1303,13 +1458,34 @@ const GuestOrder = () => {
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
                                                     <Typography>{item.name}</Typography>
                                                     <Box display="flex" alignItems="center">
-                                                        <button
+                                                         <button
                                                             onClick={() =>
+                                                                // setData((prev) => ({
+                                                                //     ...prev,
+                                                                //     dinnerAlternative: prev.dinnerAlternative.map((i) =>
+                                                                //         i.id === item.id
+                                                                //             ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
+                                                                //             : i
+                                                                //     ),
+                                                                // }))
                                                                 setData((prev) => ({
                                                                     ...prev,
                                                                     dinnerAlternative: prev.dinnerAlternative.map((i) =>
                                                                         i.id === item.id
-                                                                            ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
+                                                                            ? {
+                                                                                ...i,
+                                                                                qty: Math.max((i.qty || 0) - 1, 0),
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt, idx) => ({
+                                                                                        ...opt,
+                                                                                        is_selected: idx === 0 ? 1 : 0,
+                                                                                    }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({
+                                                                                    ...p,
+                                                                                    is_selected: 0,
+                                                                                })),
+                                                                            }
                                                                             : i
                                                                     ),
                                                                 }))
@@ -1319,20 +1495,23 @@ const GuestOrder = () => {
                                                         >
                                                             -
                                                         </button>
-                                                        <Typography>{item.qty || 0}</Typography>
+                                                        <Typography>{item.qty || 0}</Typography>                                                
                                                         <button
                                                             onClick={() =>
                                                                 setData((prev) => ({
                                                                     ...prev,
                                                                     dinnerAlternative: prev.dinnerAlternative.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? { ...i, qty: (i.qty || 0) + 1 } //{ ...i, qty: 1 }
-                                                                            :  { ...i, qty: 0 } // only single items selected i
+                                                                        i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
                                                                     ),
                                                                 }))
                                                             }
                                                             style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= guestCount || isAfter12PM || isPast}
+                                                            disabled={
+                                                                item.qty >= maxDinnerQty ||
+                                                                totalDinnerQty >= maxDinnerQty ||
+                                                                isAfter12PM ||
+                                                                isPast
+                                                            }
                                                         >
                                                             +
                                                         </button>
