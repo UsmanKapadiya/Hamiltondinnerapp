@@ -54,8 +54,15 @@ const GuestOrder = () => {
         return userDatas ? JSON.parse(userDatas) : null;
     });
     const [guestCount, setGuestCount] = useState(1);
-    const handleIncrement = () => setGuestCount(prev => prev + 1);
-    const handleDecrement = () => setGuestCount(prev => (prev > 1 ? prev - 1 : 1));
+const handleIncrement = () => {
+    setGuestCount(prev => {
+        if (prev >= 10) {
+            toast.warn("Maximum 10 guests allowed.");
+            return prev;
+        }
+        return prev + 1;
+    });
+};    const handleDecrement = () => setGuestCount(prev => (prev > 1 ? prev - 1 : 1));
 
 
     useEffect(() => {
@@ -229,7 +236,7 @@ const GuestOrder = () => {
         // Helper to flatten and format items
         const collectItems = (arr = []) =>
             arr
-                // .filter(item => item.qty > 0)
+                .filter(item => item.qty > 0)
                 .map(item => ({
                     item_id: item.id,
                     qty: item.qty,
@@ -293,10 +300,6 @@ const GuestOrder = () => {
         }
     };
     console.log(" DATA ==>", data)
-
-    const maxBreakfastQty = 2;
-    const maxLunchQty = 2;
-    const maxDinnerQty = 2;
 
     const totalBreakfastQty =
         (data.breakFastDailySpecial || []).reduce((sum, i) => sum + (i.qty || 0), 0) +
@@ -460,8 +463,8 @@ const GuestOrder = () => {
                                                             }
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
-                                                                item.qty >= maxBreakfastQty ||
-                                                                totalBreakfastQty >= maxBreakfastQty ||
+                                                                item.qty >= guestCount ||
+                                                                totalBreakfastQty >= guestCount ||
                                                                 isAfter10AM ||
                                                                 isPast
                                                             }
@@ -594,8 +597,8 @@ const GuestOrder = () => {
                                                             }
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
-                                                                item.qty >= maxBreakfastQty ||
-                                                                totalBreakfastQty >= maxBreakfastQty ||
+                                                                item.qty >= guestCount ||
+                                                                totalBreakfastQty >= guestCount ||
                                                                 isAfter10AM ||
                                                                 isPast
                                                             }
@@ -792,8 +795,8 @@ const GuestOrder = () => {
                                                             }
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
-                                                                item.qty >= maxLunchQty ||
-                                                                totalLunchSoupQty >= maxLunchQty ||
+                                                                item.qty >= guestCount ||
+                                                                totalLunchSoupQty >= guestCount ||
                                                                 isAfter3PM ||
                                                                 isPast
                                                             }
@@ -950,8 +953,8 @@ const GuestOrder = () => {
                                                             }
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
-                                                                item.qty >= maxLunchQty ||
-                                                                totalLunchQty >= maxLunchQty ||
+                                                                item.qty >= guestCount ||
+                                                                totalLunchQty >= guestCount ||
                                                                 isAfter3PM ||
                                                                 isPast
                                                             }
@@ -1097,8 +1100,8 @@ const GuestOrder = () => {
                                                             }
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
-                                                                item.qty >= maxLunchQty ||
-                                                                totalLunchQty >= maxLunchQty ||
+                                                                item.qty >= guestCount ||
+                                                                totalLunchQty >= guestCount ||
                                                                 isAfter3PM ||
                                                                 isPast
                                                             }
@@ -1283,8 +1286,8 @@ const GuestOrder = () => {
                                                         }
                                                         style={{ marginLeft: 8 }}
                                                         disabled={
-                                                            item.qty >= maxDinnerQty ||
-                                                            totalDinnerSoupQty >= maxDinnerQty ||
+                                                            item.qty >= guestCount ||
+                                                            totalDinnerSoupQty >= guestCount ||
                                                             isAfter12PM ||
                                                             isPast
                                                         }
@@ -1366,8 +1369,8 @@ const GuestOrder = () => {
                                                             }
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
-                                                                item.qty >= maxDinnerQty ||
-                                                                totalDinnerQty >= maxDinnerQty ||
+                                                                item.qty >= guestCount ||
+                                                                totalDinnerQty >= guestCount ||
                                                                 isAfter12PM ||
                                                                 isPast
                                                             }
@@ -1507,8 +1510,8 @@ const GuestOrder = () => {
                                                             }
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
-                                                                item.qty >= maxDinnerQty ||
-                                                                totalDinnerQty >= maxDinnerQty ||
+                                                                item.qty >= guestCount ||
+                                                                totalDinnerQty >= guestCount ||
                                                                 isAfter12PM ||
                                                                 isPast
                                                             }
