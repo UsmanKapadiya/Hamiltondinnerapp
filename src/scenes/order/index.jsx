@@ -17,6 +17,7 @@ import { EditOutlined, EmojiPeopleOutlined } from "@mui/icons-material";
 let breakFastEndTime = 10;
 let lunchEndTime = 15;
 let dinnerEndTime = 24;
+const MAX_MEAL_QTY = 1;
 
 
 const Order = () => {
@@ -30,6 +31,17 @@ const Order = () => {
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState({});
     const [mealData, setMealData] = useState({});
+    const isToday = date.isSame(dayjs(), 'day');
+    const isPast = date.isBefore(dayjs(), 'day');
+    const isAfter10AM = isToday && (dayjs().hour() > breakFastEndTime || (dayjs().hour() === breakFastEndTime && dayjs().minute() > 0));
+    const isAfter3PM = isToday && (dayjs().hour() > lunchEndTime || (dayjs().hour() === lunchEndTime && dayjs().minute() > 0));
+    const isAfter12PM = isToday && (dayjs().hour() > dinnerEndTime || (dayjs().hour() === dinnerEndTime && dayjs().minute() > 0));
+    const [mealSelections, setMealSelections] = useState([]);
+
+    const [userData] = useState(() => {
+        const userDatas = localStorage.getItem("userData");
+        return userDatas ? JSON.parse(userDatas) : null;
+    });
 
     const getDefaultTabIndex = () => {
         const now = dayjs();
@@ -42,17 +54,7 @@ const Order = () => {
     };
 
     const [tabIndex, setTabIndex] = useState(getDefaultTabIndex());
-    const isToday = date.isSame(dayjs(), 'day');
-    const isPast = date.isBefore(dayjs(), 'day');
-    const isAfter10AM = isToday && (dayjs().hour() > breakFastEndTime || (dayjs().hour() === breakFastEndTime && dayjs().minute() > 0));
-    const isAfter3PM = isToday && (dayjs().hour() > lunchEndTime || (dayjs().hour() === lunchEndTime && dayjs().minute() > 0));
-    const isAfter12PM = isToday && (dayjs().hour() > dinnerEndTime || (dayjs().hour() === dinnerEndTime && dayjs().minute() > 0));
-    const [mealSelections, setMealSelections] = useState([]);
-
-    const [userData] = useState(() => {
-        const userDatas = localStorage.getItem("userData");
-        return userDatas ? JSON.parse(userDatas) : null;
-    });
+    
 
     useEffect(() => {
         const fetchMenuDetails = async (date) => {
@@ -79,9 +81,9 @@ const Order = () => {
                 setLoading(false);
             }
         };
-        console.log(mealSelections)
+        //console.log(mealSelections)
         let obj = mealSelections?.find((x) => x.date === date.format("YYYY-MM-DD"));
-        console.log(obj)
+        //console.log(obj)
         if (obj === undefined) {
             fetchMenuDetails(date.format("YYYY-MM-DD"));
         }
@@ -202,7 +204,6 @@ const Order = () => {
         const is_dinner_escort_service = mealData?.is_dinner_escort_service
         const is_dinner_tray_service = mealData?.is_dinner_tray_service
 
-
         return {
             breakFastDailySpecialCatName,
             breakFastAlternativeCatName,
@@ -229,10 +230,9 @@ const Order = () => {
     }
 
     function buildOrderPayload(newMealSelections, date) {
-        // Helper to flatten and format items
         const collectItems = (arr = []) =>
             arr
-                // .filter(item => item.qty > 0)
+                .filter(item => item.qty > 0) // Only get if qty is grater 0
                 .map(item => ({
                     item_id: item.id,
                     qty: item.qty,
@@ -247,9 +247,7 @@ const Order = () => {
                         .join(","),
                 }));
 
-        // Map over each meal selection object in the array
         return newMealSelections.map(data => {
-            // Collect all items for this selection
             const items = [
                 ...collectItems(data.breakFastDailySpecial),
                 ...collectItems(data.breakFastAlternative),
@@ -261,12 +259,8 @@ const Order = () => {
                 ...collectItems(data.dinnerAlternative),
             ];
 
-            // Helper for additional services
-            console.log("data", data);
-            console.log("userData", userData);
-
             let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
-            console.log("selectedObj", selectedObj)
+            //console.log("selectedObj", selectedObj)
             return {
                 room_id: selectedObj?.id,
                 // orders_to_change: JSON.stringify(items),
@@ -276,13 +270,14 @@ const Order = () => {
                 is_lunch_tray_service: data?.is_lunch_tray_service,
                 is_dinner_escort_service: data?.is_dinner_escort_service,
                 is_dinner_tray_service: data?.is_dinner_tray_service,
-                items,
-                date: data.date || date // include date if needed
+                items: JSON.stringify(items), //Stringify Data Pass
+                // items,// items Pass
+                date: data.date // || date
             };
         });
     }
     function getUpdatedMealSelections(prev, data, date) {
-        const dateStr = date.format("YYYY-MM-DD");
+        const dateStr = date;
         const foundIndex = prev.findIndex(item => item?.date === dateStr);
         if (foundIndex !== -1) {
             const updated = [...prev];
@@ -294,16 +289,13 @@ const Order = () => {
     }
 
     const submitData = async (data, date) => {
-        console.log("newMEalSelections", mealSelections)
+        // console.log("newMEalSelections", mealSelections)
+        // console.log("data", data)
         try {
-            data['date'] = date.format("YYYY-MM-DD");
-
-            setMealSelections(prev => getUpdatedMealSelections(prev, data, date));
-
-            // Use the same logic to get the updated array for payload
-            const newMealSelections = getUpdatedMealSelections(mealSelections, data, date);
+            const dataCopy = { ...data, date: date.format("YYYY-MM-DD") };
+            setMealSelections(prev => getUpdatedMealSelections(prev, dataCopy, date));
+            const newMealSelections = getUpdatedMealSelections(mealSelections, dataCopy, date.format("YYYY-MM-DD"));
             const payload = buildOrderPayload(newMealSelections, date);
-          
             let response = await OrderServices.submitOrder(payload);
             if (response.ResponseText === "success") {
                 toast.success("Order submitted successfully!");
@@ -373,13 +365,13 @@ const Order = () => {
         let obj = mealSelections?.find((x) => x.date === newDate.format("YYYY-MM-DD"));
 
         if (obj !== undefined) {
-            console.log("mealSelections1 =>", mealSelections)
+            //console.log("mealSelections1 =>", mealSelections)
             setTabIndex(getTabIndexByTime(newDate))
             data['date'] = previousDate
 
             setMealSelections(prev => {
                 const foundIndex = prev.findIndex(item => item?.date === previousDate);
-                console.log(foundIndex)
+                //console.log(foundIndex)
                 if (foundIndex !== -1) {
                     // Update existing object
                     const updated = [...prev];
@@ -394,7 +386,7 @@ const Order = () => {
             setDate(newDate);
 
         } else {
-            console.log("mealSelections2 =>", mealSelections)
+            //console.log("mealSelections2 =>", mealSelections)
             setTabIndex(0)
             setDate(newDate);
             data['date'] = previousDate
@@ -402,12 +394,7 @@ const Order = () => {
         }
     }
 
-
-
-    const maxBreakfastQty = 2;
-    const maxLunchQty = 2;
-    const maxDinnerQty = 2;
-
+    
     const totalBreakfastQty =
         (data.breakFastDailySpecial || []).reduce((sum, i) => sum + (i.qty || 0), 0) +
         (data.breakFastAlternative || []).reduce((sum, i) => sum + (i.qty || 0), 0);
@@ -419,6 +406,7 @@ const Order = () => {
     const totalDinnerQty =
         (data.dinnerEntree || []).reduce((sum, i) => sum + (i.qty || 0), 0) +
         (data.dinnerAlternative || []).reduce((sum, i) => sum + (i.qty || 0), 0);
+
 
     return (
         <Box m="20px">
@@ -579,8 +567,8 @@ const Order = () => {
                                                             }
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
-                                                                item.qty >= maxBreakfastQty ||
-                                                                totalBreakfastQty >= maxBreakfastQty ||
+                                                                item.qty >= MAX_MEAL_QTY ||
+                                                                totalBreakfastQty >= MAX_MEAL_QTY ||
                                                                 isAfter10AM ||
                                                                 isPast
                                                             }
@@ -729,8 +717,8 @@ const Order = () => {
                                                             }
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
-                                                                item.qty >= maxBreakfastQty ||
-                                                                totalBreakfastQty >= maxBreakfastQty ||
+                                                                item.qty >= MAX_MEAL_QTY ||
+                                                                totalBreakfastQty >= MAX_MEAL_QTY ||
                                                                 isAfter10AM ||
                                                                 isPast
                                                             }
@@ -939,8 +927,8 @@ const Order = () => {
                                                             }
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
-                                                                item.qty >= maxLunchQty ||
-                                                                totalLunchSoupQty >= maxLunchQty ||
+                                                                item.qty >= MAX_MEAL_QTY ||
+                                                                totalLunchSoupQty >= MAX_MEAL_QTY ||
                                                                 isAfter3PM ||
                                                                 isPast
                                                             }
@@ -1097,8 +1085,8 @@ const Order = () => {
                                                             }
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
-                                                                item.qty >= maxLunchQty ||
-                                                                totalLunchQty >= maxLunchQty ||
+                                                                item.qty >= MAX_MEAL_QTY ||
+                                                                totalLunchQty >= MAX_MEAL_QTY ||
                                                                 isAfter3PM ||
                                                                 isPast
                                                             }
@@ -1244,8 +1232,8 @@ const Order = () => {
                                                             }
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
-                                                                item.qty >= maxLunchQty ||
-                                                                totalLunchQty >= maxLunchQty ||
+                                                                item.qty >= MAX_MEAL_QTY ||
+                                                                totalLunchQty >= MAX_MEAL_QTY ||
                                                                 isAfter3PM ||
                                                                 isPast
                                                             }
@@ -1443,8 +1431,8 @@ const Order = () => {
                                                         }
                                                         style={{ marginLeft: 8 }}
                                                         disabled={
-                                                            item.qty >= maxDinnerQty ||
-                                                            totalDinnerSoupQty >= maxDinnerQty ||
+                                                            item.qty >= MAX_MEAL_QTY ||
+                                                            totalDinnerSoupQty >= MAX_MEAL_QTY ||
                                                             isAfter12PM ||
                                                             isPast
                                                         }
@@ -1526,8 +1514,8 @@ const Order = () => {
                                                             }
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
-                                                                item.qty >= maxDinnerQty ||
-                                                                totalDinnerQty >= maxDinnerQty ||
+                                                                item.qty >= MAX_MEAL_QTY ||
+                                                                totalDinnerQty >= MAX_MEAL_QTY ||
                                                                 isAfter12PM ||
                                                                 isPast
                                                             }
@@ -1683,8 +1671,8 @@ const Order = () => {
                                                             }
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
-                                                                item.qty >= maxDinnerQty ||
-                                                                totalDinnerQty >= maxDinnerQty ||
+                                                                item.qty >= MAX_MEAL_QTY ||
+                                                                totalDinnerQty >= MAX_MEAL_QTY ||
                                                                 isAfter12PM ||
                                                                 isPast
                                                             }
