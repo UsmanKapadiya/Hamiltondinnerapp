@@ -47,10 +47,6 @@ const Order = () => {
     const isAfter10AM = isToday && (dayjs().hour() > breakFastEndTime || (dayjs().hour() === breakFastEndTime && dayjs().minute() > 0));
     const isAfter3PM = isToday && (dayjs().hour() > lunchEndTime || (dayjs().hour() === lunchEndTime && dayjs().minute() > 0));
     const isAfter12PM = isToday && (dayjs().hour() > dinnerEndTime || (dayjs().hour() === dinnerEndTime && dayjs().minute() > 0));
-
-    // Multiple date Order Placed
-    const [ordersByDate, setOrdersByDate] = useState({});
-    const [selectedDate, setSelectedDate] = useState(null);
     const [mealSelections, setMealSelections] = useState([]);
 
     const [userData] = useState(() => {
@@ -266,11 +262,11 @@ const Order = () => {
             ];
 
             // Helper for additional services
-            console.log("data",data);
-            console.log("userData",userData);
+            console.log("data", data);
+            console.log("userData", userData);
 
             let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
-            console.log("selectedObj",selectedObj)
+            console.log("selectedObj", selectedObj)
             return {
                 room_id: selectedObj?.id,
                 // orders_to_change: JSON.stringify(items),
@@ -285,18 +281,33 @@ const Order = () => {
             };
         });
     }
+    function getUpdatedMealSelections(prev, data, date) {
+        const dateStr = date.format("YYYY-MM-DD");
+        const foundIndex = prev.findIndex(item => item?.date === dateStr);
+        if (foundIndex !== -1) {
+            const updated = [...prev];
+            updated[foundIndex] = { ...data };
+            return updated;
+        } else {
+            return [...prev, data];
+        }
+    }
 
     const submitData = async (data, date) => {
+        console.log("newMEalSelections", mealSelections)
         try {
-            data['date'] = date.format("YYYY-MM-DD")
-            setMealSelections(prev => [...prev, data])
-            const newMealSelections = [...mealSelections, data];
+            data['date'] = date.format("YYYY-MM-DD");
+
+            setMealSelections(prev => getUpdatedMealSelections(prev, data, date));
+
+            // Use the same logic to get the updated array for payload
+            const newMealSelections = getUpdatedMealSelections(mealSelections, data, date);
             const payload = buildOrderPayload(newMealSelections, date);
-           
+          
             let response = await OrderServices.submitOrder(payload);
             if (response.ResponseText === "success") {
                 toast.success("Order submitted successfully!");
-                // setData(transformMealData(mealData)); // <-- Now mealData is defined
+                setData(transformMealData(mealData)); // <-- Now mealData is defined
             } else {
                 toast.error(response.ResponseText || "Order submission failed.");
             }
@@ -341,35 +352,20 @@ const Order = () => {
 
         navigate("/guestOrder", {
             state: { roomNo: room, selectedDate: formattedDate }
-            // state: {
-            //     date: date,
-            //     room: room,
-            //     isToday:isToday,
-            //     isPast:isPast,
-            //     isAfter10AM:isAfter10AM,
-            //     isAfter3PM:isAfter3PM,
-            //     isAfter12PM:isAfter12PM,
-            // },
         });
     };
 
-    const getTabIndexByTime = (dateObj) => {
-        const hour = dateObj.hour();
-        const minute = dateObj.minute();
+    function getTabIndexByTime(dateObj) {
 
-        if (hour > lunchEndTime || (hour === lunchEndTime && minute > 0)) {
+        const now = dateObj;
+        if (now.hour() > lunchEndTime || (now.hour() === lunchEndTime && now.minute() > 0)) {
             return 2; // Dinner
-        } else if (hour > breakFastEndTime || (hour === breakFastEndTime && minute > 0)) {
+        } else if (now.hour() > breakFastEndTime || (now.hour() === breakFastEndTime && now.minute() > 0)) {
             return 1; // Lunch
-        } else {
-            return 0; // Breakfast
         }
-    };
+        return 0; // Breakfast
+    }
 
-    // useEffect(() => {
-    //     console.log("mealSections", mealSelections)
-    //     console.log(data)
-    // }, [mealSelections, data])
 
     const handleDateChange = (newDate) => {
 
@@ -377,12 +373,29 @@ const Order = () => {
         let obj = mealSelections?.find((x) => x.date === newDate.format("YYYY-MM-DD"));
 
         if (obj !== undefined) {
-
+            console.log("mealSelections1 =>", mealSelections)
+            setTabIndex(getTabIndexByTime(newDate))
             data['date'] = previousDate
-            setMealSelections(prev => [...prev, data])
+
+            setMealSelections(prev => {
+                const foundIndex = prev.findIndex(item => item?.date === previousDate);
+                console.log(foundIndex)
+                if (foundIndex !== -1) {
+                    // Update existing object
+                    const updated = [...prev];
+                    updated[foundIndex] = { ...data };
+                    return updated;
+                } else {
+                    // Add new object
+                    return [...prev, data];
+                }
+            });
             setData(obj)
             setDate(newDate);
+
         } else {
+            console.log("mealSelections2 =>", mealSelections)
+            setTabIndex(0)
             setDate(newDate);
             data['date'] = previousDate
             setMealSelections(prev => [...prev, data])
