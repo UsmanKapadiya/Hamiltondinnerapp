@@ -48,17 +48,22 @@ const Order = () => {
     const isAfter3PM = isToday && (dayjs().hour() > lunchEndTime || (dayjs().hour() === lunchEndTime && dayjs().minute() > 0));
     const isAfter12PM = isToday && (dayjs().hour() > dinnerEndTime || (dayjs().hour() === dinnerEndTime && dayjs().minute() > 0));
 
+    // Multiple date Order Placed
+    const [ordersByDate, setOrdersByDate] = useState({});
+    const [selectedDate, setSelectedDate] = useState(null);
+    const [mealSelections, setMealSelections] = useState([]);
+
     const [userData] = useState(() => {
         const userDatas = localStorage.getItem("userData");
         return userDatas ? JSON.parse(userDatas) : null;
     });
 
     useEffect(() => {
-        const fetchMenuDetails = async () => {
+        const fetchMenuDetails = async (date) => {
             try {
                 setLoading(true);
                 let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
-                const response = await OrderServices.getMenuData(selectedObj ? selectedObj?.id : userData?.room_id, date.format("YYYY-MM-DD"));
+                const response = await OrderServices.getMenuData(selectedObj ? selectedObj?.id : userData?.room_id, date);
                 let data = {
                     breakfast: response.breakfast,
                     lunch: response?.lunch,
@@ -78,8 +83,14 @@ const Order = () => {
                 setLoading(false);
             }
         };
-        fetchMenuDetails();
+        console.log(mealSelections)
+        let obj = mealSelections?.find((x) => x.date === date.format("YYYY-MM-DD"));
+        console.log(obj)
+        if (obj === undefined) {
+            fetchMenuDetails(date.format("YYYY-MM-DD"));
+        }
     }, [date]);
+
 
     function selectFirstOption(options) {
         if (!options || options.length === 0) return [];
@@ -220,7 +231,8 @@ const Order = () => {
             is_dinner_tray_service,
         };
     }
-    function buildOrderPayload(data, date) {
+
+    function buildOrderPayload(newMealSelections, date) {
         // Helper to flatten and format items
         const collectItems = (arr = []) =>
             arr
@@ -239,37 +251,48 @@ const Order = () => {
                         .join(","),
                 }));
 
-        // Collect all items
-        const items = [
-            ...collectItems(data.breakFastDailySpecial),
-            ...collectItems(data.breakFastAlternative),
-            ...collectItems(data.lunchSoup),
-            ...collectItems(data.lunchEntree),
-            ...collectItems(data.lunchAlternative),
-            ...collectItems(data.dinnerSoup),
-            ...collectItems(data.dinnerEntree),
-            ...collectItems(data.dinnerAlternative),
-        ];
+        // Map over each meal selection object in the array
+        return newMealSelections.map(data => {
+            // Collect all items for this selection
+            const items = [
+                ...collectItems(data.breakFastDailySpecial),
+                ...collectItems(data.breakFastAlternative),
+                ...collectItems(data.lunchSoup),
+                ...collectItems(data.lunchEntree),
+                ...collectItems(data.lunchAlternative),
+                ...collectItems(data.dinnerSoup),
+                ...collectItems(data.dinnerEntree),
+                ...collectItems(data.dinnerAlternative),
+            ];
 
-        // Helper for additional services
-        let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
-        return [{
-            date: date.format("YYYY-MM-DD"),
-            room_id: selectedObj?.id,
-            // orders_to_change: JSON.stringify(items),
-            is_brk_escort_service: data?.is_brk_escort_service, //hasService(data.breakfast_additional_services, "escort"),
-            is_brk_tray_service: data?.is_brk_tray_service,
-            is_lunch_escort_service: data?.is_lunch_escort_service,
-            is_lunch_tray_service: data?.is_lunch_tray_service,
-            is_dinner_escort_service: data?.is_dinner_escort_service,
-            is_dinner_tray_service: data?.is_dinner_tray_service,
-            items
-        }];
+            // Helper for additional services
+            console.log("data",data);
+            console.log("userData",userData);
+
+            let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
+            console.log("selectedObj",selectedObj)
+            return {
+                room_id: selectedObj?.id,
+                // orders_to_change: JSON.stringify(items),
+                is_brk_escort_service: data?.is_brk_escort_service,
+                is_brk_tray_service: data?.is_brk_tray_service,
+                is_lunch_escort_service: data?.is_lunch_escort_service,
+                is_lunch_tray_service: data?.is_lunch_tray_service,
+                is_dinner_escort_service: data?.is_dinner_escort_service,
+                is_dinner_tray_service: data?.is_dinner_tray_service,
+                items,
+                date: data.date || date // include date if needed
+            };
+        });
     }
 
     const submitData = async (data, date) => {
         try {
-            const payload = buildOrderPayload(data, date);
+            data['date'] = date.format("YYYY-MM-DD")
+            setMealSelections(prev => [...prev, data])
+            const newMealSelections = [...mealSelections, data];
+            const payload = buildOrderPayload(newMealSelections, date);
+           
             let response = await OrderServices.submitOrder(payload);
             if (response.ResponseText === "success") {
                 toast.success("Order submitted successfully!");
@@ -329,6 +352,44 @@ const Order = () => {
             // },
         });
     };
+
+    const getTabIndexByTime = (dateObj) => {
+        const hour = dateObj.hour();
+        const minute = dateObj.minute();
+
+        if (hour > lunchEndTime || (hour === lunchEndTime && minute > 0)) {
+            return 2; // Dinner
+        } else if (hour > breakFastEndTime || (hour === breakFastEndTime && minute > 0)) {
+            return 1; // Lunch
+        } else {
+            return 0; // Breakfast
+        }
+    };
+
+    // useEffect(() => {
+    //     console.log("mealSections", mealSelections)
+    //     console.log(data)
+    // }, [mealSelections, data])
+
+    const handleDateChange = (newDate) => {
+
+        const previousDate = date.format("YYYY-MM-DD");
+        let obj = mealSelections?.find((x) => x.date === newDate.format("YYYY-MM-DD"));
+
+        if (obj !== undefined) {
+
+            data['date'] = previousDate
+            setMealSelections(prev => [...prev, data])
+            setData(obj)
+            setDate(newDate);
+        } else {
+            setDate(newDate);
+            data['date'] = previousDate
+            setMealSelections(prev => [...prev, data])
+        }
+    }
+
+
 
     const maxBreakfastQty = 2;
     const maxLunchQty = 2;
@@ -393,7 +454,8 @@ const Order = () => {
                         <DatePicker
                             label="Date"
                             value={date}
-                            onChange={(newValue) => setDate(newValue)}
+                            // onChange={(newValue) => setDate(newValue)}
+                            onChange={handleDateChange}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
