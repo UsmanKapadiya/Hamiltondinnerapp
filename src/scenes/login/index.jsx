@@ -59,7 +59,7 @@ const Login = () => {
         toast.success(response.ResponseText || "Successfully Login");
         setTimeout(() => {
           if (role === "user") {
-            navigate("/order");
+            navigate("/order", { state: { roomNo: formData?.roomNo } });
           } else {
             navigate("/home");
           }
