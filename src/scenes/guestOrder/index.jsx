@@ -315,14 +315,43 @@ const GuestOrder = () => {
         };
     }
 
+    const updateOrderIdsInData = (data, itemIds, orderIds) => {
+        const updateItems = (items) => {
+            if (!Array.isArray(items)) return items;
+            return items.map(item => {
+                const idx = itemIds.findIndex(id => id === item.id);
+                if (idx !== -1) {
+                    return { ...item, order_id: orderIds[idx] };
+                }
+                return item;
+            });
+        };
+        return {
+            ...data,
+            breakFastDailySpecial: updateItems(data.breakFastDailySpecial),
+            breakFastAlternative: updateItems(data.breakFastAlternative),
+            lunchSoup: updateItems(data.lunchSoup),
+            lunchEntree: updateItems(data.lunchEntree),
+            lunchAlternative: updateItems(data.lunchAlternative),
+            dinnerSoup: updateItems(data.dinnerSoup),
+            dinnerEntree: updateItems(data.dinnerEntree),
+            dinnerAlternative: updateItems(data.dinnerAlternative),
+        };
+    };
+
     const submitData = async (data, date) => {
-        //console.log("data", data)
+        // console.log("data", data)
         try {
             const payload = buildOrderPayload(data, date);
             // //console.log("Submit Guest payload ", payload);
             // //console.log("Meal Data =>", mealData);
             let response = await OrderServices.updateGusetOrder(payload);
             if (response.ResponseText === "success") {
+                if (response?.item_id && response?.order_id) {
+                    setData(prevData =>
+                        updateOrderIdsInData(prevData, response.item_id, response.order_id)
+                    );
+                }
                 toast.success("Guest Order submitted successfully!");
                 // setData(transformMealData(mealData)); // <-- Now mealData is defined
             } else {
