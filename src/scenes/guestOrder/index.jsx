@@ -54,15 +54,16 @@ const GuestOrder = () => {
         return userDatas ? JSON.parse(userDatas) : null;
     });
     const [guestCount, setGuestCount] = useState(1);
-const handleIncrement = () => {
-    setGuestCount(prev => {
-        if (prev >= 10) {
-            toast.warn("Maximum 10 guests allowed.");
-            return prev;
-        }
-        return prev + 1;
-    });
-};    const handleDecrement = () => setGuestCount(prev => (prev > 1 ? prev - 1 : 1));
+    const handleIncrement = () => {
+        setGuestCount(prev => {
+            if (prev >= 10) {
+                toast.warn("Maximum 10 guests allowed.");
+                return prev;
+            }
+            return prev + 1;
+        });
+    }; 
+    const handleDecrement = () => setGuestCount(prev => (prev > 1 ? prev - 1 : 1));
 
 
     useEffect(() => {
@@ -75,7 +76,7 @@ const handleIncrement = () => {
                     room_id: selectedObj ? selectedObj?.id : userData?.room_id
                 }
                 const response = await OrderServices.guestOrderListData(payload);
-                console.log(response)
+                //console.log(response)
                 let data = {
                     breakfast: response.breakfast,
                     lunch: response?.lunch,
@@ -86,7 +87,7 @@ const handleIncrement = () => {
                 };
 
                 setGuestCount(response?.occupancy)
-                setMealData(data);
+                setMealData(transformMealData(data));
                 setData(transformMealData(data));
             } catch (error) {
                 console.error("Error fetching menu list:", error);
@@ -110,7 +111,7 @@ const handleIncrement = () => {
     }
 
     function transformMealData(mealData) {
-        console.log("MEAL DATA ==>", mealData)
+        //console.log("MEAL DATA ==>", mealData)
         // Breakfast
         const breakfastCat = mealData.breakfast?.[0];
         const breakfast = breakfastCat?.items || [];
@@ -232,61 +233,94 @@ const handleIncrement = () => {
         };
     }
     function buildOrderPayload(data, date) {
-        console.log("data", data)
-        // Helper to flatten and format items
-        const collectItems = (arr = []) =>
-            arr
-                .filter(item => item.qty > 0)
-                .map(item => ({
-                    item_id: item.id,
-                    qty: item.qty,
-                    order_id: item.order_id || 0,
-                    //preference : "1,2,3"
-                    preference: (item.preference || [])
-                        .filter(p => p.is_selected)
-                        .map(p => p.id)
-                        .join(","),
-                    //item_options: "3"
+        const flattenItems = (arr = []) =>
+            arr.map(item => ({
+                item_id: item.id,
+                qty: item.qty,
+                order_id: item.order_id || 0,
+                preference: (item.preference || [])
+                    .filter(p => p.is_selected)
+                    .map(p => p.id)
+                    .join(","),
+                item_options: (item.options || [])
+                    .filter(o => o.is_selected)
+                    .map(o => o.id)
+                    .join(","),
+            }));
 
-                    item_options: (item.options || [])
-                        .filter(o => o.is_selected)
-                        .map(o => o.id)
-                        .join(","),
-                }));
-
-        // Collect all items
-        const items = [
-            ...collectItems(data.breakFastDailySpecial),
-            ...collectItems(data.breakFastAlternative),
-            ...collectItems(data.lunchSoup),
-            ...collectItems(data.lunchEntree),
-            ...collectItems(data.lunchAlternative),
-            ...collectItems(data.dinnerSoup),
-            ...collectItems(data.dinnerEntree),
-            ...collectItems(data.dinnerAlternative),
+        const getAllItems = (obj) => [
+            ...flattenItems(obj.breakFastDailySpecial),
+            ...flattenItems(obj.breakFastAlternative),
+            ...flattenItems(obj.lunchSoup),
+            ...flattenItems(obj.lunchEntree),
+            ...flattenItems(obj.lunchAlternative),
+            ...flattenItems(obj.dinnerSoup),
+            ...flattenItems(obj.dinnerEntree),
+            ...flattenItems(obj.dinnerAlternative),
         ];
-        console.log("items items", items)
 
-        // Helper for additional services
-        const hasService = (arr, type) => Array.isArray(arr) && arr.includes(type) ? 1 : 0;
+        const updatedItems = getAllItems(data);
+        const originalItems = getAllItems(mealData);
+
+        const findOriginal = (item) =>
+            originalItems.find(
+                ori =>
+                    ori.item_id === item.item_id &&
+                    ori.order_id === item.order_id
+            );
+
+        const updatedMap = new Map(
+            updatedItems.map(item => [`${item.item_id}_${item.order_id}`, item])
+        );
+
+        const items = [];
+
+        updatedItems.forEach(item => {
+            const ori = findOriginal(item);
+            if (!ori) {
+                if (item.qty > 0) items.push(item);
+            } else if (
+                item.qty !== ori.qty ||
+                item.preference !== ori.preference ||
+                item.item_options !== ori.item_options
+            ) {
+                items.push(item);
+            }
+        });
+
+        // 2. Check originalItems for removed items not present in updatedItems
+        originalItems.forEach(ori => {
+            const key = `${ori.item_id}_${ori.order_id}`;
+            if (!updatedMap.has(key) && ori.qty > 0) {
+                // Item was removed completely, send with qty:0
+                items.push({
+                    ...ori,
+                    qty: 0,
+                    preference: "",
+                    item_options: ""
+                });
+            }
+        });
+
         let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
         return {
             date: date.format("YYYY-MM-DD"),
             room_id: selectedObj?.id,
-            orders_to_change: JSON.stringify(items), // JSON RawString
+            orders_to_change: JSON.stringify(items),
             occupancy: guestCount,
             is_for_guest: 1,
-            is_brk_tray_service: data?.is_brk_tray_service, //hasService(data.is_brk_tray_service, "tray") ? 1 : 0,
-            is_lunch_tray_service: data?.is_lunch_tray_service, //hasService(data.is_lunch_tray_service, "tray") ? 1 : 0,
-            is_dinner_tray_service: data?.is_dinner_tray_service //hasService(data.is_dinner_tray_service, "tray") ? 1 : 0,
+            is_brk_tray_service: data?.is_brk_tray_service,
+            is_lunch_tray_service: data?.is_lunch_tray_service,
+            is_dinner_tray_service: data?.is_dinner_tray_service
         };
     }
 
     const submitData = async (data, date) => {
-        console.log("data", data)
+        //console.log("data", data)
         try {
             const payload = buildOrderPayload(data, date);
-            console.log("Submit Guest payload ", payload)
+            // //console.log("Submit Guest payload ", payload);
+            // //console.log("Meal Data =>", mealData);
             let response = await OrderServices.updateGusetOrder(payload);
             if (response.ResponseText === "success") {
                 toast.success("Guest Order submitted successfully!");
@@ -299,7 +333,7 @@ const handleIncrement = () => {
             console.error(error);
         }
     };
-    console.log(" DATA ==>", data)
+    //console.log(" DATA ==>", data)
 
     const totalBreakfastQty =
         (data.breakFastDailySpecial || []).reduce((sum, i) => sum + (i.qty || 0), 0) +
@@ -897,7 +931,7 @@ const handleIncrement = () => {
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
                                                     <Typography>{item.name}</Typography>
                                                     <Box display="flex" alignItems="center">
-                                                       <button
+                                                        <button
                                                             onClick={() =>
                                                                 setData((prev) => ({
                                                                     ...prev,
@@ -1461,7 +1495,7 @@ const handleIncrement = () => {
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
                                                     <Typography>{item.name}</Typography>
                                                     <Box display="flex" alignItems="center">
-                                                         <button
+                                                        <button
                                                             onClick={() =>
                                                                 // setData((prev) => ({
                                                                 //     ...prev,
@@ -1498,7 +1532,7 @@ const handleIncrement = () => {
                                                         >
                                                             -
                                                         </button>
-                                                        <Typography>{item.qty || 0}</Typography>                                                
+                                                        <Typography>{item.qty || 0}</Typography>
                                                         <button
                                                             onClick={() =>
                                                                 setData((prev) => ({
