@@ -17,7 +17,7 @@ import { EditOutlined, EmojiPeopleOutlined } from "@mui/icons-material";
 let breakFastEndTime = 10;
 let lunchEndTime = 15;
 let dinnerEndTime = 24;
-const MAX_MEAL_QTY = 1;
+const MAX_MEAL_QTY = 2;
 
 
 const Order = () => {
@@ -230,9 +230,19 @@ const Order = () => {
     }
 
     function buildOrderPayload(newMealSelections, date) {
+        // Find the latest selected date
+        const current_date = newMealSelections.reduce((latest, curr) => {
+            return (!latest || curr.date > latest) ? curr.date : latest;
+        }, null);
+
+        // Get room_id from userData and roomNo
+        let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
+        const room_id = selectedObj?.id;
+
+        // Helper to collect items (qty must be > 0)
         const collectItems = (arr = []) =>
-            arr
-                .filter(item => item.qty > 0) // Only get if qty is grater 0
+            (arr || [])
+                .filter(item => item.qty > 0)
                 .map(item => ({
                     item_id: item.id,
                     qty: item.qty,
@@ -247,7 +257,8 @@ const Order = () => {
                         .join(","),
                 }));
 
-        return newMealSelections.map(data => {
+        // Build the orders_to_change array
+        const orders_to_change = newMealSelections.map(data => {
             const items = [
                 ...collectItems(data.breakFastDailySpecial),
                 ...collectItems(data.breakFastAlternative),
@@ -258,23 +269,23 @@ const Order = () => {
                 ...collectItems(data.dinnerEntree),
                 ...collectItems(data.dinnerAlternative),
             ];
-
-            let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
-            //console.log("selectedObj", selectedObj)
             return {
-                room_id: selectedObj?.id,
-                // orders_to_change: JSON.stringify(items),
+                date: data.date,
                 is_brk_escort_service: data?.is_brk_escort_service,
                 is_brk_tray_service: data?.is_brk_tray_service,
                 is_lunch_escort_service: data?.is_lunch_escort_service,
                 is_lunch_tray_service: data?.is_lunch_tray_service,
                 is_dinner_escort_service: data?.is_dinner_escort_service,
                 is_dinner_tray_service: data?.is_dinner_tray_service,
-                items: JSON.stringify(items), //Stringify Data Pass
-                // items,// items Pass
-                date: data.date // || date
+                items: items
             };
         });
+
+        return {
+            current_date,
+            room_id,
+            orders_to_change: JSON.stringify(orders_to_change)
+        };
     }
     function getUpdatedMealSelections(prev, data, date) {
         const dateStr = date;
@@ -296,6 +307,7 @@ const Order = () => {
             setMealSelections(prev => getUpdatedMealSelections(prev, dataCopy, date));
             const newMealSelections = getUpdatedMealSelections(mealSelections, dataCopy, date.format("YYYY-MM-DD"));
             const payload = buildOrderPayload(newMealSelections, date);
+            console.log("payload", payload);
             let response = await OrderServices.submitOrder(payload);
             if (response.ResponseText === "success") {
                 toast.success("Order submitted successfully!");
