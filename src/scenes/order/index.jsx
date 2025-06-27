@@ -57,7 +57,16 @@ const Order = () => {
 
 
     useEffect(() => {
-        const fetchMenuDetails = async (date) => {
+       
+        //console.log(mealSelections)
+        let obj = mealSelections?.find((x) => x.date === date.format("YYYY-MM-DD"));
+        //console.log(obj)
+        if (obj === undefined) {
+            fetchMenuDetails(date.format("YYYY-MM-DD"));
+        }
+    }, [date]);
+
+     const fetchMenuDetails = async (date) => {
             try {
                 setLoading(true);
                 let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
@@ -93,13 +102,6 @@ const Order = () => {
                 setLoading(false);
             }
         };
-        //console.log(mealSelections)
-        let obj = mealSelections?.find((x) => x.date === date.format("YYYY-MM-DD"));
-        //console.log(obj)
-        if (obj === undefined) {
-            fetchMenuDetails(date.format("YYYY-MM-DD"));
-        }
-    }, [date]);
 
 
     function selectFirstOption(options) {
@@ -405,23 +407,26 @@ const Order = () => {
             console.log("payload", payload);
             let response = await OrderServices.submitOrder(payload);
             if (response.ResponseText === "success") {
+                setMealSelections([])
+                console.log("date",date.format("YYYY-MM-DD"))
+                fetchMenuDetails(date.format("YYYY-MM-DD"));
                 toast.success("Order submitted successfully!");
-                if (response?.item_id && response?.order_id) {
-                    setMealSelections(prev => {
-                        const updated = updateOrderIdsInMealSelections(prev, response.item_id, response.order_id);
-                        // Remove duplicate dates, keeping the last occurrence
-                        const uniqueByDate = [];
-                        const seen = new Set();
-                        for (let i = updated.length - 1; i >= 0; i--) {
-                            const date = updated[i].date;
-                            if (!seen.has(date)) {
-                                uniqueByDate.unshift(updated[i]);
-                                seen.add(date);
-                            }
-                        }
-                        return uniqueByDate;
-                    });
-                }
+                // if (response?.item_id && response?.order_id) {
+                //     setMealSelections(prev => {
+                //         const updated = updateOrderIdsInMealSelections(prev, response.item_id, response.order_id);
+                //         // Remove duplicate dates, keeping the last occurrence
+                //         const uniqueByDate = [];
+                //         const seen = new Set();
+                //         for (let i = updated.length - 1; i >= 0; i--) {
+                //             const date = updated[i].date;
+                //             if (!seen.has(date)) {
+                //                 uniqueByDate.unshift(updated[i]);
+                //                 seen.add(date);
+                //             }
+                //         }
+                //         return uniqueByDate;
+                //     });
+                // }
             } else {
                 toast.error(response.ResponseText || "Order submission failed.");
             }
