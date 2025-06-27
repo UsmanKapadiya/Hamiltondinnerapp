@@ -55,9 +55,7 @@ const Order = () => {
 
     const [tabIndex, setTabIndex] = useState(getDefaultTabIndex());
 
- useEffect(() => {
-    console.log("meal",mealSelections)
- },[mealSelections])
+
     useEffect(() => {
         const fetchMenuDetails = async (date) => {
             try {
@@ -82,12 +80,11 @@ const Order = () => {
                     let updated;
                     if (foundIndex !== -1) {
                         updated = [...prev];
-                        updated[foundIndex] = meal;
+                        updated[foundIndex] = transformMealData(meal);
                     } else {
-                        updated = [...prev, meal];
+                        updated = [...prev, transformMealData(meal)];
                     }
-                    // Transform all meals after update
-                    return updated.map(m => transformMealData(m));
+                    return updated;
                 });
                 setData(transformMealData(data));
             } catch (error) {
@@ -220,6 +217,7 @@ const Order = () => {
         const is_dinner_tray_service = mealData?.is_dinner_tray_service
 
         return {
+            date: mealData.date,
             breakFastDailySpecialCatName,
             breakFastAlternativeCatName,
             breakFastDailySpecial,
@@ -244,101 +242,104 @@ const Order = () => {
         };
     }
 
-  function buildOrderPayload(dataArray) {
-    const flattenItems = (arr = []) =>
-        (arr || []).map(item => ({
-            item_id: item.id || item.item_id,
+    function buildOrderPayload(dataArray) {
+        console.log("dataArray", dataArray)
+        console.log("mealData", mealData)
+        const flatten = arr => (arr || []).map(item => ({
+            item_id: item.id,
             qty: item.qty,
             order_id: item.order_id || 0,
             preference: (item.preference || [])
                 .filter(p => p.is_selected)
-                .map(p => p.id)
-                .sort((a, b) => a - b)
-                .join(","),
+                .map(p => p.id).join(","),
             item_options: (item.options || [])
                 .filter(o => o.is_selected)
-                .map(o => o.id)
-                .sort((a, b) => a - b)
-                .join(","),
+                .map(o => o.id).join(",")
         }));
 
-    const getAllItems = obj => [
-        ...flattenItems(obj.breakFastDailySpecial),
-        ...flattenItems(obj.breakFastAlternative),
-        ...flattenItems(obj.lunchSoup),
-        ...flattenItems(obj.lunchEntree),
-        ...flattenItems(obj.lunchAlternative),
-        ...flattenItems(obj.dinnerSoup),
-        ...flattenItems(obj.dinnerEntree),
-        ...flattenItems(obj.dinnerAlternative)
-    ];
+        const getItems = d => [
+            ...flatten(d.breakFastDailySpecial),
+            ...flatten(d.breakFastAlternative),
+            ...flatten(d.lunchSoup),
+            ...flatten(d.lunchEntree),
+            ...flatten(d.lunchAlternative),
+            ...flatten(d.dinnerSoup),
+            ...flatten(d.dinnerEntree),
+            ...flatten(d.dinnerAlternative)
+        ];
 
-    const selectedRoom = userData?.rooms?.find(x => x.name === roomNo);
-    const room_id = selectedRoom?.id || 0;
+        const selectedRoom = userData.rooms.find(x => x.name === roomNo);
+        const room_id = selectedRoom?.id || 0;
 
-    const orders_to_change = dataArray.map((data, idx) => {
-        const updated = getAllItems(data);
-        const originalObj = Array.isArray(mealData)
-            ? mealData.find(m => m.date === data.date)
-            : mealData && mealData.date === data.date
-                ? mealData
-                : null;
-        const original = originalObj ? getAllItems(originalObj) : [];
+        const orders = dataArray.map(data => {
+            const updated = getItems(data);
+            const origDay = Array.isArray(mealData)
+                ? mealData.find(m => m.date === data.date)
+                : mealData.date === data.date
+                    ? mealData
+                    : null;
+            const original = origDay ? getItems(origDay) : [];
+            const origMap = new Map(original.map(o => [`${o.item_id}_${o.order_id}`, o]));
+            const updMap = new Map(updated.map(u => [`${u.item_id}_${u.order_id}`, u]));
 
-        const updatedMap = new Map(updated.map(i => [`${i.item_id}_${i.order_id}`, i]));
-        const originalMap = new Map(original.map(i => [`${i.item_id}_${i.order_id}`, i]));
+            const items = [];
 
-        const items = [];
+            // 1. New or changed items
+            updated.forEach(u => {
+                const key = `${u.item_id}_${u.order_id}`;
+                const o = origMap.get(key);
+                if (!o) {
+                    // New item — include only if qty > 0
+                    if (u.qty > 0) items.push(u);
+                } else {
+                    // Existing — include only if any field changed
+                    if (
+                        u.qty !== o.qty ||
+                        u.preference !== o.preference ||
+                        u.item_options !== o.item_options
+                    ) {
+                        // If qty changed from >0 to 0, include with qty: 0
+                        if (o.qty > 0 && u.qty === 0) {
+                            items.push({ ...u, qty: 0, preference: "", item_options: "" });
+                        } else {
+                            items.push(u);
+                        }
+                    }
+                }
+            });
 
-        // Get updated or new items
-        updated.forEach(item => {
-            const key = `${item.item_id}_${item.order_id}`;
-            const ori = originalMap.get(key);
+            // 2. Removed items (present in original, missing in updated, and qty > 0)
+            original.forEach(o => {
+                const key = `${o.item_id}_${o.order_id}`;
+                if (!updMap.has(key) && o.qty > 0) {
+                    items.push({ ...o, qty: 0, preference: "", item_options: "" });
+                }
+            });
 
-            const isNew = !ori;
-            const isChanged = isNew
-                ? item.qty > 0
-                : item.qty !== ori.qty ||
-                item.preference !== ori.preference ||
-                item.item_options !== ori.item_options;
+            if (items.length === 0) return null;
 
-            if (isChanged) {
-                items.push(item);
-            }
-        });
+            return {
+                date: data.date,
+                room_id,
+                is_for_guest: 1,
+                is_brk_tray_service: data.is_brk_tray_service,
+                is_lunch_tray_service: data.is_lunch_tray_service,
+                is_dinner_tray_service: data.is_dinner_tray_service,
+                items
+            };
+        }).filter(Boolean);
 
-        // Get removed items (qty changed to 0)
-        original.forEach(ori => {
-            const key = `${ori.item_id}_${ori.order_id}`;
-            if (!updatedMap.has(key) && ori.qty > 0) {
-                items.push({
-                    ...ori,
-                    qty: 0,
-                    preference: "",
-                    item_options: ""
-                });
-            }
-        });
-
-        return items.length > 0 ? {
-            date: data.date,
+        return {
+            current_date: dataArray.length
+                ? dataArray[dataArray.length - 1].date
+                : "",
             room_id,
-            is_for_guest: 1,
-            is_brk_tray_service: data?.is_brk_tray_service,
-            is_lunch_tray_service: data?.is_lunch_tray_service,
-            is_dinner_tray_service: data?.is_dinner_tray_service,
-            items
-        } : null;
-    }).filter(Boolean);
+            orders_to_change: JSON.stringify(orders)
+        };
+    }
 
-    const current_date = dataArray.length > 0 ? dataArray[dataArray.length - 1].date : "";
 
-    return {
-        current_date,
-        room_id,
-        orders_to_change: JSON.stringify(orders_to_change)
-    };
-}
+
 
 
     function getUpdatedMealSelections(prev, data, date) {
@@ -354,29 +355,29 @@ const Order = () => {
     }
 
     function updateOrderIdsInMealSelections(mealSelections, itemIds, orderIds) {
-    return mealSelections.map(selection => {
-        // Update all meal arrays inside each selection
-        const updateItems = arr => (arr || []).map(item => {
-            const idx = itemIds.indexOf(item.id);
-            if (idx !== -1) {
-                return { ...item, order_id: orderIds[idx] };
-            }
-            return item;
-        });
+        return mealSelections.map(selection => {
+            // Update all meal arrays inside each selection
+            const updateItems = arr => (arr || []).map(item => {
+                const idx = itemIds.indexOf(item.id);
+                if (idx !== -1) {
+                    return { ...item, order_id: orderIds[idx] };
+                }
+                return item;
+            });
 
-        return {
-            ...selection,
-            breakFastDailySpecial: updateItems(selection.breakFastDailySpecial),
-            breakFastAlternative: updateItems(selection.breakFastAlternative),
-            lunchSoup: updateItems(selection.lunchSoup),
-            lunchEntree: updateItems(selection.lunchEntree),
-            lunchAlternative: updateItems(selection.lunchAlternative),
-            dinnerSoup: updateItems(selection.dinnerSoup),
-            dinnerEntree: updateItems(selection.dinnerEntree),
-            dinnerAlternative: updateItems(selection.dinnerAlternative),
-        };
-    });
-}
+            return {
+                ...selection,
+                breakFastDailySpecial: updateItems(selection.breakFastDailySpecial),
+                breakFastAlternative: updateItems(selection.breakFastAlternative),
+                lunchSoup: updateItems(selection.lunchSoup),
+                lunchEntree: updateItems(selection.lunchEntree),
+                lunchAlternative: updateItems(selection.lunchAlternative),
+                dinnerSoup: updateItems(selection.dinnerSoup),
+                dinnerEntree: updateItems(selection.dinnerEntree),
+                dinnerAlternative: updateItems(selection.dinnerAlternative),
+            };
+        });
+    }
 
     const submitData = async (data, date) => {
         console.log("newMEalSelections", mealSelections)
@@ -384,7 +385,21 @@ const Order = () => {
 
         try {
             const dataCopy = { ...data, date: date.format("YYYY-MM-DD") };
-            setMealSelections(prev => getUpdatedMealSelections(prev, dataCopy, date));
+            setMealSelections(prev => {
+                // Get updated meal selections
+                const updated = getUpdatedMealSelections(prev, dataCopy, date);
+                // Remove duplicate dates, keeping the last occurrence
+                const uniqueByDate = [];
+                const seen = new Set();
+                for (let i = updated.length - 1; i >= 0; i--) {
+                    const d = updated[i].date;
+                    if (!seen.has(d)) {
+                        uniqueByDate.unshift(updated[i]);
+                        seen.add(d);
+                    }
+                }
+                return uniqueByDate;
+            });
             const newMealSelections = getUpdatedMealSelections(mealSelections, dataCopy, date.format("YYYY-MM-DD"));
             const payload = buildOrderPayload(newMealSelections, date);
             console.log("payload", payload);
@@ -392,8 +407,21 @@ const Order = () => {
             if (response.ResponseText === "success") {
                 toast.success("Order submitted successfully!");
                 if (response?.item_id && response?.order_id) {
-                setMealSelections(prev => updateOrderIdsInMealSelections(prev, response.item_id, response.order_id));
-            }
+                    setMealSelections(prev => {
+                        const updated = updateOrderIdsInMealSelections(prev, response.item_id, response.order_id);
+                        // Remove duplicate dates, keeping the last occurrence
+                        const uniqueByDate = [];
+                        const seen = new Set();
+                        for (let i = updated.length - 1; i >= 0; i--) {
+                            const date = updated[i].date;
+                            if (!seen.has(date)) {
+                                uniqueByDate.unshift(updated[i]);
+                                seen.add(date);
+                            }
+                        }
+                        return uniqueByDate;
+                    });
+                }
             } else {
                 toast.error(response.ResponseText || "Order submission failed.");
             }
@@ -501,7 +529,7 @@ const Order = () => {
         (data.dinnerEntree || []).reduce((sum, i) => sum + (i.qty || 0), 0) +
         (data.dinnerAlternative || []).reduce((sum, i) => sum + (i.qty || 0), 0);
 
-
+    console.log(mealData)
     return (
         <Box m="20px">
             <Header
