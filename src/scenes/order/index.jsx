@@ -30,7 +30,7 @@ const Order = () => {
     const [date, setDate] = useState(dayjs());
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState({});
-    const [mealData, setMealData] = useState({});
+    const [mealData, setMealData] = useState([]);
     const isToday = date.isSame(dayjs(), 'day');
     const isPast = date.isBefore(dayjs(), 'day');
     const isAfter10AM = isToday && (dayjs().hour() > breakFastEndTime || (dayjs().hour() === breakFastEndTime && dayjs().minute() > 0));
@@ -54,8 +54,10 @@ const Order = () => {
     };
 
     const [tabIndex, setTabIndex] = useState(getDefaultTabIndex());
-    
 
+ useEffect(() => {
+    console.log("meal",mealSelections)
+ },[mealSelections])
     useEffect(() => {
         const fetchMenuDetails = async (date) => {
             try {
@@ -73,7 +75,20 @@ const Order = () => {
                     is_dinner_escort_service: response?.is_dinner_escort_service,
                     is_dinner_tray_service: response?.is_dinner_tray_service,
                 };
-                setMealData(data); // <-- Add this line
+                let meal = { ...data, date }; // Add date as a property
+                console.log("meal", meal);
+                setMealData(prev => {
+                    const foundIndex = prev.findIndex(item => dayjs(item.date).isSame(dayjs(meal.date), 'day'));
+                    let updated;
+                    if (foundIndex !== -1) {
+                        updated = [...prev];
+                        updated[foundIndex] = meal;
+                    } else {
+                        updated = [...prev, meal];
+                    }
+                    // Transform all meals after update
+                    return updated.map(m => transformMealData(m));
+                });
                 setData(transformMealData(data));
             } catch (error) {
                 console.error("Error fetching menu list:", error);
@@ -229,64 +244,103 @@ const Order = () => {
         };
     }
 
-    function buildOrderPayload(newMealSelections, date) {
-        // Find the latest selected date
-        const current_date = newMealSelections.reduce((latest, curr) => {
-            return (!latest || curr.date > latest) ? curr.date : latest;
-        }, null);
+  function buildOrderPayload(dataArray) {
+    const flattenItems = (arr = []) =>
+        (arr || []).map(item => ({
+            item_id: item.id || item.item_id,
+            qty: item.qty,
+            order_id: item.order_id || 0,
+            preference: (item.preference || [])
+                .filter(p => p.is_selected)
+                .map(p => p.id)
+                .sort((a, b) => a - b)
+                .join(","),
+            item_options: (item.options || [])
+                .filter(o => o.is_selected)
+                .map(o => o.id)
+                .sort((a, b) => a - b)
+                .join(","),
+        }));
 
-        // Get room_id from userData and roomNo
-        let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
-        const room_id = selectedObj?.id;
+    const getAllItems = obj => [
+        ...flattenItems(obj.breakFastDailySpecial),
+        ...flattenItems(obj.breakFastAlternative),
+        ...flattenItems(obj.lunchSoup),
+        ...flattenItems(obj.lunchEntree),
+        ...flattenItems(obj.lunchAlternative),
+        ...flattenItems(obj.dinnerSoup),
+        ...flattenItems(obj.dinnerEntree),
+        ...flattenItems(obj.dinnerAlternative)
+    ];
 
-        // Helper to collect items (qty must be > 0)
-        const collectItems = (arr = []) =>
-            (arr || [])
-                .filter(item => item.qty > 0)
-                .map(item => ({
-                    item_id: item.id,
-                    qty: item.qty,
-                    order_id: item.order_id || 0,
-                    preference: (item.preference || [])
-                        .filter(p => p.is_selected)
-                        .map(p => p.id)
-                        .join(","),
-                    item_options: (item.options || [])
-                        .filter(o => o.is_selected)
-                        .map(o => o.id)
-                        .join(","),
-                }));
+    const selectedRoom = userData?.rooms?.find(x => x.name === roomNo);
+    const room_id = selectedRoom?.id || 0;
 
-        // Build the orders_to_change array
-        const orders_to_change = newMealSelections.map(data => {
-            const items = [
-                ...collectItems(data.breakFastDailySpecial),
-                ...collectItems(data.breakFastAlternative),
-                ...collectItems(data.lunchSoup),
-                ...collectItems(data.lunchEntree),
-                ...collectItems(data.lunchAlternative),
-                ...collectItems(data.dinnerSoup),
-                ...collectItems(data.dinnerEntree),
-                ...collectItems(data.dinnerAlternative),
-            ];
-            return {
-                date: data.date,
-                is_brk_escort_service: data?.is_brk_escort_service,
-                is_brk_tray_service: data?.is_brk_tray_service,
-                is_lunch_escort_service: data?.is_lunch_escort_service,
-                is_lunch_tray_service: data?.is_lunch_tray_service,
-                is_dinner_escort_service: data?.is_dinner_escort_service,
-                is_dinner_tray_service: data?.is_dinner_tray_service,
-                items: items
-            };
+    const orders_to_change = dataArray.map((data, idx) => {
+        const updated = getAllItems(data);
+        const originalObj = Array.isArray(mealData)
+            ? mealData.find(m => m.date === data.date)
+            : mealData && mealData.date === data.date
+                ? mealData
+                : null;
+        const original = originalObj ? getAllItems(originalObj) : [];
+
+        const updatedMap = new Map(updated.map(i => [`${i.item_id}_${i.order_id}`, i]));
+        const originalMap = new Map(original.map(i => [`${i.item_id}_${i.order_id}`, i]));
+
+        const items = [];
+
+        // Get updated or new items
+        updated.forEach(item => {
+            const key = `${item.item_id}_${item.order_id}`;
+            const ori = originalMap.get(key);
+
+            const isNew = !ori;
+            const isChanged = isNew
+                ? item.qty > 0
+                : item.qty !== ori.qty ||
+                item.preference !== ori.preference ||
+                item.item_options !== ori.item_options;
+
+            if (isChanged) {
+                items.push(item);
+            }
         });
 
-        return {
-            current_date,
+        // Get removed items (qty changed to 0)
+        original.forEach(ori => {
+            const key = `${ori.item_id}_${ori.order_id}`;
+            if (!updatedMap.has(key) && ori.qty > 0) {
+                items.push({
+                    ...ori,
+                    qty: 0,
+                    preference: "",
+                    item_options: ""
+                });
+            }
+        });
+
+        return items.length > 0 ? {
+            date: data.date,
             room_id,
-            orders_to_change: JSON.stringify(orders_to_change)
-        };
-    }
+            is_for_guest: 1,
+            is_brk_tray_service: data?.is_brk_tray_service,
+            is_lunch_tray_service: data?.is_lunch_tray_service,
+            is_dinner_tray_service: data?.is_dinner_tray_service,
+            items
+        } : null;
+    }).filter(Boolean);
+
+    const current_date = dataArray.length > 0 ? dataArray[dataArray.length - 1].date : "";
+
+    return {
+        current_date,
+        room_id,
+        orders_to_change: JSON.stringify(orders_to_change)
+    };
+}
+
+
     function getUpdatedMealSelections(prev, data, date) {
         const dateStr = date;
         const foundIndex = prev.findIndex(item => item?.date === dateStr);
@@ -299,9 +353,35 @@ const Order = () => {
         }
     }
 
+    function updateOrderIdsInMealSelections(mealSelections, itemIds, orderIds) {
+    return mealSelections.map(selection => {
+        // Update all meal arrays inside each selection
+        const updateItems = arr => (arr || []).map(item => {
+            const idx = itemIds.indexOf(item.id);
+            if (idx !== -1) {
+                return { ...item, order_id: orderIds[idx] };
+            }
+            return item;
+        });
+
+        return {
+            ...selection,
+            breakFastDailySpecial: updateItems(selection.breakFastDailySpecial),
+            breakFastAlternative: updateItems(selection.breakFastAlternative),
+            lunchSoup: updateItems(selection.lunchSoup),
+            lunchEntree: updateItems(selection.lunchEntree),
+            lunchAlternative: updateItems(selection.lunchAlternative),
+            dinnerSoup: updateItems(selection.dinnerSoup),
+            dinnerEntree: updateItems(selection.dinnerEntree),
+            dinnerAlternative: updateItems(selection.dinnerAlternative),
+        };
+    });
+}
+
     const submitData = async (data, date) => {
-        // console.log("newMEalSelections", mealSelections)
-        // console.log("data", data)
+        console.log("newMEalSelections", mealSelections)
+        console.log("data", data)
+
         try {
             const dataCopy = { ...data, date: date.format("YYYY-MM-DD") };
             setMealSelections(prev => getUpdatedMealSelections(prev, dataCopy, date));
@@ -311,7 +391,9 @@ const Order = () => {
             let response = await OrderServices.submitOrder(payload);
             if (response.ResponseText === "success") {
                 toast.success("Order submitted successfully!");
-                setData(transformMealData(mealData)); // <-- Now mealData is defined
+                if (response?.item_id && response?.order_id) {
+                setMealSelections(prev => updateOrderIdsInMealSelections(prev, response.item_id, response.order_id));
+            }
             } else {
                 toast.error(response.ResponseText || "Order submission failed.");
             }
@@ -406,7 +488,7 @@ const Order = () => {
         }
     }
 
-    
+
     const totalBreakfastQty =
         (data.breakFastDailySpecial || []).reduce((sum, i) => sum + (i.qty || 0), 0) +
         (data.breakFastAlternative || []).reduce((sum, i) => sum + (i.qty || 0), 0);
