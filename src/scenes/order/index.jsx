@@ -42,7 +42,7 @@ const Order = () => {
         const userDatas = localStorage.getItem("userData");
         return userDatas ? JSON.parse(userDatas) : null;
     });
-    
+
     const getDefaultTabIndex = () => {
         const now = dayjs();
         if (now.hour() > lunchEndTime || (now.hour() === lunchEndTime && now.minute() > 0)) {
@@ -962,7 +962,7 @@ const Order = () => {
                                     )}
                                 {userData?.guideline && (
                                     <>
-                                    <hr />
+                                        <hr />
                                         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
                                             {userData?.guideline}
                                         </Typography>
@@ -970,7 +970,9 @@ const Order = () => {
                                 )}
                                 {/* Add Submit Button for BreakFast DataSubmit */}
                                 {(
-                                    (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0))
+                                    (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0)) ||
+                                    (data.lunchSoup?.some(item => item.qty > 0) || data.lunchEntree?.some(item => item.qty > 0) || data.lunchAlternative?.some(item => item.qty > 0)) ||
+                                    (data.dinnerSoup?.some(item => item.qty > 0) || data.dinnerEntree?.some(item => item.qty > 0) || data.dinnerAlternative?.some(item => item.qty > 0))
                                 ) && (
                                         <Box mt={3} display="flex" justifyContent="center">
                                             <CustomButton
@@ -993,7 +995,6 @@ const Order = () => {
                                                 Submit Order
                                             </CustomButton>
                                         </Box>
-                                        // ...existing code...
                                     )}
                             </Box>
                         )}
@@ -1487,7 +1488,7 @@ const Order = () => {
                                     )}
                                 {userData?.guideline && (
                                     <>
-                                    <hr />
+                                        <hr />
                                         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
                                             {userData?.guideline}
                                         </Typography>
@@ -1495,9 +1496,9 @@ const Order = () => {
                                 )}
                                 {/* Add lunch submit button,  if breakfast not submited then here breakfast and lunch submited */}
                                 {(
-                                    (data.lunchSoup?.some(item => item.qty > 0) ||
-                                        data.lunchEntree?.some(item => item.qty > 0) ||
-                                        data.lunchAlternative?.some(item => item.qty > 0))
+                                    (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0)) ||
+                                    (data.lunchSoup?.some(item => item.qty > 0) || data.lunchEntree?.some(item => item.qty > 0) || data.lunchAlternative?.some(item => item.qty > 0)) ||
+                                    (data.dinnerSoup?.some(item => item.qty > 0) || data.dinnerEntree?.some(item => item.qty > 0) || data.dinnerAlternative?.some(item => item.qty > 0))
                                 ) && (
                                         <Box mt={3} display="flex" justifyContent="center">
                                             <CustomButton
@@ -1932,12 +1933,11 @@ const Order = () => {
                                             </label>
                                         </Box>
                                     )}
-                                {/* Add Dinner Submit, if lunch and breakfast not submited then here all data submited like breakfast, lunch and dinner */}
-                                {/* Add Dinner Submit, if lunch and breakfast not submited then here all data submited like breakfast, lunch and dinner */}
+                                {/* Add Dinner Submit, if lunch and breakfast not submited then here all data submited like breakfast, lunch and dinner */}                              
                                 {(
-                                    (data.dinnerSoup?.some(item => item.qty > 0) ||
-                                        data.dinnerEntree?.some(item => item.qty > 0) ||
-                                        data.dinnerAlternative?.some(item => item.qty > 0))
+                                    (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0)) ||
+                                    (data.lunchSoup?.some(item => item.qty > 0) || data.lunchEntree?.some(item => item.qty > 0) || data.lunchAlternative?.some(item => item.qty > 0)) ||
+                                    (data.dinnerSoup?.some(item => item.qty > 0) || data.dinnerEntree?.some(item => item.qty > 0) || data.dinnerAlternative?.some(item => item.qty > 0))
                                 ) && (
                                         <Box mt={3} display="flex" justifyContent="center">
                                             <CustomButton
