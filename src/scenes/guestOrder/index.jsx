@@ -62,7 +62,7 @@ const GuestOrder = () => {
             }
             return prev + 1;
         });
-    }; 
+    };
     const handleDecrement = () => setGuestCount(prev => (prev > 1 ? prev - 1 : 1));
 
 
@@ -764,6 +764,15 @@ const GuestOrder = () => {
                                             </label>
                                         </Box>
                                     )}
+                                {/* Add GuideLine */}
+                                {userData?.guideline && (
+                                    <>
+                                        <hr />
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                            {userData?.guideline}
+                                        </Typography>
+                                    </>
+                                )}
                                 {/* Add Submit Button for BreakFast DataSubmit */}
                                 {(
                                     (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0))
@@ -789,8 +798,8 @@ const GuestOrder = () => {
                                                 Submit Order
                                             </CustomButton>
                                         </Box>
-                                        // ...existing code...
                                     )}
+
                             </Box>
                         )}
 
@@ -1268,6 +1277,15 @@ const GuestOrder = () => {
                                             </label>
                                         </Box>
                                     )}
+                                {/* Add GuideLine */}
+                                {userData?.guideline && (
+                                    <>
+                                        <hr />
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                            {userData?.guideline}
+                                        </Typography>
+                                    </>
+                                )}
                                 {/* Add lunch submit button,  if breakfast not submited then here breakfast and lunch submited */}
                                 {(
                                     (data.lunchSoup?.some(item => item.qty > 0) ||
