@@ -27,7 +27,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     // navigate("/home");
-    console.log("navigate", formData)
+    // console.log("navigate", formData)
     const newErrors = {};
     if (!formData.roomNo) newErrors.roomNo = "Room No is required";
     if (!formData.password) newErrors.password = "Password is required";
