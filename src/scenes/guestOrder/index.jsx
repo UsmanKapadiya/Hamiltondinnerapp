@@ -516,18 +516,44 @@ const GuestOrder = () => {
                                                         </button>
                                                         <Typography>{item.qty || 0}</Typography>
                                                         <button
-                                                            onClick={() =>
-                                                                setData((prev) => ({
-                                                                    ...prev,
-                                                                    breakFastDailySpecial: prev.breakFastDailySpecial.map((i) =>
+                                                            onClick={() => {
+                                                                setData((prev) => {
+                                                                    const totalQty = (prev.breakFastDailySpecial?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
+                                                                        (prev.breakFastAlternative?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
+                                                                    let newSpecial = [...prev.breakFastDailySpecial];
+                                                                    let newAlternative = [...(prev.breakFastAlternative || [])];
+                                                                    if (totalQty >= guestCount) {
+                                                                        let removed = false;
+                                                                        newAlternative = newAlternative.map((alt) => {
+                                                                            if (!removed && alt.qty > 0) {
+                                                                                removed = true;
+                                                                                return { ...alt, qty: alt.qty - 1 };
+                                                                            }
+                                                                            return alt;
+                                                                        });
+                                                                        if (!removed) {
+                                                                            newSpecial = newSpecial.map((sp) => {
+                                                                                if (!removed && sp.id !== item.id && sp.qty > 0) {
+                                                                                    removed = true;
+                                                                                    return { ...sp, qty: sp.qty - 1 };
+                                                                                }
+                                                                                return sp;
+                                                                            });
+                                                                        }
+                                                                    }
+                                                                    newSpecial = newSpecial.map((i) =>
                                                                         i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
-                                                                    ),
-                                                                }))
-                                                            }
+                                                                    );
+                                                                    return {
+                                                                        ...prev,
+                                                                        breakFastDailySpecial: newSpecial,
+                                                                        breakFastAlternative: newAlternative,
+                                                                    };
+                                                                });
+                                                            }}
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
                                                                 item.qty >= guestCount ||
-                                                                totalBreakfastQty >= guestCount ||
                                                                 isAfter10AM ||
                                                                 isPast
                                                             }
@@ -650,18 +676,44 @@ const GuestOrder = () => {
                                                         </button>
                                                         <Typography>{item.qty || 0}</Typography>
                                                         <button
-                                                            onClick={() =>
-                                                                setData((prev) => ({
-                                                                    ...prev,
-                                                                    breakFastAlternative: prev.breakFastAlternative.map((i) =>
+                                                            onClick={() => {
+                                                                setData((prev) => {
+                                                                    const totalQty = (prev.breakFastDailySpecial?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
+                                                                        (prev.breakFastAlternative?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
+                                                                    let newAlternative = [...prev.breakFastAlternative];
+                                                                    let newSpecial = [...(prev.breakFastDailySpecial || [])];
+                                                                    if (totalQty >= guestCount) {
+                                                                        let removed = false;
+                                                                        newSpecial = newSpecial.map((sp) => {
+                                                                            if (!removed && sp.qty > 0) {
+                                                                                removed = true;
+                                                                                return { ...sp, qty: sp.qty - 1 };
+                                                                            }
+                                                                            return sp;
+                                                                        });
+                                                                        if (!removed) {                                                                            
+                                                                            newAlternative = newAlternative.map((alt) => {
+                                                                                if (!removed && alt.id !== item.id && alt.qty > 0) {
+                                                                                    removed = true;
+                                                                                    return { ...alt, qty: alt.qty - 1 };
+                                                                                }
+                                                                                return alt;
+                                                                            });
+                                                                        }
+                                                                    }                                                                    
+                                                                    newAlternative = newAlternative.map((i) =>
                                                                         i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
-                                                                    ),
-                                                                }))
-                                                            }
+                                                                    );
+                                                                    return {
+                                                                        ...prev,
+                                                                        breakFastDailySpecial: newSpecial,
+                                                                        breakFastAlternative: newAlternative,
+                                                                    };
+                                                                });
+                                                            }}
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
                                                                 item.qty >= guestCount ||
-                                                                totalBreakfastQty >= guestCount ||
                                                                 isAfter10AM ||
                                                                 isPast
                                                             }
@@ -1017,18 +1069,48 @@ const GuestOrder = () => {
                                                             +
                                                         </button> */}
                                                         <button
-                                                            onClick={() =>
-                                                                setData((prev) => ({
-                                                                    ...prev,
-                                                                    lunchEntree: prev.lunchEntree.map((i) =>
+                                                            onClick={() => {
+                                                                setData((prev) => {
+                                                                    const totalQty = (prev.lunchEntree?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
+                                                                        (prev.lunchAlternative?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
+                                                                    let newEntree = [...prev.lunchEntree];
+                                                                    let newAlternative = [...(prev.lunchAlternative || [])];
+                                                                    if (totalQty >= guestCount) {
+                                                                        // Remove 1 qty from the other group if possible
+                                                                        // Try to remove from lunchAlternative first
+                                                                        let removed = false;
+                                                                        newAlternative = newAlternative.map((alt) => {
+                                                                            if (!removed && alt.qty > 0) {
+                                                                                removed = true;
+                                                                                return { ...alt, qty: alt.qty - 1 };
+                                                                            }
+                                                                            return alt;
+                                                                        });
+                                                                        if (!removed) {
+                                                                            // Try to remove from another entree item (not the current one)
+                                                                            newEntree = newEntree.map((en) => {
+                                                                                if (!removed && en.id !== item.id && en.qty > 0) {
+                                                                                    removed = true;
+                                                                                    return { ...en, qty: en.qty - 1 };
+                                                                                }
+                                                                                return en;
+                                                                            });
+                                                                        }
+                                                                    }
+                                                                    // Now add qty to the current item
+                                                                    newEntree = newEntree.map((i) =>
                                                                         i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
-                                                                    ),
-                                                                }))
-                                                            }
+                                                                    );
+                                                                    return {
+                                                                        ...prev,
+                                                                        lunchEntree: newEntree,
+                                                                        lunchAlternative: newAlternative,
+                                                                    };
+                                                                });
+                                                            }}
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
                                                                 item.qty >= guestCount ||
-                                                                totalLunchQty >= guestCount ||
                                                                 isAfter3PM ||
                                                                 isPast
                                                             }
@@ -1164,18 +1246,48 @@ const GuestOrder = () => {
                                                             +
                                                         </button> */}
                                                         <button
-                                                            onClick={() =>
-                                                                setData((prev) => ({
-                                                                    ...prev,
-                                                                    lunchAlternative: prev.lunchAlternative.map((i) =>
+                                                            onClick={() => {
+                                                                setData((prev) => {
+                                                                    const totalQty = (prev.lunchEntree?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
+                                                                        (prev.lunchAlternative?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
+                                                                    let newAlternative = [...prev.lunchAlternative];
+                                                                    let newEntree = [...(prev.lunchEntree || [])];
+                                                                    if (totalQty >= guestCount) {
+                                                                        // Remove 1 qty from the other group if possible
+                                                                        // Try to remove from lunchEntree first
+                                                                        let removed = false;
+                                                                        newEntree = newEntree.map((en) => {
+                                                                            if (!removed && en.qty > 0) {
+                                                                                removed = true;
+                                                                                return { ...en, qty: en.qty - 1 };
+                                                                            }
+                                                                            return en;
+                                                                        });
+                                                                        if (!removed) {
+                                                                            // Try to remove from another alternative item (not the current one)
+                                                                            newAlternative = newAlternative.map((alt) => {
+                                                                                if (!removed && alt.id !== item.id && alt.qty > 0) {
+                                                                                    removed = true;
+                                                                                    return { ...alt, qty: alt.qty - 1 };
+                                                                                }
+                                                                                return alt;
+                                                                            });
+                                                                        }
+                                                                    }
+                                                                    // Now add qty to the current item
+                                                                    newAlternative = newAlternative.map((i) =>
                                                                         i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
-                                                                    ),
-                                                                }))
-                                                            }
+                                                                    );
+                                                                    return {
+                                                                        ...prev,
+                                                                        lunchEntree: newEntree,
+                                                                        lunchAlternative: newAlternative,
+                                                                    };
+                                                                });
+                                                            }}
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
                                                                 item.qty >= guestCount ||
-                                                                totalLunchQty >= guestCount ||
                                                                 isAfter3PM ||
                                                                 isPast
                                                             }
@@ -1442,18 +1554,48 @@ const GuestOrder = () => {
                                                         </button>
                                                         <Typography>{item.qty || 0}</Typography>
                                                         <button
-                                                            onClick={() =>
-                                                                setData((prev) => ({
-                                                                    ...prev,
-                                                                    dinnerEntree: prev.dinnerEntree.map((i) =>
+                                                            onClick={() => {
+                                                                setData((prev) => {
+                                                                    const totalQty = (prev.dinnerEntree?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
+                                                                        (prev.dinnerAlternative?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
+                                                                    let newEntree = [...prev.dinnerEntree];
+                                                                    let newAlternative = [...(prev.dinnerAlternative || [])];
+                                                                    if (totalQty >= guestCount) {
+                                                                        // Remove 1 qty from the other group if possible
+                                                                        // Try to remove from dinnerAlternative first
+                                                                        let removed = false;
+                                                                        newAlternative = newAlternative.map((alt) => {
+                                                                            if (!removed && alt.qty > 0) {
+                                                                                removed = true;
+                                                                                return { ...alt, qty: alt.qty - 1 };
+                                                                            }
+                                                                            return alt;
+                                                                        });
+                                                                        if (!removed) {
+                                                                            // Try to remove from another entree item (not the current one)
+                                                                            newEntree = newEntree.map((en) => {
+                                                                                if (!removed && en.id !== item.id && en.qty > 0) {
+                                                                                    removed = true;
+                                                                                    return { ...en, qty: en.qty - 1 };
+                                                                                }
+                                                                                return en;
+                                                                            });
+                                                                        }
+                                                                    }
+                                                                    // Now add qty to the current item
+                                                                    newEntree = newEntree.map((i) =>
                                                                         i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
-                                                                    ),
-                                                                }))
-                                                            }
+                                                                    );
+                                                                    return {
+                                                                        ...prev,
+                                                                        dinnerEntree: newEntree,
+                                                                        dinnerAlternative: newAlternative,
+                                                                    };
+                                                                });
+                                                            }}
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
                                                                 item.qty >= guestCount ||
-                                                                totalDinnerQty >= guestCount ||
                                                                 isAfter12PM ||
                                                                 isPast
                                                             }
@@ -1583,18 +1725,48 @@ const GuestOrder = () => {
                                                         </button>
                                                         <Typography>{item.qty || 0}</Typography>
                                                         <button
-                                                            onClick={() =>
-                                                                setData((prev) => ({
-                                                                    ...prev,
-                                                                    dinnerAlternative: prev.dinnerAlternative.map((i) =>
+                                                            onClick={() => {
+                                                                setData((prev) => {
+                                                                    const totalQty = (prev.dinnerEntree?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
+                                                                        (prev.dinnerAlternative?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
+                                                                    let newAlternative = [...prev.dinnerAlternative];
+                                                                    let newEntree = [...(prev.dinnerEntree || [])];
+                                                                    if (totalQty >= guestCount) {
+                                                                        // Remove 1 qty from the other group if possible
+                                                                        // Try to remove from dinnerEntree first
+                                                                        let removed = false;
+                                                                        newEntree = newEntree.map((en) => {
+                                                                            if (!removed && en.qty > 0) {
+                                                                                removed = true;
+                                                                                return { ...en, qty: en.qty - 1 };
+                                                                            }
+                                                                            return en;
+                                                                        });
+                                                                        if (!removed) {
+                                                                            // Try to remove from another alternative item (not the current one)
+                                                                            newAlternative = newAlternative.map((alt) => {
+                                                                                if (!removed && alt.id !== item.id && alt.qty > 0) {
+                                                                                    removed = true;
+                                                                                    return { ...alt, qty: alt.qty - 1 };
+                                                                                }
+                                                                                return alt;
+                                                                            });
+                                                                        }
+                                                                    }
+                                                                    // Now add qty to the current item
+                                                                    newAlternative = newAlternative.map((i) =>
                                                                         i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
-                                                                    ),
-                                                                }))
-                                                            }
+                                                                    );
+                                                                    return {
+                                                                        ...prev,
+                                                                        dinnerEntree: newEntree,
+                                                                        dinnerAlternative: newAlternative,
+                                                                    };
+                                                                });
+                                                            }}
                                                             style={{ marginLeft: 8 }}
                                                             disabled={
                                                                 item.qty >= guestCount ||
-                                                                totalDinnerQty >= guestCount ||
                                                                 isAfter12PM ||
                                                                 isPast
                                                             }
