@@ -121,7 +121,7 @@ const RoomEnter = () => {
                     <TextField
                         label="Room No"
                         name="roomNo"
-                        type="number"
+                        type="text"
                         value={formData.roomNo}
                         onChange={handleChange}
                         error={!!errors.roomNo}
