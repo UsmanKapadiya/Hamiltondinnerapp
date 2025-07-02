@@ -775,7 +775,9 @@ const GuestOrder = () => {
                                 )}
                                 {/* Add Submit Button for BreakFast DataSubmit */}
                                 {(
-                                    (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0))
+                                    (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0)) ||
+                                    (data.lunchSoup?.some(item => item.qty > 0) || data.lunchEntree?.some(item => item.qty > 0) || data.lunchAlternative?.some(item => item.qty > 0)) ||
+                                    (data.dinnerSoup?.some(item => item.qty > 0) || data.dinnerEntree?.some(item => item.qty > 0) || data.dinnerAlternative?.some(item => item.qty > 0))
                                 ) && (
                                         <Box mt={3} display="flex" justifyContent="center">
                                             <CustomButton
@@ -1288,9 +1290,9 @@ const GuestOrder = () => {
                                 )}
                                 {/* Add lunch submit button,  if breakfast not submited then here breakfast and lunch submited */}
                                 {(
-                                    (data.lunchSoup?.some(item => item.qty > 0) ||
-                                        data.lunchEntree?.some(item => item.qty > 0) ||
-                                        data.lunchAlternative?.some(item => item.qty > 0))
+                                    (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0)) ||
+                                    (data.lunchSoup?.some(item => item.qty > 0) || data.lunchEntree?.some(item => item.qty > 0) || data.lunchAlternative?.some(item => item.qty > 0)) ||
+                                    (data.dinnerSoup?.some(item => item.qty > 0) || data.dinnerEntree?.some(item => item.qty > 0) || data.dinnerAlternative?.some(item => item.qty > 0))
                                 ) && (
                                         <Box mt={3} display="flex" justifyContent="center">
                                             <CustomButton
@@ -1697,11 +1699,10 @@ const GuestOrder = () => {
                                         </Box>
                                     )}
                                 {/* Add Dinner Submit, if lunch and breakfast not submited then here all data submited like breakfast, lunch and dinner */}
-                                {/* Add Dinner Submit, if lunch and breakfast not submited then here all data submited like breakfast, lunch and dinner */}
                                 {(
-                                    (data.dinnerSoup?.some(item => item.qty > 0) ||
-                                        data.dinnerEntree?.some(item => item.qty > 0) ||
-                                        data.dinnerAlternative?.some(item => item.qty > 0))
+                                    (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0)) ||
+                                    (data.lunchSoup?.some(item => item.qty > 0) || data.lunchEntree?.some(item => item.qty > 0) || data.lunchAlternative?.some(item => item.qty > 0)) ||
+                                    (data.dinnerSoup?.some(item => item.qty > 0) || data.dinnerEntree?.some(item => item.qty > 0) || data.dinnerAlternative?.some(item => item.qty > 0))
                                 ) && (
                                         <Box mt={3} display="flex" justifyContent="center">
                                             <CustomButton
