@@ -42,7 +42,7 @@ const Order = () => {
         const userDatas = localStorage.getItem("userData");
         return userDatas ? JSON.parse(userDatas) : null;
     });
-
+    
     const getDefaultTabIndex = () => {
         const now = dayjs();
         if (now.hour() > lunchEndTime || (now.hour() === lunchEndTime && now.minute() > 0)) {
@@ -57,7 +57,7 @@ const Order = () => {
 
 
     useEffect(() => {
-       
+
         //console.log(mealSelections)
         let obj = mealSelections?.find((x) => x.date === date.format("YYYY-MM-DD"));
         //console.log(obj)
@@ -66,42 +66,42 @@ const Order = () => {
         }
     }, [date]);
 
-     const fetchMenuDetails = async (date) => {
-            try {
-                setLoading(true);
-                let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
-                const response = await OrderServices.getMenuData(selectedObj ? selectedObj?.id : userData?.room_id, date);
-                let data = {
-                    breakfast: response.breakfast,
-                    lunch: response?.lunch,
-                    dinner: response?.dinner,
-                    is_brk_escort_service: response?.is_brk_escort_service,
-                    is_brk_tray_service: response?.is_brk_tray_service,
-                    is_lunch_escort_service: response?.is_lunch_escort_service,
-                    is_lunch_tray_service: response?.is_lunch_tray_service,
-                    is_dinner_escort_service: response?.is_dinner_escort_service,
-                    is_dinner_tray_service: response?.is_dinner_tray_service,
-                };
-                let meal = { ...data, date }; // Add date as a property
-                console.log("meal", meal);
-                setMealData(prev => {
-                    const foundIndex = prev.findIndex(item => dayjs(item.date).isSame(dayjs(meal.date), 'day'));
-                    let updated;
-                    if (foundIndex !== -1) {
-                        updated = [...prev];
-                        updated[foundIndex] = transformMealData(meal);
-                    } else {
-                        updated = [...prev, transformMealData(meal)];
-                    }
-                    return updated;
-                });
-                setData(transformMealData(data));
-            } catch (error) {
-                console.error("Error fetching menu list:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const fetchMenuDetails = async (date) => {
+        try {
+            setLoading(true);
+            let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
+            const response = await OrderServices.getMenuData(selectedObj ? selectedObj?.id : userData?.room_id, date);
+            let data = {
+                breakfast: response.breakfast,
+                lunch: response?.lunch,
+                dinner: response?.dinner,
+                is_brk_escort_service: response?.is_brk_escort_service,
+                is_brk_tray_service: response?.is_brk_tray_service,
+                is_lunch_escort_service: response?.is_lunch_escort_service,
+                is_lunch_tray_service: response?.is_lunch_tray_service,
+                is_dinner_escort_service: response?.is_dinner_escort_service,
+                is_dinner_tray_service: response?.is_dinner_tray_service,
+            };
+            let meal = { ...data, date }; // Add date as a property
+            // console.log("meal", meal);
+            setMealData(prev => {
+                const foundIndex = prev.findIndex(item => dayjs(item.date).isSame(dayjs(meal.date), 'day'));
+                let updated;
+                if (foundIndex !== -1) {
+                    updated = [...prev];
+                    updated[foundIndex] = transformMealData(meal);
+                } else {
+                    updated = [...prev, transformMealData(meal)];
+                }
+                return updated;
+            });
+            setData(transformMealData(data));
+        } catch (error) {
+            console.error("Error fetching menu list:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
 
     function selectFirstOption(options) {
@@ -245,8 +245,8 @@ const Order = () => {
     }
 
     function buildOrderPayload(dataArray) {
-        console.log("dataArray", dataArray)
-        console.log("mealData", mealData)
+        // console.log("dataArray", dataArray)
+        // console.log("mealData", mealData)
         const flatten = arr => (arr || []).map(item => ({
             item_id: item.id,
             qty: item.qty,
@@ -382,8 +382,8 @@ const Order = () => {
     }
 
     const submitData = async (data, date) => {
-        console.log("newMEalSelections", mealSelections)
-        console.log("data", data)
+        // console.log("newMEalSelections", mealSelections)
+        // console.log("data", data)
 
         try {
             const dataCopy = { ...data, date: date.format("YYYY-MM-DD") };
@@ -404,11 +404,11 @@ const Order = () => {
             });
             const newMealSelections = getUpdatedMealSelections(mealSelections, dataCopy, date.format("YYYY-MM-DD"));
             const payload = buildOrderPayload(newMealSelections, date);
-            console.log("payload", payload);
+            // console.log("payload", payload);
             let response = await OrderServices.submitOrder(payload);
             if (response.ResponseText === "success") {
                 setMealSelections([])
-                console.log("date",date.format("YYYY-MM-DD"))
+                // console.log("date",date.format("YYYY-MM-DD"))
                 fetchMenuDetails(date.format("YYYY-MM-DD"));
                 toast.success("Order submitted successfully!");
                 // if (response?.item_id && response?.order_id) {
@@ -534,7 +534,7 @@ const Order = () => {
         (data.dinnerEntree || []).reduce((sum, i) => sum + (i.qty || 0), 0) +
         (data.dinnerAlternative || []).reduce((sum, i) => sum + (i.qty || 0), 0);
 
-    console.log(mealData)
+    // console.log(mealData)
     return (
         <Box m="20px">
             <Header
@@ -960,6 +960,14 @@ const Order = () => {
                                             </label>
                                         </Box>
                                     )}
+                                {userData?.guideline && (
+                                    <>
+                                    <hr />
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                            {userData?.guideline}
+                                        </Typography>
+                                    </>
+                                )}
                                 {/* Add Submit Button for BreakFast DataSubmit */}
                                 {(
                                     (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0))
@@ -1477,6 +1485,14 @@ const Order = () => {
                                             </label>
                                         </Box>
                                     )}
+                                {userData?.guideline && (
+                                    <>
+                                    <hr />
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                            {userData?.guideline}
+                                        </Typography>
+                                    </>
+                                )}
                                 {/* Add lunch submit button,  if breakfast not submited then here breakfast and lunch submited */}
                                 {(
                                     (data.lunchSoup?.some(item => item.qty > 0) ||
