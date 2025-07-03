@@ -31,5 +31,9 @@ const OrderServices = {
     );
   },
 
+  // Repoerts Api's
+  getCharges: async (date) => {
+    return requests.post(`temp-get-charges-report?date=${date}`)
+  },
 }
 export default OrderServices;

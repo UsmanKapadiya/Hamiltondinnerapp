@@ -1,32 +1,33 @@
-import { useNavigate } from "react-router-dom";
 import {
     Box, useTheme, Table, TableHead, TableBody, TableRow, TableCell,
-    TableContainer, Paper, Typography, Tooltip, TextField
+    TableContainer, Paper, Typography, Tooltip, TextField, Popover
 } from "@mui/material";
+import CustomButton from "../../components/CustomButton";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { Header } from "../../components";
 import { tokens } from "../../theme";
-import { LocalPizzaOutlined } from "@mui/icons-material";
 import { useEffect, useState, useCallback } from "react";
 import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
 import OrderServices from "../../services/orderServices";
 
-const Report = () => {
-    const navigate = useNavigate();
+const ChargesReport = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const [date, setDate] = useState(dayjs());
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState({});
-    const [openCalendar, setOpenCalendar] = useState(true); // Open on mount
+    const [openCalendar, setOpenCalendar] = useState(true); 
+
+    // For custom popup
+    const [popup, setPopup] = useState({ open: false, anchorEl: null, text: "" });
 
     useEffect(() => {
-        const fetchReports = async () => {
+        const fetchChargesReports = async () => {
             try {
                 setLoading(true);
-                const response = await OrderServices.getReportList(date.format("YYYY-MM-DD"));
+                const response = await OrderServices.getCharges(date.format("YYYY-MM-DD"));
                 setData(response)
             } catch (error) {
                 console.error("Error fetching menu list:", error);
@@ -34,7 +35,7 @@ const Report = () => {
                 setLoading(false);
             }
         };
-        fetchReports();
+        fetchChargesReports();
     }, [date]);
 
     const handleDateChange = (newValue) => {
@@ -47,7 +48,7 @@ const Report = () => {
     return (
         <Box m="20px">
             <Header
-                title="Report"
+                title="Charges Report"
                 profileScreen={true}
             />
             <Box
@@ -93,16 +94,8 @@ const Report = () => {
                             )}
                         />
                     </LocalizationProvider>
-                    <Typography
-                        variant="subtitle1"
-                        sx={{ fontWeight: 600, cursor: 'pointer',}}
-                        onClick={() => navigate('/charges')}
-                        onMouseOver={e => (e.target.style.cursor = 'pointer')}
-                    >
-                        Charges
-                    </Typography>
+            
                 </Box>
-                {/* Table Section */}
                 {loading ? (
                     <CustomLoadingOverlay />
                 ) : (
@@ -115,7 +108,7 @@ const Report = () => {
                                         sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
                                         rowSpan={2}
                                     >
-                                        Room No
+                                        #
                                     </TableCell>
                                     <TableCell
                                         align="center"
@@ -175,78 +168,128 @@ const Report = () => {
                                     ))}
                                 </TableRow>
                             </TableHead>
-
                             <TableBody>
-                                <TableRow sx={{ backgroundColor: colors.blueAccent[800] }}>
-                                    <TableCell align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)' }}>
-                                        Total
-                                    </TableCell>
-                                    {/* Breakfast  */}
-                                    {data?.breakfast_item_list?.map((_, i) => {
-                                        const total = data?.report_breakfast_list?.reduce((sum, row) => sum + (row.quantity[i] || 0), 0);
-                                        return (
-                                            <TableCell key={`btot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)' }}>
-                                                {total}
-                                            </TableCell>
-                                        );
-                                    })}
-
-                                    {data?.lunch_item_list?.map((_, i) => {
-                                        const total = data?.report_lunch_list?.reduce((sum, row) => sum + (row.quantity[i] || 0), 0);
-                                        return (
-                                            <TableCell key={`ltot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)' }}>
-                                                {total}
-                                            </TableCell>
-                                        );
-                                    })}
-
-                                    {data?.dinner_item_list?.map((_, i) => {
-                                        const total = data?.report_dinner_list?.reduce((sum, row) => sum + (row.quantity[i] || 0), 0);
-                                        return (
-                                            <TableCell key={`dtot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)' }}>
-                                                {total}
-                                            </TableCell>
-                                        );
-                                    })}
-                                </TableRow>
-
                                 {/* Data displayed*/}
-                                {data?.report_breakfast_list?.map((breakfastRow, idx) => {
-                                    const lunchRow = data?.report_lunch_list?.find(l => l.room_no === breakfastRow.room_no) || { quantity: [] };
-                                    const dinnerRow = data?.report_dinner_list?.find(d => d.room_no === breakfastRow.room_no) || { quantity: [] };
-                                    return (
-                                        <TableRow key={breakfastRow.room_no}>
-                                            <TableCell align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
-                                                {breakfastRow.room_no}
-                                            </TableCell>
-                                            {/* Breakfast quantities */}
-                                            {breakfastRow.quantity.map((qty, i) => (
-                                                <TableCell key={`b-${i}`} align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
-                                                    {qty}
+                                {(
+                                    (!data?.report_breakfast_list || data.report_breakfast_list.length === 0) &&
+                                    (!data?.report_lunch_list || data.report_lunch_list.length === 0) &&
+                                    (!data?.report_dinner_list || data.report_dinner_list.length === 0)
+                                ) ? (
+                                    <TableRow>
+                                        <TableCell colSpan={1 + (data?.breakfast_item_list?.length || 0) + (data?.lunch_item_list?.length || 0) + (data?.dinner_item_list?.length || 0)} align="center">
+                                            No Report Found
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    data?.report_breakfast_list?.map((breakfastRow, idx) => {
+                                        const lunchRow = data?.report_lunch_list?.find(l => l.room_no === breakfastRow.room_no) || { quantity: [] };
+                                        const dinnerRow = data?.report_dinner_list?.find(d => d.room_no === breakfastRow.room_no) || { quantity: [] };
+                                        return (
+                                            <TableRow key={breakfastRow.room_no}>
+                                                <TableCell align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
+                                                    {breakfastRow.room_no}
                                                 </TableCell>
-                                            ))}
-                                            {/* Lunch quantities */}
-                                            {lunchRow.quantity.map((qty, i) => (
-                                                <TableCell key={`l-${i}`} align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
-                                                    {qty}
-                                                </TableCell>
-                                            ))}
-                                            {/* Dinner quantities */}
-                                            {dinnerRow.quantity.map((qty, i) => (
-                                                <TableCell key={`d-${i}`} align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
-                                                    {qty}
-                                                </TableCell>
-                                            ))}
-                                        </TableRow>
-                                    );
-                                })}
+                                                {/* Breakfast, Lunch, Dinner quantities */}
+                                                {[{
+                                                    row: breakfastRow,
+                                                    itemList: data?.breakfast_item_list,
+                                                    prefix: 'b'
+                                                }, {
+                                                    row: lunchRow,
+                                                    itemList: data?.lunch_item_list,
+                                                    prefix: 'l'
+                                                }, {
+                                                    row: dinnerRow,
+                                                    itemList: data?.dinner_item_list,
+                                                    prefix: 'd'
+                                                }].map(({ row, itemList, prefix }) =>
+                                                    row.data?.map((qty, i) => {
+                                                        const option = row.option && row.option[i];
+                                                        const realName = itemList?.[i]?.real_item_name || "";
+                                                        const showPopup = i >= 3 && qty >= 1;
+                                                        return (
+                                                            <TableCell key={`${prefix}-${i}`} align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
+                                                                {showPopup ? (
+                                                                    <span
+                                                                        style={{
+                                                                            textDecoration: 'underline',
+                                                                            cursor: 'pointer',
+                                                                            color: '#1976d2'
+                                                                        }}
+                                                                        onClick={e => {
+                                                                            e.stopPropagation();
+                                                                            setPopup({
+                                                                                open: true,
+                                                                                anchorEl: e.currentTarget,
+                                                                                text: `${realName}${option ? ` - ${option}` : ''}`
+                                                                            });
+                                                                        }}
+                                                                    >
+                                                                        {qty}
+                                                                    </span>
+                                                                ) : (
+                                                                    qty
+                                                                )}
+                                                            </TableCell>
+                                                        );
+                                                    })
+                                                )}
+                                            </TableRow>
+                                        );
+                                    })
+                                )}
                             </TableBody>
                         </Table>
                     </TableContainer>
                 )}
-            </Box>
+            {/* Custom Popup for Option */}
+            <Popover
+                open={popup.open}
+                anchorEl={popup.anchorEl}
+                onClose={() => setPopup({ ...popup, open: false })}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+                disableEnforceFocus
+                disableRestoreFocus
+                disableScrollLock
+                PaperProps={{
+                    sx: {
+                        p: 2,
+                        minWidth: 180,
+                        maxWidth: 300,
+                        pointerEvents: 'auto',
+                        bgcolor: '#e3f2fd', 
+                        borderRadius: 2,
+                        boxShadow: 3
+                    }
+                }}
+            >
+                <Typography variant="body2" sx={{ fontWeight: 500, color: '#1976d2', mb: 1 }}>{popup.text}</Typography>
+                <Box display="flex" justifyContent="flex-end">
+                    <CustomButton
+                        onClick={() => setPopup({ ...popup, open: false })}
+                        sx={{
+                            background: '#1976d2',
+                            color: '#fff',
+                            borderRadius: 2,
+                            padding: '4px 16px',
+                            fontWeight: 600,
+                            fontSize: 14,
+                            width: 'auto',
+                            margin: 0,
+                            '&:hover': {
+                                background: '#1565c0',
+                                color: '#fff',
+                            }
+                        }}
+                    >
+                        OK
+                    </CustomButton>
+                </Box>
+            </Popover>
+        </Box>
         </Box>
     );
 };
 
-export default Report;
+export default ChargesReport;
