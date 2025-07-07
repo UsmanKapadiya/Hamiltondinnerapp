@@ -39,9 +39,9 @@ const RoomEnter = () => {
         e.preventDefault();    
         const roomNo = formData?.roomNo?.toString();
         const rooms = userData?.rooms || [];
-        const found = rooms.some(room => room.name === roomNo);
-        if (found) {
-            navigate("/order", { state: { roomNo: formData?.roomNo } });
+        const matchedRoom = rooms.find(room => room.name.toLowerCase() === roomNo.toLowerCase());
+        if (matchedRoom) {
+            navigate("/order", { state: { roomNo: matchedRoom.name } });
         } else {
             toast.error("Room number not found!");
         }
@@ -171,27 +171,44 @@ const RoomEnter = () => {
                         View Report
                     </CustomButton>
                     <Box>
-                        <CustomButton
-                            type="submit"
-                            disabled={loading}
-                            startIcon={<LogoutOutlined />}
-                            onClick={handleLogout}
-                            sx={{
+                        <a
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleLogout();
+                            }}
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
                                 width: "100%",
-                                bgcolor: colors.blueAccent[700],
+                                background: colors.blueAccent[700],
                                 color: "#fcfcfc",
                                 fontSize: isMdDevices ? "14px" : "10px",
                                 fontWeight: "bold",
-                                p: "10px 20px",
-                                mt: "18px",
+                                padding: "10px 20px",
+                                marginTop: "18px",
+                                borderRadius: "30px",
+                                textDecoration: "none",
                                 transition: ".3s ease",
-                                ":hover": {
-                                    bgcolor: colors.blueAccent[800],
-                                },
+                                opacity: loading ? 0.7 : 1,
+                                pointerEvents: loading ? "none" : "auto",
+                                cursor: loading ? "not-allowed" : "pointer",
+                            }}
+                            onMouseOver={e => {
+                                if (!loading) {
+                                    e.currentTarget.style.background = colors.blueAccent[800];
+                                }
+                            }}
+                            onMouseOut={e => {
+                                if (!loading) {
+                                    e.currentTarget.style.background = colors.blueAccent[700];
+                                }
                             }}
                         >
+                            <LogoutOutlined style={{ marginRight: 8 }} />
                             {loading ? "Loading..." : "Log Out"}
-                        </CustomButton>
+                        </a>
                     </Box>
                 </Box>
             </Box>
