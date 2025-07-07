@@ -126,10 +126,10 @@ const Home = () => {
                                 </Typography>
                             </Box>
                         )}
-                        {data?.show_incident == 1 && (
+                        {/* {data?.show_incident == 1 && ( */}
                             <Box display="flex" flexDirection="column" alignItems="center">
                                 <IconButton
-                                    onClick={() => { /* handle DynamicForm click */ }}
+                                    onClick={() => { navigate("/staticForms") }}
                                     sx={{
                                         color: colors.blueAccent[700],
                                         transition: "color 0.3s",
@@ -144,7 +144,7 @@ const Home = () => {
                                     Incident
                                 </Typography>
                             </Box>
-                        )}
+                        {/* )} */}
                     </Box>
                     <Box>
                         <CustomButton

@@ -46,47 +46,12 @@ const validationSchema = yup.object({
   incident_description: yup.string().required("Description is required"),
 });
 
-const data = [
-  {
-    "id": 3,
-    "name": "MoveIn Summary Form",
-    "allow_print": 1,
-    "allow_mail": 1,
-    "created_at": null,
-    "updated_at": null,
-    "deleted_at": null
-  },
-  {
-    "id": 2,
-    "name": "Log Form",
-    "allow_print": 1,
-    "allow_mail": 0,
-    "created_at": null,
-    "updated_at": null,
-    "deleted_at": null
-  },
-  {
-    "id": 1,
-    "name": "Incident Form",
-    "allow_print": 1,
-    "allow_mail": 1,
-    "created_at": null,
-    "updated_at": "2024-02-05T06:49:56.000000Z",
-    "deleted_at": null
-  }
-]
-
 const StaticFormCreate = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isNonMobile = useMediaQuery("(min-width:600px)");
   const [roomDetails, setRoomDetails] = useState({});
   const [loading, setLoading] = useState(true);
-  const [formsListData, setFormsListData] = useState([]);
-  useEffect(() => {
-    fetchFormsList();
-    // eslint-disable-next-line
-  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -134,22 +99,7 @@ const StaticFormCreate = () => {
     }),
     [roomDetails]
   );
-  const fetchFormsList = async () => {
-    setLoading(true);
-    try {
-      // const response = await StaticFormServices.getFormList();
-      // console.log("response", response);
-      setFormsListData(data);
-      // setPagination((prev) => ({
-      //     ...prev,
-      //     total: response.count || response.data.length,
-      // }));
-    } catch (error) {
-      console.error("Error fetching user list:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   const handleFormSubmit = useCallback(
     async (values, actions) => {
@@ -177,18 +127,18 @@ const StaticFormCreate = () => {
     },
     [initialValues, navigate]
   );
-  console.log("formsListData", formsListData);
   return (
     <Box m="20px">
       <Header
-        title={
-          loading
-            ? ""
-            : roomDetails?.id
-              ? "Update Room Detail"
-              : "Add Room Detail"
-        }
-        icon={<Home />}
+      title={"INCIDENT FORM"}
+        // title={
+        //   loading
+        //     ? ""
+        //     : roomDetails?.id
+        //       ? "Update Room Detail"
+        //       : "Add Room Detail"
+        // }
+        // icon={<Home />}
         Buttons={false}
       />
       {loading ? (
@@ -217,37 +167,6 @@ const StaticFormCreate = () => {
             setFieldValue,
           }) => (
             <form onSubmit={handleSubmit}>
-              <Box
-                display="grid"
-                gap="30px"
-                gridTemplateColumns="repeat(4, minmax(0, 1fr))"
-                sx={{
-                  "& > div": {
-                    gridColumn: isNonMobile ? undefined : "span 4",
-                  },
-                }}
-              >
-                <TextField
-                  fullWidth
-                  select
-                  variant="filled"
-                  label="Select Forms Types"
-                  onBlur={handleBlur}
-                  onChange={handleChange}
-                  value={values.formTypes}
-                  name="formTypes"
-                  error={touched.formTypes && Boolean(errors.formTypes)}
-                  helperText={touched.formTypes && errors.formTypes}
-                  sx={{ gridColumn: "span 4" }}
-                >
-                  {formsListData.map((form) => (
-                    <MenuItem key={form.id} value={form.id}>
-                      {form.name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Box>
-
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormGroup row>
                   <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>

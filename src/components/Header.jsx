@@ -12,7 +12,7 @@ import { toast, ToastContainer } from "react-toastify";
 import OrderServices from "../services/orderServices";
 import CustomButton from "./CustomButton";
 
-const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, deleteButton, profileScreen, editRoomsDetails, editIcon, handleRoomUpdate, isGuest, isGuestIcon, handleGuestClick }) => {
+const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, deleteButton, profileScreen, editRoomsDetails, editIcon, handleRoomUpdate, isGuest, isGuestIcon, handleGuestClick, isFormDropdown }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const navigate = useNavigate();
@@ -94,7 +94,6 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
     console.log("Working handleGuestOnClick")
     handleGuestClick()
   }
-
   
   return (
     <>
@@ -218,46 +217,78 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
             </Box>
           )}
           {buttons && (
-            <Box display="flex" gap="8px" ml="30px">
-              {[
-                {
-                  label: "Add New",
-                  color: colors.greenAccent[700],
-                  hoverColor: colors.greenAccent[800],
-                  icon: <AddOutlined />,
-                  onClick: addNewClick,
-                  disabled: !addButton,
-                },
-                {
-                  label: "Bulk Delete",
-                  color: colors.redAccent[700],
-                  hoverColor: colors.redAccent[800],
-                  icon: <DeleteOutline />,
-                  onClick: addBulkDelete,
-                  disabled: !deleteButton,
-                },
-              ].map((button, index) => (
-                <Button
-                  key={index}
-                  variant="contained"
-                  onClick={button.onClick || (() => { })}
+            <Box display="flex" gap="8px" ml="30px" position="relative" alignItems="center">
+              <Button
+                variant="contained"
+                onClick={e => setAnchorEl(e.currentTarget)}
+                sx={{
+                  bgcolor: colors.greenAccent[700],
+                  color: "#fcfcfc",
+                  fontSize: isMdDevices ? "12px" : "10px",
+                  fontWeight: "bold",
+                  p: "6px 12px",
+                  transition: ".3s ease",
+                  ":hover": {
+                    bgcolor: colors.greenAccent[800],
+                  },
+                }}
+                startIcon={<AddOutlined />}
+                disabled={!addButton}
+                id="add-new-btn"
+                aria-controls={isFormDropdown && Boolean(anchorEl) ? "add-new-dropdown-menu" : undefined}
+                aria-haspopup={isFormDropdown ? "true" : undefined}
+                aria-expanded={isFormDropdown && Boolean(anchorEl) ? "true" : undefined}
+              >
+                Add New
+              </Button>
+              {isFormDropdown && Boolean(anchorEl) && (
+                <Box
+                  id="add-new-dropdown-menu"
                   sx={{
-                    bgcolor: button.color,
-                    color: "#fcfcfc",
-                    fontSize: isMdDevices ? "12px" : "10px",
-                    fontWeight: "bold",
-                    p: "6px 12px",
-                    transition: ".3s ease",
-                    ":hover": {
-                      bgcolor: button.hoverColor,
-                    },
+                    position: "absolute",
+                    top: "100%",
+                    left: 0,
+                    bgcolor: "background.paper",
+                    boxShadow: 3,
+                    borderRadius: 1,
+                    mt: 1,
+                    minWidth: 180,
+                    zIndex: 10,
                   }}
-                  startIcon={button.icon}
-                  disabled={button?.disabled}
+                  onMouseLeave={() => setAnchorEl(null)}
                 >
-                  {button.label}
-                </Button>
-              ))}
+                  {(userData?.form_types || []).map((form) => (
+                    <MenuItem
+                      key={form.id}
+                      onClick={() => {
+                        addNewClick && addNewClick(form.name);
+                        setAnchorEl(null);
+                      }}
+                    >
+                      {form.name}
+                    </MenuItem>
+                  ))}
+                </Box>
+              )}
+              <Button
+                variant="contained"
+                onClick={addBulkDelete}
+                sx={{
+                  bgcolor: colors.redAccent[700],
+                  color: "#fcfcfc",
+                  fontSize: isMdDevices ? "12px" : "10px",
+                  fontWeight: "bold",
+                  p: "6px 12px",
+                  transition: ".3s ease",
+                  ":hover": {
+                    bgcolor: colors.redAccent[800],
+                  },
+                }}
+                startIcon={<DeleteOutline />}
+                disabled={!deleteButton}
+              >
+                Bulk Delete
+              </Button>
             </Box>
           )}
           {/* Right Align User Icon */}

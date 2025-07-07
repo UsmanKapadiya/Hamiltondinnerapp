@@ -1,8 +1,8 @@
 import requests from "./api.js";
 
 const StaticFormServices = {
-  getFormList: async () => {
-    return requests.get(`/form-types`);
+  getFormList: async (data) => {
+    return requests.post(`/list-forms`,data);
   },
   getRoomList: async () => {
     return requests.get(`/rooms`);
