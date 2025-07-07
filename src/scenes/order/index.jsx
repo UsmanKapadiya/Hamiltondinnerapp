@@ -1244,24 +1244,30 @@ const Order = () => {
                                                             onClick={() =>
                                                                 setData((prev) => ({
                                                                     ...prev,
-                                                                    lunchEntree: prev.lunchEntree.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? {
+                                                                    lunchEntree: prev.lunchEntree.map((i) => {
+                                                                        if (i.id === item.id) {
+                                                                            const newQty = Math.max((i.qty || 0) - 1, 0);
+                                                                            return {
                                                                                 ...i,
-                                                                                qty: Math.max((i.qty || 0) - 1, 0),
-                                                                                options: (i.options || []).length > 0
-                                                                                    ? i.options.map((opt, idx) => ({
-                                                                                        ...opt,
-                                                                                        is_selected: idx === 0 ? 1 : 0,
-                                                                                    }))
+                                                                                qty: newQty,
+                                                                                options: (i.options || []).length > 0 && newQty === 0
+                                                                                    ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                     : i.options,
-                                                                                preference: (i.preference || []).map((p) => ({
-                                                                                    ...p,
-                                                                                    is_selected: 0,
-                                                                                })),
-                                                                            }
-                                                                            : i
-                                                                    ),
+                                                                                preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                            };
+                                                                        }
+                                                                        // If qty is already 0, also reset options/preference
+                                                                        if ((i.qty || 0) === 0) {
+                                                                            return {
+                                                                                ...i,
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                            };
+                                                                        }
+                                                                        return i;
+                                                                    }),
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
@@ -1421,24 +1427,30 @@ const Order = () => {
                                                             onClick={() =>
                                                                 setData((prev) => ({
                                                                     ...prev,
-                                                                    lunchAlternative: prev.lunchAlternative.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? {
+                                                                    lunchAlternative: prev.lunchAlternative.map((i) => {
+                                                                        if (i.id === item.id) {
+                                                                            const newQty = Math.max((i.qty || 0) - 1, 0);
+                                                                            return {
                                                                                 ...i,
-                                                                                qty: Math.max((i.qty || 0) - 1, 0),
-                                                                                options: (i.options || []).length > 0
-                                                                                    ? i.options.map((opt, idx) => ({
-                                                                                        ...opt,
-                                                                                        is_selected: idx === 0 ? 1 : 0,
-                                                                                    }))
+                                                                                qty: newQty,
+                                                                                options: (i.options || []).length > 0 && newQty === 0
+                                                                                    ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                     : i.options,
-                                                                                preference: (i.preference || []).map((p) => ({
-                                                                                    ...p,
-                                                                                    is_selected: 0,
-                                                                                })),
-                                                                            }
-                                                                            : i
-                                                                    ),
+                                                                                preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                            };
+                                                                        }
+                                                                        // If qty is already 0, also reset options/preference
+                                                                        if ((i.qty || 0) === 0) {
+                                                                            return {
+                                                                                ...i,
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                            };
+                                                                        }
+                                                                        return i;
+                                                                    }),
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
@@ -1746,34 +1758,32 @@ const Order = () => {
                                                     <Box display="flex" alignItems="center">
                                                         <button
                                                             onClick={() =>
-                                                                // setData((prev) => ({
-                                                                //     ...prev,
-                                                                //     dinnerEntree: prev.dinnerEntree.map((i) =>
-                                                                //         i.id === item.id
-                                                                //             ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
-                                                                //             : i
-                                                                //     ),
-                                                                // }))
                                                                 setData((prev) => ({
                                                                     ...prev,
-                                                                    dinnerEntree: prev.dinnerEntree.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? {
+                                                                    dinnerEntree: prev.dinnerEntree.map((i) => {
+                                                                        if (i.id === item.id) {
+                                                                            const newQty = Math.max((i.qty || 0) - 1, 0);
+                                                                            return {
                                                                                 ...i,
-                                                                                qty: Math.max((i.qty || 0) - 1, 0),
-                                                                                options: (i.options || []).length > 0
-                                                                                    ? i.options.map((opt, idx) => ({
-                                                                                        ...opt,
-                                                                                        is_selected: idx === 0 ? 1 : 0,
-                                                                                    }))
+                                                                                qty: newQty,
+                                                                                options: (i.options || []).length > 0 && newQty === 0
+                                                                                    ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                     : i.options,
-                                                                                preference: (i.preference || []).map((p) => ({
-                                                                                    ...p,
-                                                                                    is_selected: 0,
-                                                                                })),
-                                                                            }
-                                                                            : i
-                                                                    ),
+                                                                                preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                            };
+                                                                        }
+                                                                        // If qty is already 0, also reset options/preference
+                                                                        if ((i.qty || 0) === 0) {
+                                                                            return {
+                                                                                ...i,
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                            };
+                                                                        }
+                                                                        return i;
+                                                                    }),
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
@@ -1917,34 +1927,32 @@ const Order = () => {
                                                     <Box display="flex" alignItems="center">
                                                         <button
                                                             onClick={() =>
-                                                                // setData((prev) => ({
-                                                                //     ...prev,
-                                                                //     dinnerAlternative: prev.dinnerAlternative.map((i) =>
-                                                                //         i.id === item.id
-                                                                //             ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
-                                                                //             : i
-                                                                //     ),
-                                                                // }))
                                                                 setData((prev) => ({
                                                                     ...prev,
-                                                                    dinnerAlternative: prev.dinnerAlternative.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? {
+                                                                    dinnerAlternative: prev.dinnerAlternative.map((i) => {
+                                                                        if (i.id === item.id) {
+                                                                            const newQty = Math.max((i.qty || 0) - 1, 0);
+                                                                            return {
                                                                                 ...i,
-                                                                                qty: Math.max((i.qty || 0) - 1, 0),
-                                                                                options: (i.options || []).length > 0
-                                                                                    ? i.options.map((opt, idx) => ({
-                                                                                        ...opt,
-                                                                                        is_selected: idx === 0 ? 1 : 0,
-                                                                                    }))
+                                                                                qty: newQty,
+                                                                                options: (i.options || []).length > 0 && newQty === 0
+                                                                                    ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                     : i.options,
-                                                                                preference: (i.preference || []).map((p) => ({
-                                                                                    ...p,
-                                                                                    is_selected: 0,
-                                                                                })),
-                                                                            }
-                                                                            : i
-                                                                    ),
+                                                                                preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                            };
+                                                                        }
+                                                                        // If qty is already 0, also reset options/preference
+                                                                        if ((i.qty || 0) === 0) {
+                                                                            return {
+                                                                                ...i,
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                            };
+                                                                        }
+                                                                        return i;
+                                                                    }),
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
