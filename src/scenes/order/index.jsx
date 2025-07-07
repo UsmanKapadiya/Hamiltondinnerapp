@@ -981,9 +981,9 @@ const Order = () => {
                                     (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0))
                                 ) && (
                                         <Box mt={3}>
-                                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                            {/* <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
                                                 Additional Services
-                                            </Typography>
+                                            </Typography> */}
                                             <label>
                                                 <input
                                                     type="checkbox"
@@ -1567,9 +1567,9 @@ const Order = () => {
                                         data.lunchAlternative?.some(item => item.qty > 0))
                                 ) && (
                                         <Box mt={3}>
-                                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                            {/* <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
                                                 Additional Services
-                                            </Typography>
+                                            </Typography> */}
                                             <label>
                                                 <input
                                                     type="checkbox"
@@ -2074,9 +2074,9 @@ const Order = () => {
                                         data.dinnerAlternative?.some(item => item.qty > 0))
                                 ) && (
                                         <Box mt={3}>
-                                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                            {/* <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
                                                 Additional Services
-                                            </Typography>
+                                            </Typography> */}
                                             <label>
                                                 <input
                                                     type="checkbox"
