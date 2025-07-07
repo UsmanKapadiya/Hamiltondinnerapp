@@ -95,7 +95,7 @@ const Report = () => {
                     </LocalizationProvider>
                     <Typography
                         variant="subtitle1"
-                        sx={{ fontWeight: 600, cursor: 'pointer',}}
+                        sx={{ fontWeight: 600, cursor: 'pointer', }}
                         onClick={() => navigate('/charges')}
                         onMouseOver={e => (e.target.style.cursor = 'pointer')}
                     >
@@ -177,39 +177,54 @@ const Report = () => {
                             </TableHead>
 
                             <TableBody>
-                                <TableRow sx={{ backgroundColor: colors.blueAccent[800] }}>
-                                    <TableCell align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)' }}>
-                                        Total
-                                    </TableCell>
-                                    {/* Breakfast  */}
-                                    {data?.breakfast_item_list?.map((_, i) => {
-                                        const total = data?.report_breakfast_list?.reduce((sum, row) => sum + (row.quantity[i] || 0), 0);
-                                        return (
-                                            <TableCell key={`btot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)' }}>
-                                                {total}
-                                            </TableCell>
-                                        );
-                                    })}
+                                {(
+                                    (!data?.report_breakfast_list || data.report_breakfast_list.length === 0) &&
+                                    (!data?.report_lunch_list || data.report_lunch_list.length === 0) &&
+                                    (!data?.report_dinner_list || data.report_dinner_list.length === 0)
+                                ) ? (
+                                    <TableRow>
+                                        <TableCell
+                                            align="center"
+                                            colSpan={4}
+                                            sx={{ textAlign: 'center', fontWeight: 600, fontSize: '1.1rem'}}
+                                        >
+                                            No Report Found
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    <TableRow sx={{ backgroundColor: colors.blueAccent[800] }}>
+                                        <TableCell align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)' }}>
+                                            Total
+                                        </TableCell>
+                                        {/* Breakfast  */}
+                                        {data?.breakfast_item_list?.map((_, i) => {
+                                            const total = data?.report_breakfast_list?.reduce((sum, row) => sum + (row.quantity[i] || 0), 0);
+                                            return (
+                                                <TableCell key={`btot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)',color:'red' }}>
+                                                    {total}
+                                                </TableCell>
+                                            );
+                                        })}
 
-                                    {data?.lunch_item_list?.map((_, i) => {
-                                        const total = data?.report_lunch_list?.reduce((sum, row) => sum + (row.quantity[i] || 0), 0);
-                                        return (
-                                            <TableCell key={`ltot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)' }}>
-                                                {total}
-                                            </TableCell>
-                                        );
-                                    })}
+                                        {data?.lunch_item_list?.map((_, i) => {
+                                            const total = data?.report_lunch_list?.reduce((sum, row) => sum + (row.quantity[i] || 0), 0);
+                                            return (
+                                                <TableCell key={`ltot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)',color:'red' }}>
+                                                    {total} 
+                                                </TableCell>
+                                            );
+                                        })}
 
-                                    {data?.dinner_item_list?.map((_, i) => {
-                                        const total = data?.report_dinner_list?.reduce((sum, row) => sum + (row.quantity[i] || 0), 0);
-                                        return (
-                                            <TableCell key={`dtot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)' }}>
-                                                {total}
-                                            </TableCell>
-                                        );
-                                    })}
-                                </TableRow>
-
+                                        {data?.dinner_item_list?.map((_, i) => {
+                                            const total = data?.report_dinner_list?.reduce((sum, row) => sum + (row.quantity[i] || 0), 0);
+                                            return (
+                                                <TableCell key={`dtot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)',color:'red' }}>
+                                                    {total} 
+                                                </TableCell>
+                                            );
+                                        })}
+                                    </TableRow>
+                                )}
                                 {/* Data displayed*/}
                                 {data?.report_breakfast_list?.map((breakfastRow, idx) => {
                                     const lunchRow = data?.report_lunch_list?.find(l => l.room_no === breakfastRow.room_no) || { quantity: [] };
