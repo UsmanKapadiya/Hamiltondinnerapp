@@ -589,24 +589,41 @@ const Order = () => {
                                                             onClick={() =>
                                                                 setData((prev) => ({
                                                                     ...prev,
-                                                                    breakFastDailySpecial: prev.breakFastDailySpecial.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? {
+                                                                    breakFastDailySpecial: prev.breakFastDailySpecial.map((i) => {
+                                                                        if (i.id === item.id) {
+                                                                            return {
                                                                                 ...i,
                                                                                 qty: 0,
                                                                                 options: (i.options || []).length > 0
-                                                                                    ? i.options.map((opt, idx) => ({
+                                                                                    ? i.options.map((opt) => ({
                                                                                         ...opt,
-                                                                                        is_selected: idx === 0 ? 1 : 0,
+                                                                                        is_selected: 0,
                                                                                     }))
                                                                                     : i.options,
                                                                                 preference: (i.preference || []).map((p) => ({
                                                                                     ...p,
                                                                                     is_selected: 0,
                                                                                 })),
-                                                                            }
-                                                                            : i
-                                                                    ),
+                                                                            };
+                                                                        }
+                                                                        // If previous qty is 0, also reset options and preference
+                                                                        if ((i.qty || 0) === 0) {
+                                                                            return {
+                                                                                ...i,
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt) => ({
+                                                                                        ...opt,
+                                                                                        is_selected: 0,
+                                                                                    }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).map((p) => ({
+                                                                                    ...p,
+                                                                                    is_selected: 0,
+                                                                                })),
+                                                                            };
+                                                                        }
+                                                                        return i;
+                                                                    }),
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
@@ -765,24 +782,44 @@ const Order = () => {
                                                             onClick={() =>
                                                                 setData((prev) => ({
                                                                     ...prev,
-                                                                    breakFastAlternative: prev.breakFastAlternative.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? {
+                                                                    breakFastAlternative: prev.breakFastAlternative.map((i) => {
+                                                                        const newQty = Math.max((i.qty || 0) - (i.id === item.id ? 1 : 0), 0);
+                                                                        if (i.id === item.id) {
+                                                                            return {
                                                                                 ...i,
-                                                                                qty: Math.max((i.qty || 0) - 1, 0),
-                                                                                options: (i.options || []).length > 0
-                                                                                    ? i.options.map((opt, idx) => ({
+                                                                                qty: newQty,
+                                                                                options: (i.options || []).length > 0 && newQty === 0
+                                                                                    ? i.options.map((opt) => ({
                                                                                         ...opt,
-                                                                                        is_selected: idx === 0 ? 1 : 0,
+                                                                                        is_selected: 0,
+                                                                                    }))
+                                                                                    : i.options,
+                                                                                preference: (i.preference || []).length > 0 && newQty === 0
+                                                                                    ? i.preference.map((p) => ({
+                                                                                        ...p,
+                                                                                        is_selected: 0,
+                                                                                    }))
+                                                                                    : i.preference,
+                                                                            };
+                                                                        }
+                                                                        // If previous qty is 0, also reset options and preference
+                                                                        if ((i.qty || 0) === 0) {
+                                                                            return {
+                                                                                ...i,
+                                                                                options: (i.options || []).length > 0
+                                                                                    ? i.options.map((opt) => ({
+                                                                                        ...opt,
+                                                                                        is_selected: 0,
                                                                                     }))
                                                                                     : i.options,
                                                                                 preference: (i.preference || []).map((p) => ({
                                                                                     ...p,
                                                                                     is_selected: 0,
                                                                                 })),
-                                                                            }
-                                                                            : i
-                                                                    ),
+                                                                            };
+                                                                        }
+                                                                        return i;
+                                                                    }),
                                                                 }))
                                                             }
                                                             style={{ marginRight: 8 }}
@@ -819,7 +856,26 @@ const Order = () => {
                                                                         newSpecial = newSpecial.map((sp) => {
                                                                             if (!removed && sp.qty > 0) {
                                                                                 removed = true;
-                                                                                return { ...sp, qty: sp.qty - 1 };
+                                                                                const newQty = sp.qty - 1;
+                                                                                return {
+                                                                                    ...sp,
+                                                                                    qty: newQty,
+                                                                                    options: (sp.options || []).length > 0 && newQty === 0
+                                                                                        ? sp.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                        : sp.options,
+                                                                                    preference: (sp.preference || []).length > 0 && newQty === 0
+                                                                                        ? sp.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                        : sp.preference,
+                                                                                };
+                                                                            }
+                                                                            if ((sp.qty || 0) === 0) {
+                                                                                return {
+                                                                                    ...sp,
+                                                                                    options: (sp.options || []).length > 0
+                                                                                        ? sp.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                        : sp.options,
+                                                                                    preference: (sp.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                                };
                                                                             }
                                                                             return sp;
                                                                         });
@@ -827,7 +883,26 @@ const Order = () => {
                                                                             newAlternative = newAlternative.map((alt) => {
                                                                                 if (!removed && alt.id !== item.id && alt.qty > 0) {
                                                                                     removed = true;
-                                                                                    return { ...alt, qty: alt.qty - 1 };
+                                                                                    const newQty = alt.qty - 1;
+                                                                                    return {
+                                                                                        ...alt,
+                                                                                        qty: newQty,
+                                                                                        options: (alt.options || []).length > 0 && newQty === 0
+                                                                                            ? alt.options.map((opt) => ({ ...opt, is_selected: 0 }))
+                                                                                            : alt.options,
+                                                                                        preference: (alt.preference || []).length > 0 && newQty === 0
+                                                                                            ? alt.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                            : alt.preference,
+                                                                                    };
+                                                                                }
+                                                                                if ((alt.qty || 0) === 0) {
+                                                                                    return {
+                                                                                        ...alt,
+                                                                                        options: (alt.options || []).length > 0
+                                                                                            ? alt.options.map((opt) => ({ ...opt, is_selected: 0 }))
+                                                                                            : alt.options,
+                                                                                        preference: (alt.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                                    };
                                                                                 }
                                                                                 return alt;
                                                                             });
