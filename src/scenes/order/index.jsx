@@ -17,7 +17,7 @@ import { EditOutlined, EmojiPeopleOutlined } from "@mui/icons-material";
 let breakFastEndTime = 10;
 let lunchEndTime = 15;
 let dinnerEndTime = 24;
-const MAX_MEAL_QTY = 2;
+// const MAX_MEAL_QTY = 2;
 
 
 const Order = () => {
@@ -37,7 +37,7 @@ const Order = () => {
     const isAfter3PM = isToday && (dayjs().hour() > lunchEndTime || (dayjs().hour() === lunchEndTime && dayjs().minute() > 0));
     const isAfter12PM = isToday && (dayjs().hour() > dinnerEndTime || (dayjs().hour() === dinnerEndTime && dayjs().minute() > 0));
     const [mealSelections, setMealSelections] = useState([]);
-
+    const [MAX_MEAL_QTY, setMAX_MEAL_QTY] = useState(1)
     const [userData] = useState(() => {
         const userDatas = localStorage.getItem("userData");
         return userDatas ? JSON.parse(userDatas) : null;
@@ -55,6 +55,10 @@ const Order = () => {
 
     const [tabIndex, setTabIndex] = useState(getDefaultTabIndex());
 
+    useEffect(() =>{        
+        let selectedData = userData?.rooms.find((x) => x.name === roomNo);
+        setMAX_MEAL_QTY(selectedData?.occupancy)
+    },[roomNo])
 
     useEffect(() => {
 
@@ -340,10 +344,6 @@ const Order = () => {
         };
     }
 
-
-
-
-
     function getUpdatedMealSelections(prev, data, date) {
         const dateStr = date;
         const foundIndex = prev.findIndex(item => item?.date === dateStr);
@@ -534,7 +534,6 @@ const Order = () => {
         (data.dinnerEntree || []).reduce((sum, i) => sum + (i.qty || 0), 0) +
         (data.dinnerAlternative || []).reduce((sum, i) => sum + (i.qty || 0), 0);
 
-    // console.log(mealData)
     return (
         <Box m="20px">
             <Header
