@@ -181,62 +181,74 @@ const ChargesReport = () => {
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    data?.report_breakfast_list?.map((breakfastRow, idx) => {
-                                        const lunchRow = data?.report_lunch_list?.find(l => l.room_no === breakfastRow.room_no) || { quantity: [] };
-                                        const dinnerRow = data?.report_dinner_list?.find(d => d.room_no === breakfastRow.room_no) || { quantity: [] };
-                                        return (
-                                            <TableRow key={breakfastRow.room_no}>
-                                                <TableCell align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
-                                                    {breakfastRow.room_no}
-                                                </TableCell>
-                                                {/* Breakfast, Lunch, Dinner quantities */}
-                                                {[{
-                                                    row: breakfastRow,
-                                                    itemList: data?.breakfast_item_list,
-                                                    prefix: 'b'
-                                                }, {
-                                                    row: lunchRow,
-                                                    itemList: data?.lunch_item_list,
-                                                    prefix: 'l'
-                                                }, {
-                                                    row: dinnerRow,
-                                                    itemList: data?.dinner_item_list,
-                                                    prefix: 'd'
-                                                }].map(({ row, itemList, prefix }) =>
-                                                    row.data?.map((qty, i) => {
-                                                        const option = row.option && row.option[i];
-                                                        const realName = itemList?.[i]?.real_item_name || "";
-                                                        const showPopup = i >= 3 && qty >= 1;
-                                                        return (
-                                                            <TableCell key={`${prefix}-${i}`} align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
-                                                                {showPopup ? (
-                                                                    <span
-                                                                        style={{
-                                                                            textDecoration: 'underline',
-                                                                            cursor: 'pointer',
-                                                                            color: '#1976d2'
-                                                                        }}
-                                                                        onClick={e => {
-                                                                            e.stopPropagation();
-                                                                            setPopup({
-                                                                                open: true,
-                                                                                anchorEl: e.currentTarget,
-                                                                                text: `${realName}${option ? ` - ${option}` : ''}`
-                                                                            });
-                                                                        }}
-                                                                    >
-                                                                        {qty}
-                                                                    </span>
-                                                                ) : (
-                                                                    qty
-                                                                )}
-                                                            </TableCell>
-                                                        );
-                                                    })
-                                                )}
-                                            </TableRow>
-                                        );
-                                    })
+                                    (() => {
+                                        const baseList =
+                                            (data?.report_breakfast_list && data.report_breakfast_list.length > 0 && data.report_breakfast_list) ||
+                                            (data?.report_lunch_list && data.report_lunch_list.length > 0 && data.report_lunch_list) ||
+                                            (data?.report_dinner_list && data.report_dinner_list.length > 0 && data.report_dinner_list) ||
+                                            [];
+                                        return baseList.map((row, idx) => {
+                                            const breakfastRow = data?.report_breakfast_list?.find(b => b.room_no === row.room_no) || { data: [] };
+                                            const lunchRow = data?.report_lunch_list?.find(l => l.room_no === row.room_no) || { data: [] };
+                                            const dinnerRow = data?.report_dinner_list?.find(d => d.room_no === row.room_no) || { data: [] };
+                                            return (
+                                                <TableRow key={row.room_no}>
+                                                    <TableCell align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
+                                                        {row.room_no}
+                                                    </TableCell>
+                                                    {/* Breakfast, Lunch, Dinner quantities */}
+                                                    {[{
+                                                        row: breakfastRow,
+                                                        itemList: data?.breakfast_item_list,
+                                                        prefix: 'b'
+                                                    }, {
+                                                        row: lunchRow,
+                                                        itemList: data?.lunch_item_list,
+                                                        prefix: 'l'
+                                                    }, {
+                                                        row: dinnerRow,
+                                                        itemList: data?.dinner_item_list,
+                                                        prefix: 'd'
+                                                    }].map(({ row, itemList, prefix }) =>
+                                                        (itemList || []).map((item, i) => {
+                                                            let qty = row.data?.[i];
+                                                            const option = row.option && row.option[i];
+                                                            const realName = item?.real_item_name || "";
+                                                            const showPopup = i >= 3 && qty >= 1;
+                                                            // If qty is undefined or null, show '-'
+                                                            return (
+                                                                <TableCell key={`${prefix}-${i}`} align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
+                                                                    {qty === undefined || qty === null ? (
+                                                                        '-' 
+                                                                    ) : showPopup ? (
+                                                                        <span
+                                                                            style={{
+                                                                                textDecoration: 'underline',
+                                                                                cursor: 'pointer',
+                                                                                color: '#1976d2'
+                                                                            }}
+                                                                            onClick={e => {
+                                                                                e.stopPropagation();
+                                                                                setPopup({
+                                                                                    open: true,
+                                                                                    anchorEl: e.currentTarget,
+                                                                                    text: `${realName}${option ? ` - ${option}` : ''}`
+                                                                                });
+                                                                            }}
+                                                                        >
+                                                                            {qty}
+                                                                        </span>
+                                                                    ) : (
+                                                                        qty
+                                                                    )}
+                                                                </TableCell>
+                                                            );
+                                                        })
+                                                    )}
+                                                </TableRow>
+                                            );
+                                        });
+                                    })()
                                 )}
                             </TableBody>
                         </Table>
