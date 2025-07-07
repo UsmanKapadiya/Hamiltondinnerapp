@@ -55,10 +55,10 @@ const Order = () => {
 
     const [tabIndex, setTabIndex] = useState(getDefaultTabIndex());
 
-    useEffect(() =>{        
+    useEffect(() => {
         let selectedData = userData?.rooms.find((x) => x.name === roomNo);
         setMAX_MEAL_QTY(selectedData?.occupancy)
-    },[roomNo])
+    }, [roomNo])
 
     useEffect(() => {
 
@@ -356,31 +356,6 @@ const Order = () => {
         }
     }
 
-    function updateOrderIdsInMealSelections(mealSelections, itemIds, orderIds) {
-        return mealSelections.map(selection => {
-            // Update all meal arrays inside each selection
-            const updateItems = arr => (arr || []).map(item => {
-                const idx = itemIds.indexOf(item.id);
-                if (idx !== -1) {
-                    return { ...item, order_id: orderIds[idx] };
-                }
-                return item;
-            });
-
-            return {
-                ...selection,
-                breakFastDailySpecial: updateItems(selection.breakFastDailySpecial),
-                breakFastAlternative: updateItems(selection.breakFastAlternative),
-                lunchSoup: updateItems(selection.lunchSoup),
-                lunchEntree: updateItems(selection.lunchEntree),
-                lunchAlternative: updateItems(selection.lunchAlternative),
-                dinnerSoup: updateItems(selection.dinnerSoup),
-                dinnerEntree: updateItems(selection.dinnerEntree),
-                dinnerAlternative: updateItems(selection.dinnerAlternative),
-            };
-        });
-    }
-
     const submitData = async (data, date) => {
         // console.log("newMEalSelections", mealSelections)
         // console.log("data", data)
@@ -411,22 +386,6 @@ const Order = () => {
                 // console.log("date",date.format("YYYY-MM-DD"))
                 fetchMenuDetails(date.format("YYYY-MM-DD"));
                 toast.success("Order submitted successfully!");
-                // if (response?.item_id && response?.order_id) {
-                //     setMealSelections(prev => {
-                //         const updated = updateOrderIdsInMealSelections(prev, response.item_id, response.order_id);
-                //         // Remove duplicate dates, keeping the last occurrence
-                //         const uniqueByDate = [];
-                //         const seen = new Set();
-                //         for (let i = updated.length - 1; i >= 0; i--) {
-                //             const date = updated[i].date;
-                //             if (!seen.has(date)) {
-                //                 uniqueByDate.unshift(updated[i]);
-                //                 seen.add(date);
-                //             }
-                //         }
-                //         return uniqueByDate;
-                //     });
-                // }
             } else {
                 toast.error(response.ResponseText || "Order submission failed.");
             }
@@ -521,18 +480,8 @@ const Order = () => {
         }
     }
 
-
-    const totalBreakfastQty =
-        (data.breakFastDailySpecial || []).reduce((sum, i) => sum + (i.qty || 0), 0) +
-        (data.breakFastAlternative || []).reduce((sum, i) => sum + (i.qty || 0), 0);
-    const totalLunchSoupQty = (data.lunchSoup || []).reduce((sum, i) => sum + (i.qty || 0), 0);
-    const totalLunchQty =
-        (data.lunchEntree || []).reduce((sum, i) => sum + (i.qty || 0), 0) +
-        (data.lunchAlternative || []).reduce((sum, i) => sum + (i.qty || 0), 0);
+    const totalLunchSoupQty = (data.lunchSoup || []).reduce((sum, i) => sum + (i.qty || 0), 0);    
     const totalDinnerSoupQty = (data.dinnerSoup || []).reduce((sum, i) => sum + (i.qty || 0), 0);
-    const totalDinnerQty =
-        (data.dinnerEntree || []).reduce((sum, i) => sum + (i.qty || 0), 0) +
-        (data.dinnerAlternative || []).reduce((sum, i) => sum + (i.qty || 0), 0);
 
     return (
         <Box m="20px">
@@ -698,7 +647,7 @@ const Order = () => {
                                                                             }
                                                                             return alt;
                                                                         });
-                                                                        if (!removed) {                                                                            
+                                                                        if (!removed) {
                                                                             newSpecial = newSpecial.map((sp) => {
                                                                                 if (!removed && sp.id !== item.id && sp.qty > 0) {
                                                                                     removed = true;
@@ -707,7 +656,7 @@ const Order = () => {
                                                                                 return sp;
                                                                             });
                                                                         }
-                                                                    }                                                                   
+                                                                    }
                                                                     newSpecial = newSpecial.map((i) =>
                                                                         i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
                                                                     );
@@ -874,7 +823,7 @@ const Order = () => {
                                                                             }
                                                                             return sp;
                                                                         });
-                                                                        if (!removed) {                                                                            
+                                                                        if (!removed) {
                                                                             newAlternative = newAlternative.map((alt) => {
                                                                                 if (!removed && alt.id !== item.id && alt.qty > 0) {
                                                                                     removed = true;
@@ -883,7 +832,7 @@ const Order = () => {
                                                                                 return alt;
                                                                             });
                                                                         }
-                                                                    }                                                                
+                                                                    }
                                                                     newAlternative = newAlternative.map((i) =>
                                                                         i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
                                                                     );
