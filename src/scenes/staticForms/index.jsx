@@ -26,10 +26,11 @@ const StaticForms = () => {
 
   // Accepts a formType argument for dynamic navigation
   const handleAddNewClick = useCallback((formType) => {
-    let route = "staticForm-create";
-    if (formType === "incidentForm") route = "staticForm-create";
-    else if (formType === "loginForm") route = "loginForm-create";
-    else if (formType === "moveInSummaryForm") route = "moveInSummaryForm-create";
+    console.log("form",formType)
+    let route = "incidentForm-create";
+    if (formType === "incidentForm") route = "incidentForm-create";
+    else if (formType === "Log Form") route = "logForm-create";
+    else if (formType === "MoveIn Summary Form") route = "moveInSummaryForm-create";
     console.log("Route", route)
     navigate(route);
   }, [navigate]);
