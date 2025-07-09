@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Box, Checkbox, FormControlLabel, FormGroup, TextField } from "@mui/material";
+import React, { useRef, useState } from "react";
+import { Box, Checkbox, FormControlLabel, FormGroup, TextField, Button } from "@mui/material";
 import CustomButton from "../../components/CustomButton";
 import { LoginOutlined } from "@mui/icons-material";
 import { Formik } from "formik";
@@ -8,6 +8,7 @@ import { Header } from "../../components";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
+import SignatureCanvas from "react-signature-canvas";
 
 const initialValues = {
     suiteNumber: "",
@@ -63,6 +64,8 @@ const initialValues = {
 };
 
 const MoveInSummeryForm = () => {
+    const sigPadRef = useRef();
+
     const [loading, setLoading] = useState(false);
     const handleSubmit = (values, actions) => {
         // Replace with your submit logic
@@ -709,6 +712,37 @@ const MoveInSummeryForm = () => {
                                                     </Box>
                                                 ))}
                                             </FormGroup>
+                                              <Box sx={{ mt: 3 }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ marginRight: 8 }} xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M3 17.25V21h3.75l11.06-11.06-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z" fill="#1976d2" />
+                                                </svg>
+                                                <Box component="label" sx={{ fontWeight: 600, fontSize: 16 }}>
+                                                    Resident Signature
+                                                </Box>
+                                            </Box>
+                                            <Box sx={{ position: 'relative', display: 'inline-block', width: 400 }}>
+                                                <SignatureCanvas
+                                                    ref={sigPadRef}
+                                                    penColor="black"
+                                                    backgroundColor="#fff"
+                                                    canvasProps={{
+                                                        width: 400,
+                                                        height: 150,
+                                                        style: {
+                                                            border: '2px solid #1976d2',
+                                                            borderRadius: 8,
+                                                            background: '#fff',
+                                                            boxShadow: '0 2px 8px rgba(25, 118, 210, 0.08)',
+                                                        },
+                                                        className: "sigCanvas"
+                                                    }}
+                                                />
+                                                <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                                                    <Button onClick={() => sigPadRef.current.clear()} sx={{ mt: 1 }} variant="outlined" color="primary">Clear</Button>
+                                                </Box>
+                                            </Box>
+                                        </Box>
                                             <FormGroup row sx={{ mt: 2 }}>
                                                 {[
                                                     { label: 'Suite insurance Copy Received', name: 'suiteInsuranceCopyReceived' },
@@ -795,12 +829,7 @@ const MoveInSummeryForm = () => {
                                                 </LocalizationProvider>
                                             </Box>
                                         </Box>
-                                        <Box sx={{ mt: 3 }}>
-                                            <Box component="label" sx={{ mb: 1, fontWeight: 600, fontSize: 16, width: '100%' }}>
-                                                Digital Signature
-                                            </Box>
-                                         {/* Digital Signature here */}
-                                        </Box>
+                                      
 
                                     </Box>
 
