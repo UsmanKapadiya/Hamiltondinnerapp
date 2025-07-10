@@ -1,14 +1,13 @@
-import { Box, Typography, useTheme, FormControl, InputLabel, Select, MenuItem, IconButton } from "@mui/material";
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import { Box, useTheme, FormControl, InputLabel, Select, MenuItem, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Autocomplete } from "@mui/material";
 import { Header } from "../../components";
 import { DataGrid } from "@mui/x-data-grid";
-import { mockDataInvoices } from "../../data/mockData";
 import { tokens } from "../../theme";
 import { ReceiptOutlined } from "@mui/icons-material";
 import { useCallback, useEffect, useState } from "react";
-import { Route, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import StaticFormServices from "../../services/staticFormServices";
 import { toast } from "react-toastify";
 
@@ -23,19 +22,22 @@ const StaticForms = () => {
     return userDatas ? JSON.parse(userDatas) : null;
   });
   const [selectedFormType, setSelectedFormType] = useState('all');
+  const [markDialogOpen, setMarkDialogOpen] = useState(false);
+  const [markReason, setMarkReason] = useState("");
+  const [markRowId, setMarkRowId] = useState(null);
+  const [completedNames, setCompletedNames] = useState(() => {
+    const stored = localStorage.getItem("completedNames");
+    return stored ? JSON.parse(stored) : [];
+  });
 
-  // Accepts a formType argument for dynamic navigation
   const handleAddNewClick = useCallback((formType) => {
-    console.log("form",formType)
     let route = "incidentForm-create";
     if (formType === "incidentForm") route = "incidentForm-create";
     else if (formType === "Log Form") route = "logForm-create";
     else if (formType === "MoveIn Summary Form") route = "moveInSummaryForm-create";
-    console.log("Route", route)
     navigate(route);
   }, [navigate]);
 
-  // Fetch room list
   const fetchFormList = useCallback(async (formType = 'all') => {
     setLoading(true);
     try {
@@ -54,6 +56,66 @@ const StaticForms = () => {
     fetchFormList(selectedFormType);
   }, [fetchFormList, selectedFormType]);
 
+  const handleDelete = async (id) => {
+    if (!id) return;
+    setLoading(true);
+    const payload = {
+      form_id: id
+    }
+    try {
+      await StaticFormServices.deleteForm(payload);
+      toast.success("Form deleted successfully.");
+      fetchFormList(selectedFormType); // Refresh list
+    } catch (error) {
+      toast.error("Failed to delete form. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenMarkDialog = (rowId) => {
+    setMarkRowId(rowId);
+    setMarkReason("");
+    setMarkDialogOpen(true);
+  };
+
+  const handleCloseMarkDialog = () => {
+    setMarkDialogOpen(false);
+    setMarkReason("");
+    setMarkRowId(null);
+  };
+
+  const handleMarkComplete = async () => {
+    const name = markReason.trim();
+    const formId = markRowId;
+    if (!name) {
+      toast.error("Name is required to mark as complete.");
+      return;
+    }
+
+    setLoading(true);
+    let updatedNames = completedNames;
+    if (!completedNames.includes(name)) {
+      updatedNames = [...completedNames, name];
+      setCompletedNames(updatedNames);
+      localStorage.setItem("completedNames", JSON.stringify(updatedNames));
+    }
+    const payload = {
+      form_id: formId,
+      completed_by: name
+    };
+    try {
+      await StaticFormServices.completeLog(payload);
+      toast.success(`Marked as complete! Name: ${name}`);
+      fetchFormList(selectedFormType); // Refresh list
+      handleCloseMarkDialog();
+    } catch (error) {
+      toast.error("Failed to mark as complete. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const columns = [
     { field: "id", headerName: "ID" },
     {
@@ -67,7 +129,7 @@ const StaticForms = () => {
           // Incident Form
           return form_response.incident_involved || "";
         } else if (form_type_id === 2) {
-          // Log Form (existing logic)
+          // Log Form 
           return form_response.room_number && form_response.resident_name
             ? `${form_response.room_number} - ${form_response.resident_name}`
             : "";
@@ -91,6 +153,36 @@ const StaticForms = () => {
       },
     },
     {
+      field: "view",
+      headerName: "View",
+      sortable: false,
+      filterable: false,
+      width: 80,
+      renderCell: (params) => {
+        return (
+          params?.row?.formLink && (
+            <IconButton
+              key={`view-btn-${params.row.id}`}
+              size="small"
+              title="View"
+              sx={{ color: colors.greenAccent[600] }}
+              onClick={() => {
+                const url = params.row.formLink;
+                const isPdf = url && url.toLowerCase().endsWith('.pdf');
+                if (isPdf) {
+                  window.open(`https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`, '_blank');
+                } else {
+                  window.open(url, '_blank');
+                }
+              }}
+            >
+              <ReceiptOutlined fontSize="small" />
+            </IconButton>
+          )
+        );
+      }
+    },
+    {
       field: "actions",
       headerName: "Action",
       sortable: false,
@@ -103,16 +195,22 @@ const StaticForms = () => {
         if (form_type_id === 1 || form_type_id === 3) {
           return (
             <Box display="flex" justifyContent="center" alignItems="center" gap={1}>
-              <IconButton size="small" title="Edit" sx={{ color: colors.blueAccent[600] }}>
+              <IconButton key={`edit-btn-${params.row.id}`} size="small" title="Edit" sx={{ color: colors.blueAccent[600] }}>
                 <EditIcon fontSize="small" />
               </IconButton>
-              <IconButton size="small" title="Delete" sx={{ color: colors.redAccent[600] }}>
+              <IconButton
+                key={`delete-btn-${params.row.id}`}
+                size="small"
+                title="Delete"
+                sx={{ color: colors.redAccent[600] }}
+                onClick={() => handleDelete(params.row.id)}
+              >
                 <DeleteForeverIcon fontSize="small" />
               </IconButton>
             </Box>
           );
         }
-        else if(form_type_id === 2){
+        else if (form_type_id === 2) {
           // if check userData?.role === "concierge"  or  "nurse"  that time action empty,
           // else if userData?.role === "admin" that time check form_response?.is_completed === 0 that time display mui icon CheckCircleOutlineIcon 
           const role = userData?.role;
@@ -121,19 +219,56 @@ const StaticForms = () => {
             return null;
           } else if (role === "admin" && form_response.is_completed === 0) {
             return (
-              <IconButton size="small" title="Mark as Complete" sx={{ color: colors.greenAccent[600] }}>
-                <CheckCircleOutlineIcon fontSize="small" />
-              </IconButton>
+              <>
+                <IconButton
+                  size="small"
+                  title="Mark as Complete"
+                  sx={{ color: colors.greenAccent[600] }}
+                  onClick={() => handleOpenMarkDialog(params.row.id)}
+                >
+                  <CheckCircleOutlineIcon fontSize="small" />
+                </IconButton>
+                <Dialog open={markDialogOpen} onClose={handleCloseMarkDialog} maxWidth="xs" fullWidth>
+                  <DialogTitle>Completed By</DialogTitle>
+                  <DialogContent>
+                    <Autocomplete
+                      freeSolo
+                      options={completedNames}
+                      value={markReason}
+                      onInputChange={(e, newValue) => setMarkReason(newValue)}
+                      ListboxProps={{
+                        style: {
+                          maxHeight: 150,
+                          overflowY: 'auto',
+                        },
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          autoFocus
+                          margin="dense"
+                          label="Enter name"
+                          type="text"
+                          fullWidth
+                        />
+                      )}
+                    />
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleCloseMarkDialog} color="secondary">Cancel</Button>
+                    <Button onClick={handleMarkComplete} color="primary" variant="contained">Submit</Button>
+                  </DialogActions>
+                </Dialog>
+
+              </>
             );
           }
         }
         return null;
       },
     },
-  
+
   ];
-  console.log("user", userData)
-  console.log("formist", formist)
 
   return (
     <Box m="20px">
