@@ -667,42 +667,52 @@ const IncidentForm = () => {
                     component="label"
                     sx={{ mt: 1 }}
                   >
-                    Upload Photo
+                    Upload Photo/Video
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/*,video/*"
                       multiple
                       hidden
                       onChange={(event) => {
                         const files = Array.from(event.currentTarget.files);
-                        // Merge with existing images if any
                         const prev = values.attachments || [];
                         setFieldValue("attachments", [...prev, ...files]);
                       }}
                     />
                   </Button>
-                  {/* Show selected images below the button */}
                   {Array.isArray(values.attachments) && values.attachments.length > 0 && (
                     <Box sx={{ width: '100%', mt: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                      {values.attachments.map((file, idx) => (
-                        <Box key={idx} sx={{ position: 'relative', display: 'inline-block' }}>
-                          <img
-                            src={URL.createObjectURL(file)}
-                            alt={file.name}
-                            style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 4, border: '1px solid #ccc' }}
-                          />
-                          <Button
-                            size="small"
-                            sx={{ position: 'absolute', top: 0, right: 0, minWidth: 0, p: 0, bgcolor: 'rgba(255,255,255,0.7)' }}
-                            onClick={() => {
-                              const newArr = values.attachments.filter((_, i) => i !== idx);
-                              setFieldValue('attachments', newArr);
-                            }}
-                          >
-                            <span style={{ color: 'red', fontWeight: 'bold', fontSize: 18, lineHeight: 1 }}>×</span>
-                          </Button>
-                        </Box>
-                      ))}
+                      {values.attachments.map((file, idx) => {
+                        const isImage = file.type.startsWith('image/');
+                        const isVideo = file.type.startsWith('video/');
+                        return (
+                          <Box key={idx} sx={{ position: 'relative', display: 'inline-block' }}>
+                            {isImage ? (
+                              <img
+                                src={URL.createObjectURL(file)}
+                                alt={file.name}
+                                style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 4, border: '1px solid #ccc' }}
+                              />
+                            ) : isVideo ? (
+                              <video
+                                src={URL.createObjectURL(file)}
+                                style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 4, border: '1px solid #ccc' }}
+                                controls
+                              />
+                            ) : null}
+                            <Button
+                              size="small"
+                              sx={{ position: 'absolute', top: 0, right: 0, minWidth: 0, p: 0, bgcolor: 'rgba(255,255,255,0.7)' }}
+                              onClick={() => {
+                                const newArr = values.attachments.filter((_, i) => i !== idx);
+                                setFieldValue('attachments', newArr);
+                              }}
+                            >
+                              <span style={{ color: 'red', fontWeight: 'bold', fontSize: 18, lineHeight: 1 }}>×</span>
+                            </Button>
+                          </Box>
+                        );
+                      })}
                     </Box>
                   )}
                 </FormGroup>
