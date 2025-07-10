@@ -732,35 +732,54 @@ const IncidentForm = () => {
                     { key: "informed_general_manager", label: "General Manager" },
                     { key: "informed_risk_committee", label: "Risk Management Committee" },
                     { key: "informed_other", label: "Other" },
-                  ].map((item) => (
-                    <Box
-                      key={item.key}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        width: "100%",
-                        mb: 1,
-                        justifyContent: "space-between", // Add this for right alignment
-                      }}
-                    >
-                      <Checkbox
-                        checked={!!values[item.key]}
-                        onChange={(e) => setFieldValue(item.key, e.target.checked ? true : false)}
-                        name={item.key}
-                      />
-                      <Box sx={{ minWidth: 170, mr: 2 }}>{item.label}</Box>
-                      <Box sx={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
-                        <TextField
-                          size="small"
-                          variant="filled"
-                          placeholder={`Enter ${item.label} Name/Details`}
-                          value={values[`${item.key}_details`] || ""}
-                          onChange={(e) => setFieldValue(`${item.key}_details`, e.target.value)}
-                          sx={{ width: 180 }}
-                        />
+                  ].map((item) => {
+                    const isOther = item.key === "informed_other";
+                    return (
+                      <Box
+                        key={item.key}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          width: "100%",
+                          mb: 1,
+                          justifyContent: "space-between",
+                          flexDirection: isOther ? 'column' : 'row',
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                          <Checkbox
+                            checked={!!values[item.key]}
+                            onChange={(e) => setFieldValue(item.key, e.target.checked ? true : false)}
+                            name={item.key}
+                          />
+                          <Box sx={{ minWidth: 170, mr: 2 }}>{item.label}
+                            {isOther && values.informed_other && (
+                              <Box sx={{ width: '100%', mt: 1, display: 'flex', justifyContent: 'flex-end' }}>
+                                <TextField
+                                  size="small"
+                                  variant="filled"
+                                  placeholder="Enter Additional Details for Other"
+                                  value={values.informed_other_extra_details || ""}
+                                  onChange={(e) => setFieldValue('informed_other_extra_details', e.target.value)}
+                                  sx={{ width: 220 }}
+                                />
+                              </Box>
+                            )}
+                          </Box>
+                          <Box sx={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
+                            <TextField
+                              size="small"
+                              variant="filled"
+                              placeholder={`Enter ${item.label} Name/Details`}
+                              value={values[`${item.key}_details`] || ""}
+                              onChange={(e) => setFieldValue(`${item.key}_details`, e.target.value)}
+                              sx={{ width: 180 }}
+                            />
+                          </Box>
+                        </Box>
                       </Box>
-                    </Box>
-                  ))}
+                    );
+                  })}
                 </FormGroup>
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
