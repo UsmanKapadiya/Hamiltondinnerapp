@@ -157,7 +157,7 @@ const IncidentForm = () => {
           onSubmit={handleFormSubmit}
           initialValues={initialValues}
           enableReinitialize
-          // validationSchema={validationSchema}
+        // validationSchema={validationSchema}
         >
           {({
             values,
@@ -217,7 +217,7 @@ const IncidentForm = () => {
                 <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
                   Date/Time of Incident
                 </Box>
-                <Box sx={{ width: "100%" }}>
+                <Box sx={{ width: "100%", display: 'flex', gap: 2 }}>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Date"
@@ -410,24 +410,75 @@ const IncidentForm = () => {
                   {[
                     { key: "other_witnesses", label: "Other Witnesses?" },
                   ].map((item) => (
-                    <Box key={item.key} sx={{ display: "flex", alignItems: "center", width: "100%", mb: 1 }}>
-                      <Box sx={{ flex: 1 }}>{item.label}</Box>
-                      <Box sx={{ display: "flex", gap: 2 }}>
-                        {["Yes", "No"].map((option) => (
-                          <FormControlLabel
-                            key={option}
-                            control={
-                              <Radio
-                                checked={values[item.key] === option}
-                                onChange={() => setFieldValue(item.key, option)}
-                                value={option}
-                                name={item.key}
-                              />
-                            }
-                            label={option}
-                          />
-                        ))}
+                    <Box key={item.key} sx={{ display: "flex", alignItems: "center", width: "100%", mb: 1, flexDirection: 'column' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                        <Box sx={{ flex: 1 }}>{item.label}</Box>
+                        <Box sx={{ display: "flex", gap: 2 }}>
+                          {["Yes", "No"].map((option) => (
+                            <FormControlLabel
+                              key={option}
+                              control={
+                                <Radio
+                                  checked={values[item.key] === option}
+                                  onChange={() => setFieldValue(item.key, option)}
+                                  value={option}
+                                  name={item.key}
+                                />
+                              }
+                              label={option}
+                            />
+                          ))}
+                        </Box>
                       </Box>
+                      {/* If Yes, show two sets of name/position fields, each on a new row */}
+                      {values[item.key] === "Yes" && (
+                        <>
+                          <Box sx={{ width: "100%", mt: 2, display: 'flex', gap: 2 }}>
+                            <TextField
+                              fullWidth
+                              variant="filled"
+                              label="Witness Name 1"
+                              name="other_witness_name_1"
+                              value={values.other_witness_name_1 || ''}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              sx={{ flex: 1 }}
+                            />
+                            <TextField
+                              fullWidth
+                              variant="filled"
+                              label="Witness Position 1"
+                              name="other_witness_position_1"
+                              value={values.other_witness_position_1 || ''}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              sx={{ flex: 1 }}
+                            />
+                          </Box>
+                          <Box sx={{ width: "100%", mt: 2, display: 'flex', gap: 2 }}>
+                            <TextField
+                              fullWidth
+                              variant="filled"
+                              label="Witness Name 2"
+                              name="other_witness_name_2"
+                              value={values.other_witness_name_2 || ''}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              sx={{ flex: 1 }}
+                            />
+                            <TextField
+                              fullWidth
+                              variant="filled"
+                              label="Witness Position 2"
+                              name="other_witness_position_2"
+                              value={values.other_witness_position_2 || ''}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              sx={{ flex: 1 }}
+                            />
+                          </Box>
+                        </>
+                      )}
                     </Box>
                   ))}
                 </FormGroup>
