@@ -266,11 +266,13 @@ const IncidentForm = () => {
       notified_resident_responsible_party: incidentFormDetails?.notified_resident_responsible_party ?? "no",
       notified_resident_name: incidentFormDetails?.notified_resident_name || "",
       notified_resident_date: incidentFormDetails?.notified_resident_date || "",
+      notified_resident_tm: incidentFormDetails?.notified_resident_tm || "",
 
       // completed_by
       completed_by: incidentFormDetails?.completed_by || "",
       completed_position: incidentFormDetails?.completed_position || "",
       completed_date: incidentFormDetails?.completed_date || "",
+      completed_tm: incidentFormDetails?.completed_tm || "",
 
       // Show Follow Up Details
       followUp_issue: incidentFormDetails?.followUp_issue || '',
@@ -345,6 +347,18 @@ const IncidentForm = () => {
         : null;
       const discoveryDateTime = values.discovery_date && values.discovery_tm
         ? dayjs(`${values.discovery_date} ${values.discovery_tm}`, "YYYY-MM-DD HH:mm")
+        : null;
+
+      const notifiedFamilyDoctorDateTime = values.notified_family_doctor_date && values.notified_family_doctor_tm
+        ? dayjs(`${values.notified_family_doctor_date} ${values.notified_family_doctor_tm}`, "YYYY-MM-DD HH:mm")
+        : null;
+
+      const notifiedResidentDateTime = values.notified_resident_date && values.notified_resident_tm
+        ? dayjs(`${values.notified_resident_date} ${values.notified_resident_tm}`, "YYYY-MM-DD HH:mm")
+        : null;
+
+      const completedDateTime = values.completed_date && values.completed_tm
+        ? dayjs(`${values.completed_date} ${values.completed_tm}`, "YYYY-MM-DD HH:mm")
         : null;
 
       const payload = {
@@ -443,41 +457,42 @@ const IncidentForm = () => {
         ...(values.informed_of_inc_other && values.informed_of_inc_other_text
           ? { informed_of_inc_other_text: values.informed_of_inc_other_text }
           : {}),
+
         notified_family_doctor: values.notified_family_doctor || "",
-        notified_family_doctor_date: values.notified_family_doctor_date
-          ? dayjs(values.notified_family_doctor_date).format("DD MMM YYYY hh:mm A")
+        notified_family_doctor_date: notifiedFamilyDoctorDateTime
+          ? dayjs(notifiedFamilyDoctorDateTime).format("DD MMM YYYY hh:mm A")
           : "",
-        notified_family_doctor_dt: values.notified_family_doctor_date
-          ? dayjs(values.notified_family_doctor_date).format("DD MMM YYYY")
+        notified_family_doctor_dt: notifiedFamilyDoctorDateTime
+          ? dayjs(notifiedFamilyDoctorDateTime).format("DD MMM YYYY")
           : "",
-        notified_family_doctor_tm: values.notified_family_doctor_date
-          ? dayjs(values.notified_family_doctor_date).format("hh:mm A")
+        notified_family_doctor_tm: values.notified_family_doctor_tm
+          ? dayjs(values.notified_family_doctor_tm, "HH:mm").format("hh:mm A")
           : "",
         notified_other: values.notified_other || "",
 
         notified_resident_responsible_party: values.notified_resident_responsible_party || "",
         notified_resident_name: values.notified_resident_name || "",
-        notified_resident_date: values.notified_resident_date
-          ? dayjs(values.notified_resident_date).format("DD MMM YYYY hh:mm A")
+        notified_resident_date: notifiedResidentDateTime
+          ? dayjs(notifiedResidentDateTime).format("DD MMM YYYY hh:mm A")
           : "",
-        notified_resident_dt: values.notified_resident_date
-          ? dayjs(values.notified_resident_date).format("DD MMM YYYY")
+        notified_resident_dt: notifiedResidentDateTime
+          ? dayjs(notifiedResidentDateTime).format("DD MMM YYYY")
           : "",
-        notified_resident_tm: values.notified_resident_date
-          ? dayjs(values.notified_resident_date).format("hh:mm A")
+        notified_resident_tm: values.notified_resident_tm
+          ? dayjs(values.notified_resident_tm, "HH:mm").format("hh:mm A")
           : "",
 
         // Completed
         completed_by: values.completed_by || "",
         completed_position: values.completed_position || "",
-        completed_date: values.completed_date
-          ? dayjs(values.completed_date).format("DD MMM YYYY hh:mm A")
+        completed_date: completedDateTime
+          ? dayjs(completedDateTime).format("DD MMM YYYY hh:mm A")
           : "",
-        completed_dt: values.completed_date
-          ? dayjs(values.completed_date).format("DD MMM YYYY")
+        completed_dt: completedDateTime
+          ? dayjs(completedDateTime).format("DD MMM YYYY")
           : "",
-        completed_tm: values.completed_date
-          ? dayjs(values.completed_date).format("hh:mm A")
+        completed_tm: values.completed_tm
+          ? dayjs(values.completed_tm, "HH:mm").format("hh:mm A")
           : "",
 
         followUp_issue: values.followUp_issue || "",
@@ -1317,28 +1332,40 @@ const IncidentForm = () => {
                 />
                 <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
                   Date/Time
+                </Box>               
+                {/* // --- Notified Family Doctor --- */}
+                <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Date"
+                      value={values.notified_family_doctor_date ? dayjs(values.notified_family_doctor_date) : null}
+                      onChange={(newValue) =>
+                        setFieldValue("notified_family_doctor_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                      }
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          variant: "filled",
+                          error: touched.notified_family_doctor_date && Boolean(errors.notified_family_doctor_date),
+                          helperText: touched.notified_family_doctor_date && errors.notified_family_doctor_date,
+                        },
+                      }}
+                    />
+                    <TimePicker
+                      label="Time"
+                      value={values.notified_family_doctor_tm ? dayjs(values.notified_family_doctor_tm, "HH:mm") : null}
+                      onChange={(newValue) =>
+                        setFieldValue("notified_family_doctor_tm", newValue ? newValue.format("HH:mm") : "")
+                      }
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          variant: "filled",
+                        },
+                      }}
+                    />
+                  </LocalizationProvider>
                 </Box>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker
-                    label="Date/Time"
-                    value={values.notified_family_doctor_date ? dayjs(values.notified_family_doctor_date) : null}
-                    onChange={(newValue) =>
-                      setFieldValue("notified_family_doctor_date", newValue ? newValue.format("YYYY-MM-DD") : "")
-                    }
-                    slotProps={{
-                      textField: {
-                        fullWidth: true,
-                        variant: "filled",
-                        sx: { mb: 2 },
-                        error: Boolean(errors.notified_family_doctor_date) && (touched.notified_family_doctor_date || submitCount > 0),
-                        helperText:
-                          Boolean(errors.notified_family_doctor_date) && (touched.notified_family_doctor_date || submitCount > 0)
-                            ? errors.notified_family_doctor_date
-                            : "",
-                      },
-                    }}
-                  />
-                </LocalizationProvider>
                 <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
                   Other
                 </Box>
@@ -1371,6 +1398,7 @@ const IncidentForm = () => {
                     />
                   ))}
                 </FormGroup>
+                {/* // --- Notified Resident Date --- */}
                 {values.notified_resident_responsible_party === "yes" && (
                   <Box sx={{ width: "100%", mt: 2, display: "flex", gap: 2 }}>
                     <TextField
@@ -1387,7 +1415,7 @@ const IncidentForm = () => {
                     />
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
-                        label="Notified Resident Date"
+                        label="Date"
                         value={values.notified_resident_date ? dayjs(values.notified_resident_date) : null}
                         onChange={(newValue) =>
                           setFieldValue("notified_resident_date", newValue ? newValue.format("YYYY-MM-DD") : "")
@@ -1401,6 +1429,19 @@ const IncidentForm = () => {
                               Boolean(errors.notified_resident_date) && (touched.notified_resident_date || submitCount > 0)
                                 ? errors.notified_resident_date
                                 : "",
+                          },
+                        }}
+                      />
+                      <TimePicker
+                        label="Time"
+                        value={values.notified_resident_tm ? dayjs(values.notified_resident_tm, "HH:mm") : null}
+                        onChange={(newValue) =>
+                          setFieldValue("notified_resident_tm", newValue ? newValue.format("HH:mm") : "")
+                        }
+                        slotProps={{
+                          textField: {
+                            fullWidth: true,
+                            variant: "filled",
                           },
                         }}
                       />
@@ -1440,34 +1481,38 @@ const IncidentForm = () => {
                 <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
                   Date/Time Completed
                 </Box>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker
-                    label="Date/Time Completed"
-                    value={values.completed_date ? dayjs(values.completed_date) : null}
-                    onChange={(newValue) =>
-                      setFieldValue("completed_date", newValue ? newValue.format("YYYY-MM-DD") : "")
-                    }
-                    // slotProps={{
-                    //   textField: {
-                    //     fullWidth: true,
-                    //     variant: "filled",
-                    //     sx: { mb: 2 },
-                    //   },
-                    // }}
-                    slotProps={{
-                      textField: {
-                        fullWidth: true,
-                        variant: "filled",
-                        sx: { mb: 2 },
-                        error: Boolean(errors.completed_date) && (touched.completed_date || submitCount > 0),
-                        helperText:
-                          Boolean(errors.completed_date) && (touched.completed_date || submitCount > 0)
-                            ? errors.completed_date
-                            : "",
-                      },
-                    }}
-                  />
-                </LocalizationProvider>
+                <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Date"
+                      value={values.completed_date ? dayjs(values.completed_date) : null}
+                      onChange={(newValue) =>
+                        setFieldValue("completed_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                      }
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          variant: "filled",
+                          error: touched.completed_date && Boolean(errors.completed_date),
+                          helperText: touched.completed_date && errors.completed_date,
+                        },
+                      }}
+                    />
+                    <TimePicker
+                      label="Time"
+                      value={values.completed_tm ? dayjs(values.completed_tm, "HH:mm") : null}
+                      onChange={(newValue) =>
+                        setFieldValue("completed_tm", newValue ? newValue.format("HH:mm") : "")
+                      }
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          variant: "filled",
+                        },
+                      }}
+                    />
+                  </LocalizationProvider>
+                </Box>
                 <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
                   Assign Follow Up to
                 </Box>
