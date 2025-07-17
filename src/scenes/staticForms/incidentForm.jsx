@@ -101,6 +101,7 @@ const validationSchema = yup.object({
 
   // Discovery
   discovery_date: yup.string().required("Date Of Discovery is required"),
+  discovery_tm: yup.string().required("Time Of Discovery is required"),
   discovery_location: yup.string().required("Location Of Discovery is required"),
   discovered_by: yup.string().required("Discovery By is required"),
 
@@ -207,6 +208,7 @@ const IncidentForm = () => {
       incident_location: incidentFormDetails?.incident_location || "",
       witnessed_by: incidentFormDetails?.witnessed_by || "",
       discovery_date: incidentFormDetails?.discovery_date || "",
+      discovery_tm: incidentFormDetails?.discovery_tm || "",
       discovery_location: incidentFormDetails?.discovery_location || "",
       discovered_by: incidentFormDetails?.discovered_by || "",
 
@@ -341,6 +343,9 @@ const IncidentForm = () => {
       const incidentDateTime = values.incident_date && values.incident_tm
         ? dayjs(`${values.incident_date} ${values.incident_tm}`, "YYYY-MM-DD HH:mm")
         : null;
+      const discoveryDateTime = values.discovery_date && values.discovery_tm
+        ? dayjs(`${values.discovery_date} ${values.discovery_tm}`, "YYYY-MM-DD HH:mm")
+        : null;
 
       const payload = {
         incident_involved: incidentInvolvedArr.join(","),
@@ -359,14 +364,14 @@ const IncidentForm = () => {
           : "",
         incident_location: values.incident_location || "",
         witnessed_by: values.witnessed_by || "",
-        discovery_date: values.discovery_date
-          ? dayjs(values.discovery_date).format("DD MMM YYYY hh:mm A")
+        discovery_date: discoveryDateTime
+          ? dayjs(discoveryDateTime).format("DD MMM YYYY hh:mm A")
           : "",
-        discovery_dt: values.discovery_date
-          ? dayjs(values.discovery_date).format("DD MMM YYYY")
+        discovery_dt: discoveryDateTime
+          ? dayjs(discoveryDateTime).format("DD MMM YYYY")
           : "",
-        discovery_tm: values.discovery_date
-          ? dayjs(values.discovery_date).format("hh:mm A")
+        discovery_tm: values.discovery_tm
+          ? dayjs(values.discovery_tm, "HH:mm").format("hh:mm A")
           : "",
         discovery_location: values.discovery_location || "",
         discovered_by: values.discovered_by || "",
@@ -580,7 +585,7 @@ const IncidentForm = () => {
                 </Box>
                 <Box sx={{ width: "100%", display: "flex", gap: 2 }}>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
-                 
+
                     <DatePicker
                       label="Date"
                       value={values.incident_date ? dayjs(values.incident_date) : null}
@@ -654,7 +659,7 @@ const IncidentForm = () => {
                   sx={{ flex: 1 }}
                 />
               </Box>
-              <Box sx={{ gridColumn: "span 4", mt: 2 }}>
+              {/* <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
                   Date/Time Of Discovery
                 </Box>
@@ -674,6 +679,51 @@ const IncidentForm = () => {
                           error: touched.discovery_date && Boolean(errors.discovery_date),
                           helperText: touched.discovery_date && errors.discovery_date,
                           sx: { gridColumn: "span 1", mt: 1 }, // Add margin-top to separate from label
+                        },
+                      }}
+                    />
+                  </LocalizationProvider>
+                </Box>
+              </Box> */}
+              <Box sx={{ gridColumn: "span 4", mt: 2 }}>
+                <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                  Date/Time Of Discovery
+                </Box>
+                <Box sx={{ width: "100%", display: "flex", gap: 2 }}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Date"
+                      value={values.discovery_date ? dayjs(values.discovery_date) : null}
+                      onChange={(newValue) =>
+                        setFieldValue("discovery_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                      }
+                      minDate={dayjs()}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          variant: "filled",
+                          error: touched.discovery_date && Boolean(errors.discovery_date),
+                          helperText: touched.discovery_date && errors.discovery_date,
+                          sx: { mt: 1 },
+                        },
+                      }}
+                    />
+                    <TimePicker
+                      label="Time"
+                      value={values.discovery_tm ? dayjs(values.discovery_tm, "HH:mm") : null}
+                      onChange={(newValue) =>
+                        setFieldValue(
+                          "discovery_tm",
+                          newValue ? newValue.format("HH:mm") : ""
+                        )
+                      }
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          variant: "filled",
+                          error: touched.discovery_tm && Boolean(errors.discovery_tm),
+                          helperText: touched.discovery_tm && errors.discovery_tm,
+                          sx: { mt: 1 },
                         },
                       }}
                     />
