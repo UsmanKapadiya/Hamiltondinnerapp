@@ -213,13 +213,14 @@ const IncidentForm = () => {
       type_of_inc_other_text: incidentFormDetails?.type_of_inc_other_text || "",
 
       // Safety Devices
-      safety_fob: incidentFormDetails?.safety_fob || "",
-      safety_callbell: incidentFormDetails?.safety_callbell || "",
-      safety_caution: incidentFormDetails?.safety_caution || "",
-      safety_other: incidentFormDetails?.safety_other || "",
+      safety_fob: incidentFormDetails?.safety_fob ?? "No",
+      safety_callbell: incidentFormDetails?.safety_callbell ?? "No",
+      safety_caution: incidentFormDetails?.safety_caution ?? "No",
+      safety_other: incidentFormDetails?.safety_other ?? "",
+
 
       // Other Witnesses
-      other_witnesses: incidentFormDetails?.other_witnesses || "",
+      other_witnesses: incidentFormDetails?.other_witnesses ?? "No",
       witness_name1: incidentFormDetails?.witness_name1 || "",
       witness_position1: incidentFormDetails?.witness_position1 || "",
       witness_name2: incidentFormDetails?.witness_name2 || "",
@@ -237,12 +238,12 @@ const IncidentForm = () => {
       ambulation_other_text: incidentFormDetails?.ambulation_other_text || "",
 
       // Fire Section
-      fire_alarm_pulled: incidentFormDetails?.fire_alarm_pulled || "",
-      fire_false_alarm: incidentFormDetails?.fire_false_alarm || "",
-      fire_extinguisher_used: incidentFormDetails?.fire_extinguisher_used || "",
-      fire_personal_injury: incidentFormDetails?.fire_personal_injury || "",
-      fire_property_damage: incidentFormDetails?.fire_property_damage || "",
-
+      fire_alarm_pulled: incidentFormDetails?.fire_alarm_pulled ?? "No",
+      fire_false_alarm: incidentFormDetails?.fire_false_alarm ?? "No",
+      fire_extinguisher_used: incidentFormDetails?.fire_extinguisher_used ?? "No",
+      fire_personal_injury: incidentFormDetails?.fire_personal_injury ?? "No",
+      fire_property_damage: incidentFormDetails?.fire_property_damage ?? "No",
+     
       // FACTUAL CONCISE DESCRIPTION OF INCIDENT, INJURY AND ACTION TAKEN
       factual_description: incidentFormDetails?.factual_description || "",
 
@@ -259,7 +260,7 @@ const IncidentForm = () => {
       notified_family_doctor_tm: incidentFormDetails?.notified_family_doctor_tm || "",
       notified_other: incidentFormDetails?.notified_other || "",
 
-      notified_resident_responsible_party: incidentFormDetails?.notified_resident_responsible_party || "",
+      notified_resident_responsible_party: incidentFormDetails?.notified_resident_responsible_party ?? "no",
       notified_resident_name: incidentFormDetails?.notified_resident_name || "",
       notified_resident_date: incidentFormDetails?.notified_resident_date || "",
 
