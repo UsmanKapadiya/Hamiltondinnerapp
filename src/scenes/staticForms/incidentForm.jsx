@@ -96,6 +96,7 @@ const validationSchema = yup.object({
   }),
 
   incident_date: yup.string().required("Date is required"),
+  incident_tm: yup.string().required("Time Of Incident is required"),
   incident_location: yup.string().required("Location Of Incident is required"),
   witnessed_by: yup.string().required("Witnessed By is required"),
 
@@ -156,6 +157,11 @@ const validationSchema = yup.object({
     then: (schema) => schema.required('Date is required when Family Doctor is notified'),
     otherwise: (schema) => schema,
   }),
+  notified_family_doctor_tm: yup.string().when('notified_family_doctor', {
+    is: (val) => !!val,
+    then: (schema) => schema.required('Time is required when Family Doctor is notified'),
+    otherwise: (schema) => schema,
+  }),
 
   // notified_resident_responsibl
   notified_resident_responsible_party: yup.string(),
@@ -170,11 +176,17 @@ const validationSchema = yup.object({
     then: (schema) => schema.required('Notified Resident Date is required'),
     otherwise: (schema) => schema,
   }),
+  notified_resident_tm: yup.string().when('notified_resident_responsible_party', {
+    is: 'yes',
+    then: (schema) => schema.required('Notified Resident Time is required'),
+    otherwise: (schema) => schema,
+  }),
 
   //completed 
   completed_by: yup.string().required("Completed By is required"),
   completed_position: yup.string().required("Completed Position is required"),
   completed_date: yup.string().required("Completed Date is required"),
+  completed_tm: yup.string().required("Completed Time is required"),
 
 });
 
@@ -1332,8 +1344,7 @@ const IncidentForm = () => {
                 />
                 <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
                   Date/Time
-                </Box>               
-                {/* // --- Notified Family Doctor --- */}
+                </Box>
                 <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
@@ -1361,6 +1372,8 @@ const IncidentForm = () => {
                         textField: {
                           fullWidth: true,
                           variant: "filled",
+                          error: touched.notified_family_doctor_tm && Boolean(errors.notified_family_doctor_tm),
+                          helperText: touched.notified_family_doctor_tm && errors.notified_family_doctor_tm,
                         },
                       }}
                     />
@@ -1442,6 +1455,11 @@ const IncidentForm = () => {
                           textField: {
                             fullWidth: true,
                             variant: "filled",
+                            error: Boolean(errors.notified_resident_tm) && (touched.notified_resident_tm || submitCount > 0),
+                            helperText:
+                              Boolean(errors.notified_resident_tm) && (touched.notified_resident_tm || submitCount > 0)
+                                ? errors.notified_resident_tm
+                                : "",
                           },
                         }}
                       />
@@ -1508,6 +1526,8 @@ const IncidentForm = () => {
                         textField: {
                           fullWidth: true,
                           variant: "filled",
+                          error: touched.completed_tm && Boolean(errors.completed_tm),
+                          helperText: touched.completed_tm && errors.completed_tm,
                         },
                       }}
                     />
