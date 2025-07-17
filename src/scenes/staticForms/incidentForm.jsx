@@ -18,7 +18,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
 import { toast } from "react-toastify";
 import StaticFormServices from "../../services/staticFormServices";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { DatePicker, TimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import CustomButton from "../../components/CustomButton";
@@ -203,6 +203,7 @@ const IncidentForm = () => {
       inc_invl_other_text: incidentFormDetails?.inc_invl_other_text || "",
 
       incident_date: incidentFormDetails?.incident_date || "",
+      incident_tm: incidentFormDetails?.incident_tm || "",
       incident_location: incidentFormDetails?.incident_location || "",
       witnessed_by: incidentFormDetails?.witnessed_by || "",
       discovery_date: incidentFormDetails?.discovery_date || "",
@@ -243,7 +244,7 @@ const IncidentForm = () => {
       fire_extinguisher_used: incidentFormDetails?.fire_extinguisher_used ?? "No",
       fire_personal_injury: incidentFormDetails?.fire_personal_injury ?? "No",
       fire_property_damage: incidentFormDetails?.fire_property_damage ?? "No",
-     
+
       // FACTUAL CONCISE DESCRIPTION OF INCIDENT, INJURY AND ACTION TAKEN
       factual_description: incidentFormDetails?.factual_description || "",
 
@@ -336,20 +337,25 @@ const IncidentForm = () => {
       }
       const ambulationStr = ambulationArr.length > 0 ? ambulationArr.join(",") : "";
 
+      // IncidentDateTime set
+      const incidentDateTime = values.incident_date && values.incident_tm
+        ? dayjs(`${values.incident_date} ${values.incident_tm}`, "YYYY-MM-DD HH:mm")
+        : null;
+
       const payload = {
         incident_involved: incidentInvolvedArr.join(","),
         inc_invl_staff: values.incident_involved?.includes("Staff") ? 1 : 0,
         inc_invl_resident: values.incident_involved?.includes("Resident") ? 1 : 0,
         inc_invl_visitor: values.incident_involved?.includes("Visitor") ? 1 : 0,
         inc_invl_other: values.incident_involved?.includes("Other") ? 1 : 0,
-        incident_date: values.incident_date
-          ? dayjs(values.incident_date).format("DD MMM YYYY hh:mm A")
+        incident_date: incidentDateTime
+          ? dayjs(incidentDateTime).format("DD MMM YYYY hh:mm A")
           : "",
-        incident_dt: values.incident_date
-          ? dayjs(values.incident_date).format("DD MMM YYYY")
+        incident_dt: incidentDateTime
+          ? dayjs(incidentDateTime).format("DD MMM YYYY")
           : "",
-        incident_tm: values.incident_date
-          ? dayjs(values.incident_date).format("hh:mm A")
+        incident_tm: values.incident_tm
+          ? dayjs(values.incident_tm, "HH:mm").format("hh:mm A")
           : "",
         incident_location: values.incident_location || "",
         witnessed_by: values.witnessed_by || "",
@@ -567,18 +573,27 @@ const IncidentForm = () => {
                   )}
                 </FormGroup>
               </Box>
+
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
                   Date/Time of Incident
                 </Box>
-                <Box sx={{ width: "100%", display: 'flex', gap: 2 }}>
+                <Box sx={{ width: "100%", display: "flex", gap: 2 }}>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
+                 
                     <DatePicker
                       label="Date"
                       value={values.incident_date ? dayjs(values.incident_date) : null}
-                      onChange={(newValue) =>
-                        setFieldValue("incident_date", newValue ? newValue.format("YYYY-MM-DD") : "")
-                      }
+                      onChange={(newValue) => {
+                        setFieldValue(
+                          "incident_date",
+                          newValue ? newValue.format("YYYY-MM-DD") : ""
+                        );
+                        // If incident_tm is empty, set default to "12:00"
+                        if (newValue && !values.incident_tm) {
+                          setFieldValue("incident_tm", "12:00");
+                        }
+                      }}
                       minDate={dayjs()}
                       slotProps={{
                         textField: {
@@ -586,13 +601,33 @@ const IncidentForm = () => {
                           variant: "filled",
                           error: touched.incident_date && Boolean(errors.incident_date),
                           helperText: touched.incident_date && errors.incident_date,
-                          sx: { gridColumn: "span 1", mt: 1 },
+                          sx: { mt: 1 },
+                        },
+                      }}
+                    />
+                    <TimePicker
+                      label="Time"
+                      value={values.incident_tm ? dayjs(values.incident_tm, "HH:mm") : null}
+                      onChange={(newValue) =>
+                        setFieldValue(
+                          "incident_tm",
+                          newValue ? newValue.format("HH:mm") : ""
+                        )
+                      }
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          variant: "filled",
+                          error: touched.incident_tm && Boolean(errors.incident_tm),
+                          helperText: touched.incident_tm && errors.incident_tm,
+                          sx: { mt: 1 },
                         },
                       }}
                     />
                   </LocalizationProvider>
                 </Box>
               </Box>
+
               <Box sx={{ gridColumn: "span 4", mt: 2, display: "flex", gap: 2 }}>
                 <TextField
                   fullWidth
