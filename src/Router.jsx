@@ -39,7 +39,8 @@ const AppRouter = () => {
           <Route path="/report" element={<Report />} />
           <Route path="/charges" element={<ChargesReport />} />
           <Route path="/staticForms" element={<StaticForms />} />
-          <Route path="/staticForms/incidentForm-create" element={<IncidentForm />} />
+          <Route path="/staticForms/incidentForm-create" element={<IncidentForm />} />           
+           <Route path="/staticForms/incidentForm-edit/:id" element={<IncidentForm />} />
           <Route path="/staticForms/logForm-create" element={<LogForm />} />
           <Route path="/staticForms/moveInSummaryForm-create" element={<MoveInSummeryForm />} />
 

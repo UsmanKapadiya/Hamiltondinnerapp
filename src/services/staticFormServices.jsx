@@ -13,6 +13,9 @@ const StaticFormServices = {
   logFormSubmit: async (data) => {
     return requests.post(`/general-form-submit-phase1`, data);
   },
+  getFormById: async (payload) => {
+    return requests.post(`/form-details`, payload);
+  },
 
   getRoomList: async () => {
     return requests.get(`/rooms`);

@@ -195,7 +195,33 @@ const StaticForms = () => {
         if (form_type_id === 1 || form_type_id === 3) {
           return (
             <Box display="flex" justifyContent="center" alignItems="center" gap={1}>
-              <IconButton key={`edit-btn-${params.row.id}`} size="small" title="Edit" sx={{ color: colors.blueAccent[600] }}>
+              {/* <IconButton key={`edit-btn-${params.row.id}`} size="small" title="Edit" sx={{ color: colors.blueAccent[600] }}>
+                <EditIcon fontSize="small" />
+              </IconButton> */}
+              <IconButton
+                key={`edit-btn-${params.row.id}`}
+                size="small"
+                title="Edit"
+                sx={{ color: colors.blueAccent[600] }}
+                onClick={async () => {
+                  // Fetch the form data by ID
+                  try {
+                    const payload = {
+                      "form_id": params.row.id
+                    }
+                    const response = await StaticFormServices.getFormById(payload);
+                    if(response?.ResponseCode === '1'){
+                      console.log("here")
+                        navigate(`incidentForm-edit/${params.row.id}`, { state: { formData: response } })
+                    }
+                    console.log(response)
+                    // Navigate to the incident form edit screen, passing the form data
+                    // ;
+                  } catch (error) {
+                    toast.error("Failed to fetch form data. Please try again.");
+                  }
+                }}
+              >
                 <EditIcon fontSize="small" />
               </IconButton>
               <IconButton
