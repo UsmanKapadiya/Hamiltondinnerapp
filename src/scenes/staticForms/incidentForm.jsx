@@ -87,106 +87,106 @@ const notifiedResponsiblePartyOptions = [
 ];// Then use this in your form:
 
 const validationSchema = yup.object({
-  // Incident Involved
-  incident_involved: yup.array().of(yup.string()).min(1, "Please select Incident Involved"),
-  inc_invl_other_text: yup.string().when('incident_involved', {
-    is: (val) => Array.isArray(val) && val.includes('Other'),
-    then: (schema) => schema.required('Please enter other Incident Involved'),
-    otherwise: (schema) => schema,
-  }),
+  // // Incident Involved
+  // incident_involved: yup.array().of(yup.string()).min(1, "Please select Incident Involved"),
+  // inc_invl_other_text: yup.string().when('incident_involved', {
+  //   is: (val) => Array.isArray(val) && val.includes('Other'),
+  //   then: (schema) => schema.required('Please enter other Incident Involved'),
+  //   otherwise: (schema) => schema,
+  // }),
 
-  incident_date: yup.string().required("Date is required"),
-  incident_tm: yup.string().required("Time Of Incident is required"),
-  incident_location: yup.string().required("Location Of Incident is required"),
-  witnessed_by: yup.string().required("Witnessed By is required"),
+  // incident_date: yup.string().required("Date is required"),
+  // incident_tm: yup.string().required("Time Of Incident is required"),
+  // incident_location: yup.string().required("Location Of Incident is required"),
+  // witnessed_by: yup.string().required("Witnessed By is required"),
 
-  // Discovery
-  discovery_date: yup.string().required("Date Of Discovery is required"),
-  discovery_tm: yup.string().required("Time Of Discovery is required"),
-  discovery_location: yup.string().required("Location Of Discovery is required"),
-  discovered_by: yup.string().required("Discovery By is required"),
+  // // Discovery
+  // discovery_date: yup.string().required("Date Of Discovery is required"),
+  // discovery_tm: yup.string().required("Time Of Discovery is required"),
+  // discovery_location: yup.string().required("Location Of Discovery is required"),
+  // discovered_by: yup.string().required("Discovery By is required"),
 
-  // type_of_incident
-  type_of_incident: yup.array().of(yup.string()),
-  type_of_inc_other_text: yup.string().when('type_of_incident', {
-    is: (val) => Array.isArray(val) && val.includes('Other'),
-    then: (schema) => schema.required('Please enter Other Type Of Incident'),
-    otherwise: (schema) => schema,
-  }),
+  // // type_of_incident
+  // type_of_incident: yup.array().of(yup.string()),
+  // type_of_inc_other_text: yup.string().when('type_of_incident', {
+  //   is: (val) => Array.isArray(val) && val.includes('Other'),
+  //   then: (schema) => schema.required('Please enter Other Type Of Incident'),
+  //   otherwise: (schema) => schema,
+  // }),
 
-  // other_witnesses 
-  other_witnesses: yup.string(),
-  witness_name1: yup.string().when('other_witnesses', {
-    is: 'Yes',
-    then: (schema) => schema.required('Witness Name 1 is required'),
-    otherwise: (schema) => schema,
-  }),
-  witness_position1: yup.string().when('other_witnesses', {
-    is: 'Yes',
-    then: (schema) => schema.required('Witness Position 1 is required'),
-    otherwise: (schema) => schema,
-  }),
+  // // other_witnesses 
+  // other_witnesses: yup.string(),
+  // witness_name1: yup.string().when('other_witnesses', {
+  //   is: 'Yes',
+  //   then: (schema) => schema.required('Witness Name 1 is required'),
+  //   otherwise: (schema) => schema,
+  // }),
+  // witness_position1: yup.string().when('other_witnesses', {
+  //   is: 'Yes',
+  //   then: (schema) => schema.required('Witness Position 1 is required'),
+  //   otherwise: (schema) => schema,
+  // }),
 
-  condition_at_incident: yup.array().of(yup.string()),
-  condition_at_inc_other_text: yup.string().when('condition_at_incident', {
-    is: (val) => Array.isArray(val) && val.includes('Other (Specify)'),
-    then: (schema) => schema.required('Please specify Other Condition'),
-    otherwise: (schema) => schema,
-  }),
+  // condition_at_incident: yup.array().of(yup.string()),
+  // condition_at_inc_other_text: yup.string().when('condition_at_incident', {
+  //   is: (val) => Array.isArray(val) && val.includes('Other (Specify)'),
+  //   then: (schema) => schema.required('Please specify Other Condition'),
+  //   otherwise: (schema) => schema,
+  // }),
 
 
-  ambulation: yup.array().of(yup.string()),
-  ambulation_other_text: yup.string().when('ambulation', {
-    is: (val) => Array.isArray(val) && val.includes('Other (Specify)'),
-    then: (schema) => schema.required('Please specify Other Condition'),
-    otherwise: (schema) => schema,
-  }),
+  // ambulation: yup.array().of(yup.string()),
+  // ambulation_other_text: yup.string().when('ambulation', {
+  //   is: (val) => Array.isArray(val) && val.includes('Other (Specify)'),
+  //   then: (schema) => schema.required('Please specify Other Condition'),
+  //   otherwise: (schema) => schema,
+  // }),
 
-  // NOTIFICATION
-  // Informed Of Incident
-  informed_of_inc_other: yup.boolean(),
-  informed_of_inc_other_text: yup.string().when('informed_of_inc_other', {
-    is: true,
-    then: (schema) => schema.required('Please specify Other Condition'),
-    otherwise: (schema) => schema,
-  }),
+  // // NOTIFICATION
+  // // Informed Of Incident
+  // informed_of_inc_other: yup.boolean(),
+  // informed_of_inc_other_text: yup.string().when('informed_of_inc_other', {
+  //   is: true,
+  //   then: (schema) => schema.required('Please specify Other Condition'),
+  //   otherwise: (schema) => schema,
+  // }),
 
-  notified_family_doctor: yup.string(),
-  notified_family_doctor_date: yup.string().when('notified_family_doctor', {
-    is: (val) => !!val, // not empty
-    then: (schema) => schema.required('Date is required when Family Doctor is notified'),
-    otherwise: (schema) => schema,
-  }),
-  notified_family_doctor_tm: yup.string().when('notified_family_doctor', {
-    is: (val) => !!val,
-    then: (schema) => schema.required('Time is required when Family Doctor is notified'),
-    otherwise: (schema) => schema,
-  }),
+  // notified_family_doctor: yup.string(),
+  // notified_family_doctor_date: yup.string().when('notified_family_doctor', {
+  //   is: (val) => !!val, // not empty
+  //   then: (schema) => schema.required('Date is required when Family Doctor is notified'),
+  //   otherwise: (schema) => schema,
+  // }),
+  // notified_family_doctor_tm: yup.string().when('notified_family_doctor', {
+  //   is: (val) => !!val,
+  //   then: (schema) => schema.required('Time is required when Family Doctor is notified'),
+  //   otherwise: (schema) => schema,
+  // }),
 
-  // notified_resident_responsibl
-  notified_resident_responsible_party: yup.string(),
-  notified_resident_name: yup.string().when('notified_resident_responsible_party', {
-    is: 'yes',
-    then: (schema) => schema.required('Notified Resident Name is required'),
-    otherwise: (schema) => schema,
-  }),
+  // // notified_resident_responsibl
+  // notified_resident_responsible_party: yup.string(),
+  // notified_resident_name: yup.string().when('notified_resident_responsible_party', {
+  //   is: 'yes',
+  //   then: (schema) => schema.required('Notified Resident Name is required'),
+  //   otherwise: (schema) => schema,
+  // }),
 
-  notified_resident_date: yup.string().when('notified_resident_responsible_party', {
-    is: 'yes',
-    then: (schema) => schema.required('Notified Resident Date is required'),
-    otherwise: (schema) => schema,
-  }),
-  notified_resident_tm: yup.string().when('notified_resident_responsible_party', {
-    is: 'yes',
-    then: (schema) => schema.required('Notified Resident Time is required'),
-    otherwise: (schema) => schema,
-  }),
+  // notified_resident_date: yup.string().when('notified_resident_responsible_party', {
+  //   is: 'yes',
+  //   then: (schema) => schema.required('Notified Resident Date is required'),
+  //   otherwise: (schema) => schema,
+  // }),
+  // notified_resident_tm: yup.string().when('notified_resident_responsible_party', {
+  //   is: 'yes',
+  //   then: (schema) => schema.required('Notified Resident Time is required'),
+  //   otherwise: (schema) => schema,
+  // }),
 
-  //completed 
-  completed_by: yup.string().required("Completed By is required"),
-  completed_position: yup.string().required("Completed Position is required"),
-  completed_date: yup.string().required("Completed Date is required"),
-  completed_tm: yup.string().required("Completed Time is required"),
+  // //completed 
+  // completed_by: yup.string().required("Completed By is required"),
+  // completed_position: yup.string().required("Completed Position is required"),
+  // completed_date: yup.string().required("Completed Date is required"),
+  // completed_tm: yup.string().required("Completed Time is required"),
 
 });
 
@@ -196,22 +196,157 @@ const IncidentForm = () => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
   const [incidentFormDetails, setIncidentFormDetails] = useState({});
   const [loading, setLoading] = useState(true);
+  const [userData] = useState(() => {
+    const userDatas = localStorage.getItem("userData");
+    return userDatas ? JSON.parse(userDatas) : null;
+  });
+  // Add this utility function above your IncidentForm component
 
+  function mapIncidentInvolved(rawString) {
+    if (!rawString) return { incident_involved: [], inc_invl_other_text: "" };
+    const values = rawString.split(",").map(v => v.trim());
+    const labels = incidentInvolvedData.map(opt => opt.label);
+    const incident_involved = [];
+    let inc_invl_other_text = "";
+
+    values.forEach(val => {
+      if (labels.includes(val)) {
+        incident_involved.push(val);
+      } else if (val) {
+        incident_involved.push("Other");
+        inc_invl_other_text = val;
+      }
+    });
+
+    return { incident_involved, inc_invl_other_text };
+  }
+
+  function mapTypeOfIncident(rawString) {
+    if (!rawString) return { type_of_incident: [], type_of_inc_other_text: "" };
+    const values = rawString.split(",").map(v => v.trim());
+    const labels = typeOfIncidentOptions.map(opt => opt.label);
+    const type_of_incident = [];
+    let type_of_inc_other_text = "";
+
+    values.forEach(val => {
+      if (labels.includes(val)) {
+        type_of_incident.push(val);
+      } else if (val) {
+        type_of_incident.push("Other");
+        type_of_inc_other_text = val;
+      }
+    });
+
+    return { type_of_incident, type_of_inc_other_text };
+  }
+
+  function mapConditionAtIncident(rawString) {
+    if (!rawString) return { condition_at_incident: [], condition_at_inc_other_text: "" };
+    const values = rawString.split(",").map(v => v.trim());
+    const labels = conditionAtTimeOptions.map(opt => opt.label);
+    const condition_at_incident = [];
+    let condition_at_inc_other_text = "";
+
+    values.forEach(val => {
+      if (labels.includes(val)) {
+        condition_at_incident.push(val);
+      } else if (val) {
+        condition_at_incident.push("Other (Specify)");
+        condition_at_inc_other_text = val;
+      }
+    });
+
+    return { condition_at_incident, condition_at_inc_other_text };
+  }
+  function mapAmbulation(rawString) {
+    if (!rawString) return { ambulation: [], ambulation_other_text: "" };
+    const values = rawString.split(",").map(v => v.trim());
+    const labels = ambulationOptions.map(opt => opt.label);
+    const ambulation = [];
+    let ambulation_other_text = "";
+
+    values.forEach(val => {
+      if (labels.includes(val)) {
+        ambulation.push(val);
+      } else if (val) {
+        ambulation.push("Other (Specify)");
+        ambulation_other_text = val;
+      }
+    });
+
+    return { ambulation, ambulation_other_text };
+  }
+  function mapInformedOfIncident(rawString) {
+    if (!rawString) return { informed_of_incident: [], informed_of_inc_other_text: "" };
+    const values = rawString.split(",").map(v => v.trim());
+    const labels = InformedOfIncident.map(opt => opt.label);
+    const informed_of_incident = [];
+    let informed_of_inc_other_text = "";
+
+    values.forEach(val => {
+      if (labels.includes(val)) {
+        informed_of_incident.push(val);
+      } else if (val) {
+        informed_of_incident.push("Other");
+        informed_of_inc_other_text = val;
+      }
+    });
+
+    return { informed_of_incident, informed_of_inc_other_text };
+  }
   useEffect(() => {
     setLoading(true);
-    const timer = setTimeout(() => {
-      setIncidentFormDetails(location.state || {});
+    // If response is present in location.state, parse and map it
+    if (location.state?.formData?.ResponseCode === "1") {
+      const data = location.state.formData.form_data || {};
+      const followUpFilled =
+        !!data.followUp_issue ||
+        !!data.followUp_findings ||
+        !!data.followUp_possible_solutions ||
+        !!data.followUp_action_plan ||
+        !!data.followUp_examine_result;
+
+      setIncidentFormDetails({
+        ...data,
+        // Parse comma-separated strings to arrays for multi-select fields
+        ...mapIncidentInvolved(data.incident_involved),
+        ...mapTypeOfIncident(data.type_of_incident),
+        ...mapConditionAtIncident(data.condition_at_incident),
+        ...mapAmbulation(data.ambulation),
+        ...mapInformedOfIncident(data.informed_of_incident),
+        fall_assessment: data.fall_assessment ? data.fall_assessment.split(",") : [],
+        follow_up_assigned_to: incidentFormDetails?.follow_up_assigned_to || 1,
+        show_follow_up_details: followUpFilled || incidentFormDetails?.show_follow_up_details || false,
+        // Attachments
+        attachments: location.state.formData.attachments || [],
+        // Fill other fields as needed
+      });
       setLoading(false);
-    }, 400);
-    return () => clearTimeout(timer);
+    } else {
+      // Default: use location.state or empty object
+      const timer = setTimeout(() => {
+        setIncidentFormDetails(location.state || {});
+        setLoading(false);
+      }, 400);
+      return () => clearTimeout(timer);
+    }
   }, [location.state]);
+  // // console.log("userData", userData)
+  // useEffect(() => {
+  //   setLoading(true);
+  //   const timer = setTimeout(() => {
+  //     setIncidentFormDetails(location.state || {});
+  //     setLoading(false);
+  //   }, 400);
+  //   return () => clearTimeout(timer);
+  // }, [location.state]);
 
 
   const initialValues = useMemo(
     () => ({
       id: incidentFormDetails?.id || "",
       formTypes: incidentFormDetails?.formTypes || "",
-      // Unique state for each group
+
       incident_involved: incidentFormDetails?.incident_involved || [],
       inc_invl_other_text: incidentFormDetails?.inc_invl_other_text || "",
 
@@ -232,7 +367,6 @@ const IncidentForm = () => {
       safety_callbell: incidentFormDetails?.safety_callbell ?? "No",
       safety_caution: incidentFormDetails?.safety_caution ?? "No",
       safety_other: incidentFormDetails?.safety_other ?? "",
-
 
       // Other Witnesses
       other_witnesses: incidentFormDetails?.other_witnesses ?? "No",
@@ -265,6 +399,10 @@ const IncidentForm = () => {
       // NOTIFICATION
       // Informed Of Incident
       informed_of_incident: incidentFormDetails?.informed_of_incident || [],
+      initial_assistant_gm: incidentFormDetails?.initial_assistant_gm || "",
+      initial_gm: incidentFormDetails?.initial_gm || "",
+      initial_risk_mng_committee: incidentFormDetails?.initial_risk_mng_committee || "",
+      initial_other: incidentFormDetails?.initial_other || "",
       informed_of_inc_other_text: incidentFormDetails?.informed_of_inc_other_text,
 
       // NOTIFICATION
@@ -286,6 +424,9 @@ const IncidentForm = () => {
       completed_date: incidentFormDetails?.completed_date || "",
       completed_tm: incidentFormDetails?.completed_tm || "",
 
+      //Follow Up Assign to 
+      follow_up_assigned_to: incidentFormDetails?.follow_up_assigned_to || "",
+
       // Show Follow Up Details
       followUp_issue: incidentFormDetails?.followUp_issue || '',
       followUp_findings: incidentFormDetails?.followUp_findings || '',
@@ -294,9 +435,6 @@ const IncidentForm = () => {
       followUp_examine_result: incidentFormDetails?.followUp_examine_result || '',
 
 
-      // New fields
-
-      assign_follow_up: incidentFormDetails?.assign_follow_up || "",
       attachments: incidentFormDetails?.attachments || [],
       show_follow_up_details: incidentFormDetails?.show_follow_up_details || false,
 
@@ -352,6 +490,20 @@ const IncidentForm = () => {
         ambulationArr.push(values.ambulation_other_text);
       }
       const ambulationStr = ambulationArr.length > 0 ? ambulationArr.join(",") : "";
+
+      // Informed Of Incident: collect selected labels
+      let informedOfIncidentArr = [];
+      InformedOfIncident.forEach(option => {
+        if (values[option.key]) {
+          if (option.key === "informed_of_inc_other" && values.informed_of_inc_other_text) {
+            // Add "Other" text at the end
+            informedOfIncidentArr.push(values.informed_of_inc_other_text);
+          } else {
+            informedOfIncidentArr.push(option.label);
+          }
+        }
+      });
+
 
       // IncidentDateTime set
       const incidentDateTime = values.incident_date && values.incident_tm
@@ -462,6 +614,7 @@ const IncidentForm = () => {
         factual_description: values?.factual_description || "",
 
         // Informed Of Incidents
+        informed_of_incident: informedOfIncidentArr.join(","),
         ...InformedOfIncident.reduce((acc, option) => {
           acc[option.key] = !!values[option.key] ? 1 : 0;
           return acc;
@@ -469,6 +622,10 @@ const IncidentForm = () => {
         ...(values.informed_of_inc_other && values.informed_of_inc_other_text
           ? { informed_of_inc_other_text: values.informed_of_inc_other_text }
           : {}),
+        initial_assistant_gm: values?.initial_assistant_gm || "",
+        initial_gm: values?.initial_gm || "",
+        initial_risk_mng_committee: values?.initial_risk_mng_committee || "",
+        initial_other: values?.initial_other || "",
 
         notified_family_doctor: values.notified_family_doctor || "",
         notified_family_doctor_date: notifiedFamilyDoctorDateTime
@@ -514,7 +671,36 @@ const IncidentForm = () => {
         followUp_examine_result: values?.followUp_examine_result || '',
 
       };
-      console.log("Payload", payload);
+      // console.log("Payload", payload);
+      const now = new Date();
+      const pad = n => n.toString().padStart(2, '0');
+      const logged_at = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      const rawStringData = { ...payload };
+      rawStringData['is_completed'] = 0;
+      rawStringData['logged_at'] = logged_at;
+
+      // console.log("rawStringData", rawStringData)
+      const found = userData.rooms.find(r =>
+        String(r.name).toLowerCase() === String(values?.room_number).toLowerCase()
+      );
+      const finalPayload = {
+        form_type: 1,
+        room_id: found?.id,
+        follow_up_assigned_to: values?.follow_up_assigned_to,
+        data: JSON.stringify(rawStringData)
+      };
+      // console.log("finalPayload", finalPayload)
+      try {
+        const response = await StaticFormServices.logFormSubmit(finalPayload);
+        // Only show toast if success and use ResponseText
+        if (response?.ResponseCode === "1") {
+          toast.success(response?.ResponseText || "Form submitted successfully.");
+        }
+      } catch (error) {
+        toast.error("Form is not submitted. Please try again.");
+      } finally {
+        setLoading(false);
+      }
       // Submit payload to API here
     },
     [initialValues, navigate]
@@ -1203,108 +1389,90 @@ const IncidentForm = () => {
                 </Box>
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
-                {/* <FormGroup row>
-                  <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
-                    Informed Of Incident
-                  </Box>
-                  {InformedOfIncident.map((item) => {
-                    const isOther = item.key === "informed_of_inc_other";
-                    return (
-                      <Box
-                        key={item.key}
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          width: "100%",
-                          mb: 1,
-                          justifyContent: "space-between",
-                          flexDirection: isOther ? 'column' : 'row',
-                        }}
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                          <Checkbox
-                            checked={!!values[item.key]}
-                            onChange={(e) => setFieldValue(item.key, e.target.checked ? true : false)}
-                            name={item.key}
-                          />
-                          <Box sx={{ minWidth: 170, mr: 2 }}>{item.label}
-                            {isOther && values.informed_of_inc_other && (
-                              <Box sx={{ width: '100%', mt: 1, display: 'flex', justifyContent: 'flex-end' }}>
-                                <TextField
-                                  size="small"
-                                  variant="filled"
-                                  placeholder="Enter Additional Details for Other"
-                                  name="informed_of_inc_other_text"
-                                  value={values.informed_of_inc_other_text || ""}
-                                  onChange={handleChange}
-                                  onBlur={handleBlur}
-                                  sx={{ width: 220 }}
-                                  error={Boolean(errors.informed_of_inc_other_text) && (touched.informed_of_inc_other_text || submitCount > 0)}
-                                  helperText={
-                                    Boolean(errors.informed_of_inc_other_text) && (touched.informed_of_inc_other_text || submitCount > 0)
-                                      ? errors.informed_of_inc_other_text
-                                      : ""
-                                  }
-                                />
-                              </Box>
-                            )}
-                          </Box>
-                          <Box sx={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
-                            <TextField
-                              size="small"
-                              variant="filled"
-                              placeholder={`Enter ${item.label} Name/Details`}
-                              value={values[`${item.key}_details`] || ""}
-                              onChange={(e) => setFieldValue(`${item.key}_details`, e.target.value)}
-                              sx={{ width: 180 }}
-                            />
-                          </Box>
-                        </Box>
-                      </Box>
-                    );
-                  })}
-                </FormGroup> */}
                 <FormGroup row>
                   <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
                     Informed Of Incident
                   </Box>
-                  {InformedOfIncident.map((item) => {
-                    const isOther = item.key === "informed_of_inc_other";
-                    return (
-                      <Box
-                        key={item.key}
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          width: "100%",
-                          mb: 1,
-                          justifyContent: "space-between",
-                          flexDirection: "row",
-                        }}
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                          <Checkbox
-                            checked={!!values[item.key]}
-                            onChange={(e) => setFieldValue(item.key, e.target.checked)}
-                            name={item.key}
+                  {InformedOfIncident.map((item) => (
+                    <Box
+                      key={item.key}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        width: "100%",
+                        mb: 1,
+                        justifyContent: "space-between",
+                        flexDirection: "row",
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                        <Checkbox
+                          checked={values.informed_of_incident?.includes(item.label) || false}
+                          onChange={() => {
+                            const current = values.informed_of_incident || [];
+                            if (current.includes(item.label)) {
+                              setFieldValue(
+                                "informed_of_incident",
+                                current.filter((v) => v !== item.label)
+                              );
+                              if (item.label === "Other") {
+                                setFieldValue("informed_of_inc_other_text", "");
+                              }
+                            } else {
+                              setFieldValue("informed_of_incident", [...current, item.label]);
+                            }
+                          }}
+                          name="informed_of_incident"
+                        />
+                        <Box sx={{ minWidth: 170, mr: 2 }}>{item.label}</Box>
+                        <Box sx={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
+                          <TextField
+                            size="small"
+                            variant="filled"
+                            placeholder={`Enter ${item.label} Name/Details`}
+                            name={
+                              item.key === "informed_of_inc_AGM"
+                                ? "initial_assistant_gm"
+                                : item.key === "informed_of_inc_GM"
+                                  ? "initial_gm"
+                                  : item.key === "informed_of_inc_RMC"
+                                    ? "initial_risk_mng_committee"
+                                    : item.key === "informed_of_inc_other"
+                                      ? "initial_other"
+                                      : ""
+                            }
+                            value={
+                              item.key === "informed_of_inc_AGM"
+                                ? values.initial_assistant_gm || ""
+                                : item.key === "informed_of_inc_GM"
+                                  ? values.initial_gm || ""
+                                  : item.key === "informed_of_inc_RMC"
+                                    ? values.initial_risk_mng_committee || ""
+                                    : item.key === "informed_of_inc_other"
+                                      ? values.initial_other || ""
+                                      : ""
+                            }
+                            onChange={(e) =>
+                              setFieldValue(
+                                item.key === "informed_of_inc_AGM"
+                                  ? "initial_assistant_gm"
+                                  : item.key === "informed_of_inc_GM"
+                                    ? "initial_gm"
+                                    : item.key === "informed_of_inc_RMC"
+                                      ? "initial_risk_mng_committee"
+                                      : item.key === "informed_of_inc_other"
+                                        ? "initial_other"
+                                        : "",
+                                e.target.value
+                              )
+                            }
+                            sx={{ width: 180 }}
                           />
-                          <Box sx={{ minWidth: 170, mr: 2 }}>{item.label}</Box>
-                          <Box sx={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
-                            <TextField
-                              size="small"
-                              variant="filled"
-                              placeholder={`Enter ${item.label} Name/Details`}
-                              value={values[`${item.key}_details`] || ""}
-                              onChange={(e) => setFieldValue(`${item.key}_details`, e.target.value)}
-                              sx={{ width: 180 }}
-                            />
-                          </Box>
                         </Box>
                       </Box>
-                    );
-                  })}
-
-                  {values.informed_of_inc_other && (
+                    </Box>
+                  ))}
+                  {values.informed_of_incident?.includes("Other") && (
                     <Box sx={{ width: '100%', mb: 2 }}>
                       <TextField
                         fullWidth
@@ -1324,9 +1492,13 @@ const IncidentForm = () => {
                       />
                     </Box>
                   )}
-
                 </FormGroup>
 
+              </Box>
+              <Box sx={{ gridColumn: "span 4", mt: 2 }}>
+                <Box component="label" sx={{ mb: 1, fontWeight: 700, width: "100%" }}>
+                  Person Notified
+                </Box>
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
@@ -1541,17 +1713,33 @@ const IncidentForm = () => {
                   fullWidth
                   variant="filled"
                   label="Assign Follow Up to"
-                  name="assign_follow_up"
-                  value={values.assign_follow_up || ''}
+                  name="follow_up_assigned_to"
+                  value={values.follow_up_assigned_to || ''}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   sx={{ mb: 2 }}
+                  SelectProps={{
+                    MenuProps: {
+                      PaperProps: {
+                        style: {
+                          maxHeight: 200
+                        }
+                      }
+                    },
+                    renderValue: (selected) => {
+                      if (!selected) return "Select";
+                      const user = userData?.user_list?.find(u => u.id === selected);
+                      return user ? user.name : selected;
+                    }
+                  }}
                 >
                   <MenuItem value="">Select</MenuItem>
-                  <MenuItem value="Nurse">Nurse</MenuItem>
-                  <MenuItem value="Manager">Manager</MenuItem>
-                  <MenuItem value="Doctor">Doctor</MenuItem>
-                  <MenuItem value="Other">Other</MenuItem>
+                  {Array.isArray(userData?.user_list) &&
+                    userData.user_list.map((user) => (
+                      <MenuItem key={user.id} value={user.id}>
+                        {user.name}
+                      </MenuItem>
+                    ))}
                 </TextField>
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
