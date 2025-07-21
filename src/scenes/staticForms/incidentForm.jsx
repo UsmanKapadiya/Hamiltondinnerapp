@@ -87,106 +87,106 @@ const notifiedResponsiblePartyOptions = [
 ];// Then use this in your form:
 
 const validationSchema = yup.object({
-  // // Incident Involved
-  // incident_involved: yup.array().of(yup.string()).min(1, "Please select Incident Involved"),
-  // inc_invl_other_text: yup.string().when('incident_involved', {
-  //   is: (val) => Array.isArray(val) && val.includes('Other'),
-  //   then: (schema) => schema.required('Please enter other Incident Involved'),
-  //   otherwise: (schema) => schema,
-  // }),
+  // Incident Involved
+  incident_involved: yup.array().of(yup.string()).min(1, "Please select Incident Involved"),
+  inc_invl_other_text: yup.string().when('incident_involved', {
+    is: (val) => Array.isArray(val) && val.includes('Other'),
+    then: (schema) => schema.required('Please enter other Incident Involved'),
+    otherwise: (schema) => schema,
+  }),
 
-  // incident_date: yup.string().required("Date is required"),
-  // incident_tm: yup.string().required("Time Of Incident is required"),
-  // incident_location: yup.string().required("Location Of Incident is required"),
-  // witnessed_by: yup.string().required("Witnessed By is required"),
+  incident_date: yup.string().required("Date is required"),
+  incident_tm: yup.string().required("Time Of Incident is required"),
+  incident_location: yup.string().required("Location Of Incident is required"),
+  witnessed_by: yup.string().required("Witnessed By is required"),
 
-  // // Discovery
-  // discovery_date: yup.string().required("Date Of Discovery is required"),
-  // discovery_tm: yup.string().required("Time Of Discovery is required"),
-  // discovery_location: yup.string().required("Location Of Discovery is required"),
-  // discovered_by: yup.string().required("Discovery By is required"),
+  // Discovery
+  discovery_date: yup.string().required("Date Of Discovery is required"),
+  discovery_tm: yup.string().required("Time Of Discovery is required"),
+  discovery_location: yup.string().required("Location Of Discovery is required"),
+  discovered_by: yup.string().required("Discovery By is required"),
 
-  // // type_of_incident
-  // type_of_incident: yup.array().of(yup.string()),
-  // type_of_inc_other_text: yup.string().when('type_of_incident', {
-  //   is: (val) => Array.isArray(val) && val.includes('Other'),
-  //   then: (schema) => schema.required('Please enter Other Type Of Incident'),
-  //   otherwise: (schema) => schema,
-  // }),
+  // type_of_incident
+  type_of_incident: yup.array().of(yup.string()),
+  type_of_inc_other_text: yup.string().when('type_of_incident', {
+    is: (val) => Array.isArray(val) && val.includes('Other'),
+    then: (schema) => schema.required('Please enter Other Type Of Incident'),
+    otherwise: (schema) => schema,
+  }),
 
-  // // other_witnesses 
-  // other_witnesses: yup.string(),
-  // witness_name1: yup.string().when('other_witnesses', {
-  //   is: 'Yes',
-  //   then: (schema) => schema.required('Witness Name 1 is required'),
-  //   otherwise: (schema) => schema,
-  // }),
-  // witness_position1: yup.string().when('other_witnesses', {
-  //   is: 'Yes',
-  //   then: (schema) => schema.required('Witness Position 1 is required'),
-  //   otherwise: (schema) => schema,
-  // }),
+  // other_witnesses 
+  other_witnesses: yup.string(),
+  witness_name1: yup.string().when('other_witnesses', {
+    is: 'Yes',
+    then: (schema) => schema.required('Witness Name 1 is required'),
+    otherwise: (schema) => schema,
+  }),
+  witness_position1: yup.string().when('other_witnesses', {
+    is: 'Yes',
+    then: (schema) => schema.required('Witness Position 1 is required'),
+    otherwise: (schema) => schema,
+  }),
 
-  // condition_at_incident: yup.array().of(yup.string()),
-  // condition_at_inc_other_text: yup.string().when('condition_at_incident', {
-  //   is: (val) => Array.isArray(val) && val.includes('Other (Specify)'),
-  //   then: (schema) => schema.required('Please specify Other Condition'),
-  //   otherwise: (schema) => schema,
-  // }),
+  condition_at_incident: yup.array().of(yup.string()),
+  condition_at_inc_other_text: yup.string().when('condition_at_incident', {
+    is: (val) => Array.isArray(val) && val.includes('Other (Specify)'),
+    then: (schema) => schema.required('Please specify Other Condition'),
+    otherwise: (schema) => schema,
+  }),
 
 
-  // ambulation: yup.array().of(yup.string()),
-  // ambulation_other_text: yup.string().when('ambulation', {
-  //   is: (val) => Array.isArray(val) && val.includes('Other (Specify)'),
-  //   then: (schema) => schema.required('Please specify Other Condition'),
-  //   otherwise: (schema) => schema,
-  // }),
+  ambulation: yup.array().of(yup.string()),
+  ambulation_other_text: yup.string().when('ambulation', {
+    is: (val) => Array.isArray(val) && val.includes('Other (Specify)'),
+    then: (schema) => schema.required('Please specify Other Condition'),
+    otherwise: (schema) => schema,
+  }),
 
-  // // NOTIFICATION
-  // // Informed Of Incident
-  // informed_of_inc_other: yup.boolean(),
-  // informed_of_inc_other_text: yup.string().when('informed_of_inc_other', {
-  //   is: true,
-  //   then: (schema) => schema.required('Please specify Other Condition'),
-  //   otherwise: (schema) => schema,
-  // }),
+  // NOTIFICATION
+  // Informed Of Incident
+  informed_of_inc_other: yup.boolean(),
+  informed_of_inc_other_text: yup.string().when('informed_of_inc_other', {
+    is: true,
+    then: (schema) => schema.required('Please specify Other Condition'),
+    otherwise: (schema) => schema,
+  }),
 
-  // notified_family_doctor: yup.string(),
-  // notified_family_doctor_date: yup.string().when('notified_family_doctor', {
-  //   is: (val) => !!val, // not empty
-  //   then: (schema) => schema.required('Date is required when Family Doctor is notified'),
-  //   otherwise: (schema) => schema,
-  // }),
-  // notified_family_doctor_tm: yup.string().when('notified_family_doctor', {
-  //   is: (val) => !!val,
-  //   then: (schema) => schema.required('Time is required when Family Doctor is notified'),
-  //   otherwise: (schema) => schema,
-  // }),
+  notified_family_doctor: yup.string(),
+  notified_family_doctor_date: yup.string().when('notified_family_doctor', {
+    is: (val) => !!val, // not empty
+    then: (schema) => schema.required('Date is required when Family Doctor is notified'),
+    otherwise: (schema) => schema,
+  }),
+  notified_family_doctor_tm: yup.string().when('notified_family_doctor', {
+    is: (val) => !!val,
+    then: (schema) => schema.required('Time is required when Family Doctor is notified'),
+    otherwise: (schema) => schema,
+  }),
 
-  // // notified_resident_responsibl
-  // notified_resident_responsible_party: yup.string(),
-  // notified_resident_name: yup.string().when('notified_resident_responsible_party', {
-  //   is: 'yes',
-  //   then: (schema) => schema.required('Notified Resident Name is required'),
-  //   otherwise: (schema) => schema,
-  // }),
+  // notified_resident_responsibl
+  notified_resident_responsible_party: yup.string(),
+  notified_resident_name: yup.string().when('notified_resident_responsible_party', {
+    is: 'yes',
+    then: (schema) => schema.required('Notified Resident Name is required'),
+    otherwise: (schema) => schema,
+  }),
 
-  // notified_resident_date: yup.string().when('notified_resident_responsible_party', {
-  //   is: 'yes',
-  //   then: (schema) => schema.required('Notified Resident Date is required'),
-  //   otherwise: (schema) => schema,
-  // }),
-  // notified_resident_tm: yup.string().when('notified_resident_responsible_party', {
-  //   is: 'yes',
-  //   then: (schema) => schema.required('Notified Resident Time is required'),
-  //   otherwise: (schema) => schema,
-  // }),
+  notified_resident_date: yup.string().when('notified_resident_responsible_party', {
+    is: 'yes',
+    then: (schema) => schema.required('Notified Resident Date is required'),
+    otherwise: (schema) => schema,
+  }),
+  notified_resident_tm: yup.string().when('notified_resident_responsible_party', {
+    is: 'yes',
+    then: (schema) => schema.required('Notified Resident Time is required'),
+    otherwise: (schema) => schema,
+  }),
 
-  // //completed 
-  // completed_by: yup.string().required("Completed By is required"),
-  // completed_position: yup.string().required("Completed Position is required"),
-  // completed_date: yup.string().required("Completed Date is required"),
-  // completed_tm: yup.string().required("Completed Time is required"),
+  //completed 
+  completed_by: yup.string().required("Completed By is required"),
+  completed_position: yup.string().required("Completed Position is required"),
+  completed_date: yup.string().required("Completed Date is required"),
+  completed_tm: yup.string().required("Completed Time is required"),
 
 });
 
@@ -196,6 +196,7 @@ const IncidentForm = () => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
   const [incidentFormDetails, setIncidentFormDetails] = useState({});
   const [loading, setLoading] = useState(true);
+  const [formId, setFormId] = useState();
   const [userData] = useState(() => {
     const userDatas = localStorage.getItem("userData");
     return userDatas ? JSON.parse(userDatas) : null;
@@ -296,9 +297,10 @@ const IncidentForm = () => {
   }
   useEffect(() => {
     setLoading(true);
-    // If response is present in location.state, parse and map it
+
     if (location.state?.formData?.ResponseCode === "1") {
       const data = location.state.formData.form_data || {};
+      setFormId(location.state?.id)
       const followUpFilled =
         !!data.followUp_issue ||
         !!data.followUp_findings ||
@@ -331,20 +333,11 @@ const IncidentForm = () => {
       return () => clearTimeout(timer);
     }
   }, [location.state]);
-  // // console.log("userData", userData)
-  // useEffect(() => {
-  //   setLoading(true);
-  //   const timer = setTimeout(() => {
-  //     setIncidentFormDetails(location.state || {});
-  //     setLoading(false);
-  //   }, 400);
-  //   return () => clearTimeout(timer);
-  // }, [location.state]);
 
 
   const initialValues = useMemo(
     () => ({
-      id: incidentFormDetails?.id || "",
+      id: formId || "",
       formTypes: incidentFormDetails?.formTypes || "",
 
       incident_involved: incidentFormDetails?.incident_involved || [],
@@ -491,20 +484,19 @@ const IncidentForm = () => {
       }
       const ambulationStr = ambulationArr.length > 0 ? ambulationArr.join(",") : "";
 
-      // Informed Of Incident: collect selected labels
+      // informedOfIncident
       let informedOfIncidentArr = [];
-      InformedOfIncident.forEach(option => {
-        if (values[option.key]) {
-          if (option.key === "informed_of_inc_other" && values.informed_of_inc_other_text) {
-            // Add "Other" text at the end
-            informedOfIncidentArr.push(values.informed_of_inc_other_text);
-          } else {
-            informedOfIncidentArr.push(option.label);
-          }
+      let otherValue = "";
+      (values.informed_of_incident || []).forEach(label => {
+        if (label === "Other" && values.informed_of_inc_other_text) {
+          otherValue = values.informed_of_inc_other_text;
+        } else {
+          informedOfIncidentArr.push(label);
         }
       });
-
-
+      if (otherValue) {
+        informedOfIncidentArr.push(otherValue);
+      }
       // IncidentDateTime set
       const incidentDateTime = values.incident_date && values.incident_tm
         ? dayjs(`${values.incident_date} ${values.incident_tm}`, "YYYY-MM-DD HH:mm")
@@ -616,10 +608,10 @@ const IncidentForm = () => {
         // Informed Of Incidents
         informed_of_incident: informedOfIncidentArr.join(","),
         ...InformedOfIncident.reduce((acc, option) => {
-          acc[option.key] = !!values[option.key] ? 1 : 0;
+          acc[option.key] = values.informed_of_incident?.includes(option.label) ? 1 : 0;
           return acc;
         }, {}),
-        ...(values.informed_of_inc_other && values.informed_of_inc_other_text
+        ...(values.informed_of_incident?.includes("Other") && values.informed_of_inc_other_text
           ? { informed_of_inc_other_text: values.informed_of_inc_other_text }
           : {}),
         initial_assistant_gm: values?.initial_assistant_gm || "",
@@ -676,8 +668,8 @@ const IncidentForm = () => {
       const pad = n => n.toString().padStart(2, '0');
       const logged_at = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
       const rawStringData = { ...payload };
-      rawStringData['is_completed'] = 0;
-      rawStringData['logged_at'] = logged_at;
+      rawStringData['is_completed'] = incidentFormDetails?.is_completed ? incidentFormDetails?.is_completed : 0;
+      rawStringData['logged_at'] = incidentFormDetails?.logged_at ? incidentFormDetails?.logged_at : logged_at;
 
       // console.log("rawStringData", rawStringData)
       const found = userData.rooms.find(r =>
@@ -685,16 +677,23 @@ const IncidentForm = () => {
       );
       const finalPayload = {
         form_type: 1,
-        room_id: found?.id,
+        ...(formId && { form_id: formId }),
+        ...(!formId && { room_id: found?.id }),
         follow_up_assigned_to: values?.follow_up_assigned_to,
         data: JSON.stringify(rawStringData)
       };
       // console.log("finalPayload", finalPayload)
       try {
-        const response = await StaticFormServices.logFormSubmit(finalPayload);
-        // Only show toast if success and use ResponseText
-        if (response?.ResponseCode === "1") {
-          toast.success(response?.ResponseText || "Form submitted successfully.");
+        if (formId) {
+          const response = await StaticFormServices.logFormUpdate(finalPayload);
+          if (response?.ResponseCode === "1") {
+            toast.success("Form Updated successfully.");
+          }
+        } else {
+          const response = await StaticFormServices.logFormSubmit(finalPayload);
+          if (response?.ResponseCode === "1") {
+            toast.success(response?.ResponseText || "Form submitted successfully.");
+          }
         }
       } catch (error) {
         toast.error("Form is not submitted. Please try again.");

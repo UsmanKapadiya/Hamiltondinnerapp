@@ -195,9 +195,6 @@ const StaticForms = () => {
         if (form_type_id === 1 || form_type_id === 3) {
           return (
             <Box display="flex" justifyContent="center" alignItems="center" gap={1}>
-              {/* <IconButton key={`edit-btn-${params.row.id}`} size="small" title="Edit" sx={{ color: colors.blueAccent[600] }}>
-                <EditIcon fontSize="small" />
-              </IconButton> */}
               <IconButton
                 key={`edit-btn-${params.row.id}`}
                 size="small"
@@ -210,9 +207,9 @@ const StaticForms = () => {
                       "form_id": params.row.id
                     }
                     const response = await StaticFormServices.getFormById(payload);
-                    if(response?.ResponseCode === '1'){
-                      console.log("here")
-                        navigate(`incidentForm-edit/${params.row.id}`, { state: { formData: response } })
+                    if (response?.ResponseCode === '1') {
+                      console.log("here", response)
+                      navigate(`incidentForm-edit/${params.row.id}`, { state: { formData: response, id: params.row.id } })
                     }
                     console.log(response)
                     // Navigate to the incident form edit screen, passing the form data
