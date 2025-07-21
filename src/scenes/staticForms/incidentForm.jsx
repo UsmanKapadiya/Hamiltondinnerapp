@@ -201,6 +201,9 @@ const IncidentForm = () => {
     const userDatas = localStorage.getItem("userData");
     return userDatas ? JSON.parse(userDatas) : null;
   });
+
+  const canEditFollowUp = userData?.role === "admin" || userData?.role === "superadmin";
+  const canUpdateFollowUp = userData?.role === "admin" || userData?.role === "superadmin" || userData?.user_id === location?.state?.formData?.follow_up_user?.id;
   // Add this utility function above your IncidentForm component
 
   function mapIncidentInvolved(rawString) {
@@ -318,8 +321,8 @@ const IncidentForm = () => {
         ...mapInformedOfIncident(data.informed_of_incident),
         fall_assessment: data.fall_assessment ? data.fall_assessment.split(",") : [],
         follow_up_assigned_to: incidentFormDetails?.follow_up_assigned_to || 1,
-        show_follow_up_details: followUpFilled || incidentFormDetails?.show_follow_up_details || false,
-        // Attachments
+        // show_follow_up_details: followUpFilled || incidentFormDetails?.show_follow_up_details || false,
+        show_follow_up_details: formId ? true : (followUpFilled || incidentFormDetails?.show_follow_up_details || false),
         attachments: location.state.formData.attachments || [],
         // Fill other fields as needed
       });
@@ -429,7 +432,8 @@ const IncidentForm = () => {
 
 
       attachments: incidentFormDetails?.attachments || [],
-      show_follow_up_details: incidentFormDetails?.show_follow_up_details || false,
+      show_follow_up_details: formId ? true : incidentFormDetails?.show_follow_up_details || false,
+
 
     }),
     [incidentFormDetails]
@@ -1770,6 +1774,7 @@ const IncidentForm = () => {
                       onChange={handleChange}
                       onBlur={handleBlur}
                       sx={{ mb: 2 }}
+                      disabled={formId ? !canUpdateFollowUp : !canEditFollowUp}
                     />
                     <TextField
                       fullWidth
@@ -1782,6 +1787,7 @@ const IncidentForm = () => {
                       onChange={handleChange}
                       onBlur={handleBlur}
                       sx={{ mb: 2 }}
+                      disabled={formId ? !canUpdateFollowUp : !canEditFollowUp}
                     />
                     <TextField
                       fullWidth
@@ -1794,6 +1800,7 @@ const IncidentForm = () => {
                       onChange={handleChange}
                       onBlur={handleBlur}
                       sx={{ mb: 2 }}
+                      disabled={formId ? !canUpdateFollowUp : !canEditFollowUp}
                     />
                     <TextField
                       fullWidth
@@ -1806,6 +1813,7 @@ const IncidentForm = () => {
                       onChange={handleChange}
                       onBlur={handleBlur}
                       sx={{ mb: 2 }}
+                      disabled={formId ? !canUpdateFollowUp : !canEditFollowUp}
                     />
                     <TextField
                       fullWidth
@@ -1818,6 +1826,7 @@ const IncidentForm = () => {
                       onChange={handleChange}
                       onBlur={handleBlur}
                       sx={{ mb: 2 }}
+                      disabled={formId ? !canUpdateFollowUp : !canEditFollowUp}
                     />
                   </>
                 )}
