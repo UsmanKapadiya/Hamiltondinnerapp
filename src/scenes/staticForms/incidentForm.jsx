@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   TextField,
-  useMediaQuery,
   FormGroup,
   FormControlLabel,
   Checkbox,
@@ -25,7 +24,7 @@ import CustomButton from "../../components/CustomButton";
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
+import DialogActions from '@mui/material/DialogActions'
 
 const incidentInvolvedData = [
   { key: "inc_invl_resident", label: "Resident" },
@@ -192,12 +191,12 @@ const validationSchema = yup.object({
   completed_date: yup.string().required("Completed Date is required"),
   completed_tm: yup.string().required("Completed Time is required"),
 
+  follow_up_assigned_to: yup.string().required("Assign Follow Up to is required"),
 });
 
 const IncidentForm = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const isNonMobile = useMediaQuery("(min-width:600px)");
   const [incidentFormDetails, setIncidentFormDetails] = useState({});
   const [loading, setLoading] = useState(true);
   const [formId, setFormId] = useState();
@@ -205,119 +204,64 @@ const IncidentForm = () => {
     const userDatas = localStorage.getItem("userData");
     return userDatas ? JSON.parse(userDatas) : null;
   });
-
-  const canEditFollowUp = userData?.role === "admin" || userData?.role === "superadmin";
-  const canUpdateFollowUp = userData?.role === "admin" || userData?.role === "superadmin" || userData?.user_id === location?.state?.formData?.follow_up_user?.id;
+  const canEditFollowUp = ["admin", "superadmin"].includes(userData?.role);
+  const canUpdateFollowUp = canEditFollowUp || userData?.user_id === location?.state?.formData?.follow_up_user?.id;
+  const [canEditFollowUpFields, setCanEditFollowUpFields] = useState(false);
 
   const [showFollowUpConfirm, setShowFollowUpConfirm] = useState(false);
   const [pendingSubmitValues, setPendingSubmitValues] = useState(null);
   const [pendingSubmitActions, setPendingSubmitActions] = useState(null);
 
-
-  function mapIncidentInvolved(rawString) {
-    if (!rawString) return { incident_involved: [], inc_invl_other_text: "" };
+  // Generic mapping function to reduce redundancy
+  function mapOptions(rawString, options, otherLabel = "Other", otherTextKey = "other_text", arrKey = "arr") {
+    if (!rawString) {
+      return {
+        [arrKey]: [],
+        [otherTextKey]: "",
+      };
+    }
     const values = rawString.split(",").map(v => v.trim());
-    const labels = incidentInvolvedData.map(opt => opt.label);
-    const incident_involved = [];
-    let inc_invl_other_text = "";
+    const labels = options.map(opt => opt.label);
+    const resultArr = [];
+    let otherText = "";
 
     values.forEach(val => {
       if (labels.includes(val)) {
-        incident_involved.push(val);
+        resultArr.push(val);
       } else if (val) {
-        incident_involved.push("Other");
-        inc_invl_other_text = val;
+        resultArr.push(otherLabel);
+        otherText = val;
       }
     });
 
-    return { incident_involved, inc_invl_other_text };
+    return {
+      [arrKey]: resultArr,
+      [otherTextKey]: otherText,
+    };
   }
 
-  function mapTypeOfIncident(rawString) {
-    if (!rawString) return { type_of_incident: [], type_of_inc_other_text: "" };
-    const values = rawString.split(",").map(v => v.trim());
-    const labels = typeOfIncidentOptions.map(opt => opt.label);
-    const type_of_incident = [];
-    let type_of_inc_other_text = "";
+  const mapIncidentInvolved = (rawString) =>
+    mapOptions(rawString, incidentInvolvedData, "Other", "inc_invl_other_text", "incident_involved");
 
-    values.forEach(val => {
-      if (labels.includes(val)) {
-        type_of_incident.push(val);
-      } else if (val) {
-        type_of_incident.push("Other");
-        type_of_inc_other_text = val;
-      }
-    });
+  const mapTypeOfIncident = (rawString) =>
+    mapOptions(rawString, typeOfIncidentOptions, "Other", "type_of_inc_other_text", "type_of_incident");
 
-    return { type_of_incident, type_of_inc_other_text };
-  }
+  const mapConditionAtIncident = (rawString) =>
+    mapOptions(rawString, conditionAtTimeOptions, "Other (Specify)", "condition_at_inc_other_text", "condition_at_incident");
 
-  function mapConditionAtIncident(rawString) {
-    if (!rawString) return { condition_at_incident: [], condition_at_inc_other_text: "" };
-    const values = rawString.split(",").map(v => v.trim());
-    const labels = conditionAtTimeOptions.map(opt => opt.label);
-    const condition_at_incident = [];
-    let condition_at_inc_other_text = "";
+  const mapAmbulation = (rawString) =>
+    mapOptions(rawString, ambulationOptions, "Other (Specify)", "ambulation_other_text", "ambulation");
 
-    values.forEach(val => {
-      if (labels.includes(val)) {
-        condition_at_incident.push(val);
-      } else if (val) {
-        condition_at_incident.push("Other (Specify)");
-        condition_at_inc_other_text = val;
-      }
-    });
+  const mapInformedOfIncident = (rawString) =>
+    mapOptions(rawString, InformedOfIncident, "Other", "informed_of_inc_other_text", "informed_of_incident");
 
-    return { condition_at_incident, condition_at_inc_other_text };
-  }
-  function mapAmbulation(rawString) {
-    if (!rawString) return { ambulation: [], ambulation_other_text: "" };
-    const values = rawString.split(",").map(v => v.trim());
-    const labels = ambulationOptions.map(opt => opt.label);
-    const ambulation = [];
-    let ambulation_other_text = "";
-
-    values.forEach(val => {
-      if (labels.includes(val)) {
-        ambulation.push(val);
-      } else if (val) {
-        ambulation.push("Other (Specify)");
-        ambulation_other_text = val;
-      }
-    });
-
-    return { ambulation, ambulation_other_text };
-  }
-  function mapInformedOfIncident(rawString) {
-    if (!rawString) return { informed_of_incident: [], informed_of_inc_other_text: "" };
-    const values = rawString.split(",").map(v => v.trim());
-    const labels = InformedOfIncident.map(opt => opt.label);
-    const informed_of_incident = [];
-    let informed_of_inc_other_text = "";
-
-    values.forEach(val => {
-      if (labels.includes(val)) {
-        informed_of_incident.push(val);
-      } else if (val) {
-        informed_of_incident.push("Other");
-        informed_of_inc_other_text = val;
-      }
-    });
-
-    return { informed_of_incident, informed_of_inc_other_text };
-  }
   useEffect(() => {
     setLoading(true);
     if (location.state?.formData?.ResponseCode === "1") {
       const data = location.state.formData.form_data || {};
-      setFormId(location.state?.id)
-      const followUpFilled =
-        !!data.followUp_issue ||
-        !!data.followUp_findings ||
-        !!data.followUp_possible_solutions ||
-        !!data.followUp_action_plan ||
-        !!data.followUp_examine_result;
-
+      setFormId(location.state?.id);
+      const followUpFilled = ["followUp_issue", "followUp_findings", "followUp_possible_solutions", "followUp_action_plan", "followUp_examine_result"]
+        .some(key => !!data[key]);
       setIncidentFormDetails({
         ...data,
         ...mapIncidentInvolved(data.incident_involved),
@@ -341,106 +285,69 @@ const IncidentForm = () => {
   }, [location.state]);
 
 
-  const initialValues = useMemo(
-    () => ({
-      id: formId || "",
-      formTypes: incidentFormDetails?.formTypes || "",
-
-      incident_involved: incidentFormDetails?.incident_involved || [],
-      inc_invl_other_text: incidentFormDetails?.inc_invl_other_text || "",
-
-      incident_date: incidentFormDetails?.incident_date || "",
-      incident_tm: incidentFormDetails?.incident_tm || "",
-      incident_location: incidentFormDetails?.incident_location || "",
-      witnessed_by: incidentFormDetails?.witnessed_by || "",
-      discovery_date: incidentFormDetails?.discovery_date || "",
-      discovery_tm: incidentFormDetails?.discovery_tm || "",
-      discovery_location: incidentFormDetails?.discovery_location || "",
-      discovered_by: incidentFormDetails?.discovered_by || "",
-
-      type_of_incident: incidentFormDetails?.type_of_incident || [],
-      type_of_inc_other_text: incidentFormDetails?.type_of_inc_other_text || "",
-
-      // Safety Devices
-      safety_fob: incidentFormDetails?.safety_fob ?? "No",
-      safety_callbell: incidentFormDetails?.safety_callbell ?? "No",
-      safety_caution: incidentFormDetails?.safety_caution ?? "No",
-      safety_other: incidentFormDetails?.safety_other ?? "",
-
-      // Other Witnesses
-      other_witnesses: incidentFormDetails?.other_witnesses ?? "No",
-      witness_name1: incidentFormDetails?.witness_name1 || "",
-      witness_position1: incidentFormDetails?.witness_position1 || "",
-      witness_name2: incidentFormDetails?.witness_name2 || "",
-      witness_position2: incidentFormDetails?.witness_position2 || "",
-
-      // Condition At Time of Incident
-      condition_at_incident: incidentFormDetails?.condition_at_incident || [],
-      condition_at_inc_other_text: incidentFormDetails?.condition_at_inc_other_text || "",
-
-      // Fall Assessment 
-      fall_assessment: incidentFormDetails?.fall_assessment || [],
-
-      // Ambulation
-      ambulation: incidentFormDetails?.ambulation || [],
-      ambulation_other_text: incidentFormDetails?.ambulation_other_text || "",
-
-      // Fire Section
-      fire_alarm_pulled: incidentFormDetails?.fire_alarm_pulled ?? "No",
-      fire_false_alarm: incidentFormDetails?.fire_false_alarm ?? "No",
-      fire_extinguisher_used: incidentFormDetails?.fire_extinguisher_used ?? "No",
-      fire_personal_injury: incidentFormDetails?.fire_personal_injury ?? "No",
-      fire_property_damage: incidentFormDetails?.fire_property_damage ?? "No",
-
-      // FACTUAL CONCISE DESCRIPTION OF INCIDENT, INJURY AND ACTION TAKEN
-      factual_description: incidentFormDetails?.factual_description || "",
-
-      // NOTIFICATION
-      // Informed Of Incident
-      informed_of_incident: incidentFormDetails?.informed_of_incident || [],
-      initial_assistant_gm: incidentFormDetails?.initial_assistant_gm || "",
-      initial_gm: incidentFormDetails?.initial_gm || "",
-      initial_risk_mng_committee: incidentFormDetails?.initial_risk_mng_committee || "",
-      initial_other: incidentFormDetails?.initial_other || "",
-      informed_of_inc_other_text: incidentFormDetails?.informed_of_inc_other_text,
-
-      // NOTIFICATION
-      // family doctor
-      notified_family_doctor: incidentFormDetails?.notified_family_doctor || "",
-      notified_family_doctor_date: incidentFormDetails?.notified_family_doctor_date || "",
-      notified_family_doctor_dt: incidentFormDetails?.notified_family_doctor_dt || "",
-      notified_family_doctor_tm: incidentFormDetails?.notified_family_doctor_tm || "",
-      notified_other: incidentFormDetails?.notified_other || "",
-
-      notified_resident_responsible_party: incidentFormDetails?.notified_resident_responsible_party ?? "no",
-      notified_resident_name: incidentFormDetails?.notified_resident_name || "",
-      notified_resident_date: incidentFormDetails?.notified_resident_date || "",
-      notified_resident_tm: incidentFormDetails?.notified_resident_tm || "",
-
-      // completed_by
-      completed_by: incidentFormDetails?.completed_by || "",
-      completed_position: incidentFormDetails?.completed_position || "",
-      completed_date: incidentFormDetails?.completed_date || "",
-      completed_tm: incidentFormDetails?.completed_tm || "",
-
-      //Follow Up Assign to 
-      follow_up_assigned_to: incidentFormDetails?.follow_up_assigned_to || "",
-
-      // Show Follow Up Details
-      followUp_issue: incidentFormDetails?.followUp_issue || '',
-      followUp_findings: incidentFormDetails?.followUp_findings || '',
-      followUp_possible_solutions: incidentFormDetails?.followUp_possible_solutions || '',
-      followUp_action_plan: incidentFormDetails?.followUp_action_plan || '',
-      followUp_examine_result: incidentFormDetails?.followUp_examine_result || '',
-
-
-      attachments: incidentFormDetails?.attachments || [],
-      show_follow_up_details: formId ? true : incidentFormDetails?.show_follow_up_details || false,
-
-
-    }),
-    [incidentFormDetails]
-  );
+  const initialValues = useMemo(() => ({
+    id: formId || "",
+    formTypes: incidentFormDetails?.formTypes || "",
+    incident_involved: incidentFormDetails?.incident_involved || [],
+    inc_invl_other_text: incidentFormDetails?.inc_invl_other_text || "",
+    incident_date: incidentFormDetails?.incident_date || "",
+    incident_tm: incidentFormDetails?.incident_tm || "",
+    incident_location: incidentFormDetails?.incident_location || "",
+    witnessed_by: incidentFormDetails?.witnessed_by || "",
+    discovery_date: incidentFormDetails?.discovery_date || "",
+    discovery_tm: incidentFormDetails?.discovery_tm || "",
+    discovery_location: incidentFormDetails?.discovery_location || "",
+    discovered_by: incidentFormDetails?.discovered_by || "",
+    type_of_incident: incidentFormDetails?.type_of_incident || [],
+    type_of_inc_other_text: incidentFormDetails?.type_of_inc_other_text || "",
+    safety_fob: incidentFormDetails?.safety_fob ?? "No",
+    safety_callbell: incidentFormDetails?.safety_callbell ?? "No",
+    safety_caution: incidentFormDetails?.safety_caution ?? "No",
+    safety_other: incidentFormDetails?.safety_other ?? "",
+    other_witnesses: incidentFormDetails?.other_witnesses ?? "No",
+    witness_name1: incidentFormDetails?.witness_name1 || "",
+    witness_position1: incidentFormDetails?.witness_position1 || "",
+    witness_name2: incidentFormDetails?.witness_name2 || "",
+    witness_position2: incidentFormDetails?.witness_position2 || "",
+    condition_at_incident: incidentFormDetails?.condition_at_incident || [],
+    condition_at_inc_other_text: incidentFormDetails?.condition_at_inc_other_text || "",
+    fall_assessment: incidentFormDetails?.fall_assessment || [],
+    ambulation: incidentFormDetails?.ambulation || [],
+    ambulation_other_text: incidentFormDetails?.ambulation_other_text || "",
+    fire_alarm_pulled: incidentFormDetails?.fire_alarm_pulled ?? "No",
+    fire_false_alarm: incidentFormDetails?.fire_false_alarm ?? "No",
+    fire_extinguisher_used: incidentFormDetails?.fire_extinguisher_used ?? "No",
+    fire_personal_injury: incidentFormDetails?.fire_personal_injury ?? "No",
+    fire_property_damage: incidentFormDetails?.fire_property_damage ?? "No",
+    factual_description: incidentFormDetails?.factual_description || "",
+    informed_of_incident: incidentFormDetails?.informed_of_incident || [],
+    initial_assistant_gm: incidentFormDetails?.initial_assistant_gm || "",
+    initial_gm: incidentFormDetails?.initial_gm || "",
+    initial_risk_mng_committee: incidentFormDetails?.initial_risk_mng_committee || "",
+    initial_other: incidentFormDetails?.initial_other || "",
+    informed_of_inc_other_text: incidentFormDetails?.informed_of_inc_other_text,
+    notified_family_doctor: incidentFormDetails?.notified_family_doctor || "",
+    notified_family_doctor_date: incidentFormDetails?.notified_family_doctor_date || "",
+    notified_family_doctor_dt: incidentFormDetails?.notified_family_doctor_dt || "",
+    notified_family_doctor_tm: incidentFormDetails?.notified_family_doctor_tm || "",
+    notified_other: incidentFormDetails?.notified_other || "",
+    notified_resident_responsible_party: incidentFormDetails?.notified_resident_responsible_party ?? "no",
+    notified_resident_name: incidentFormDetails?.notified_resident_name || "",
+    notified_resident_date: incidentFormDetails?.notified_resident_date || "",
+    notified_resident_tm: incidentFormDetails?.notified_resident_tm || "",
+    completed_by: incidentFormDetails?.completed_by || "",
+    completed_position: incidentFormDetails?.completed_position || "",
+    completed_date: incidentFormDetails?.completed_date || "",
+    completed_tm: incidentFormDetails?.completed_tm || "",
+    follow_up_assigned_to: incidentFormDetails?.follow_up_assigned_to || "",
+    followUp_issue: incidentFormDetails?.followUp_issue || '',
+    followUp_findings: incidentFormDetails?.followUp_findings || '',
+    followUp_possible_solutions: incidentFormDetails?.followUp_possible_solutions || '',
+    followUp_action_plan: incidentFormDetails?.followUp_action_plan || '',
+    followUp_examine_result: incidentFormDetails?.followUp_examine_result || '',
+    attachments: incidentFormDetails?.attachments || [],
+    show_follow_up_details: formId ? true : incidentFormDetails?.show_follow_up_details || false,
+  }), [incidentFormDetails, formId]);
 
 
   const handleFormSubmit = useCallback(
@@ -945,8 +852,12 @@ const IncidentForm = () => {
                     <DatePicker
                       label="Date"
                       value={values.discovery_date ? dayjs(values.discovery_date) : null}
-                      onChange={(newValue) =>
+                      onChange={(newValue) => {
                         setFieldValue("discovery_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                        if (newValue && !values.discovery_tm) {
+                          setFieldValue("discovery_tm", "12:00");
+                        }
+                      }
                       }
                       minDate={dayjs()}
                       slotProps={{
@@ -1560,8 +1471,12 @@ const IncidentForm = () => {
                     <DatePicker
                       label="Date"
                       value={values.notified_family_doctor_date ? dayjs(values.notified_family_doctor_date) : null}
-                      onChange={(newValue) =>
+                      onChange={(newValue) => {
                         setFieldValue("notified_family_doctor_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                        if (newValue && !values.notified_family_doctor_tm) {
+                          setFieldValue("notified_family_doctor_tm", "12:00");
+                        }
+                      }
                       }
                       slotProps={{
                         textField: {
@@ -1640,8 +1555,12 @@ const IncidentForm = () => {
                       <DatePicker
                         label="Date"
                         value={values.notified_resident_date ? dayjs(values.notified_resident_date) : null}
-                        onChange={(newValue) =>
-                          setFieldValue("notified_resident_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                        onChange={(newValue) => {
+                          setFieldValue("notified_resident_date", newValue ? newValue.format("YYYY-MM-DD") : "");
+                          if (newValue && !values.notified_resident_tm) {
+                            setFieldValue("notified_resident_tm", "12:00");
+                          }
+                        }
                         }
                         slotProps={{
                           textField: {
@@ -1714,8 +1633,12 @@ const IncidentForm = () => {
                     <DatePicker
                       label="Date"
                       value={values.completed_date ? dayjs(values.completed_date) : null}
-                      onChange={(newValue) =>
+                      onChange={(newValue) => {
                         setFieldValue("completed_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                        if (newValue && !values.completed_tm) {
+                          setFieldValue("completed_tm", "12:00");
+                        }
+                      }
                       }
                       slotProps={{
                         textField: {
@@ -1753,9 +1676,30 @@ const IncidentForm = () => {
                   label="Assign Follow Up to"
                   name="follow_up_assigned_to"
                   value={values.follow_up_assigned_to || ''}
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    handleChange(e);
+                    const selectedId = e.target.value;
+                    const userRole = userData?.role;
+                    const currentUserId = userData?.user_id;
+                    if (
+                      userRole === "admin" ||
+                      userRole === "superadmin" ||
+                      String(currentUserId) === String(selectedId)
+                    ) {
+                      setCanEditFollowUpFields(true);
+                    } else {
+                      setCanEditFollowUpFields(false);
+                      setFieldValue("followUp_issue", "");
+                      setFieldValue("followUp_findings", "");
+                      setFieldValue("followUp_possible_solutions", "");
+                      setFieldValue("followUp_action_plan", "");
+                      setFieldValue("followUp_examine_result", "");
+                    }
+                  }}
                   onBlur={handleBlur}
                   sx={{ mb: 2 }}
+                  error={touched.follow_up_assigned_to && Boolean(errors.follow_up_assigned_to)}
+                  helperText={touched.follow_up_assigned_to && errors.follow_up_assigned_to}
                   SelectProps={{
                     MenuProps: {
                       PaperProps: {
@@ -1779,6 +1723,7 @@ const IncidentForm = () => {
                       </MenuItem>
                     ))}
                 </TextField>
+
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormControlLabel
@@ -1809,7 +1754,8 @@ const IncidentForm = () => {
                       onChange={handleChange}
                       onBlur={handleBlur}
                       sx={{ mb: 2 }}
-                      disabled={formId ? !canUpdateFollowUp : !canEditFollowUp}
+                      disabled={!canEditFollowUpFields && (formId ? !canUpdateFollowUp : !canEditFollowUp)}
+                    // disabled={formId ? !canUpdateFollowUp : !canEditFollowUp} //when canEditFollowUpFields true that time enable
                     />
                     <TextField
                       fullWidth
@@ -1822,7 +1768,7 @@ const IncidentForm = () => {
                       onChange={handleChange}
                       onBlur={handleBlur}
                       sx={{ mb: 2 }}
-                      disabled={formId ? !canUpdateFollowUp : !canEditFollowUp}
+                      disabled={!canEditFollowUpFields && (formId ? !canUpdateFollowUp : !canEditFollowUp)}
                     />
                     <TextField
                       fullWidth
@@ -1835,7 +1781,7 @@ const IncidentForm = () => {
                       onChange={handleChange}
                       onBlur={handleBlur}
                       sx={{ mb: 2 }}
-                      disabled={formId ? !canUpdateFollowUp : !canEditFollowUp}
+                      disabled={!canEditFollowUpFields && (formId ? !canUpdateFollowUp : !canEditFollowUp)}
                     />
                     <TextField
                       fullWidth
@@ -1848,7 +1794,7 @@ const IncidentForm = () => {
                       onChange={handleChange}
                       onBlur={handleBlur}
                       sx={{ mb: 2 }}
-                      disabled={formId ? !canUpdateFollowUp : !canEditFollowUp}
+                      disabled={!canEditFollowUpFields && (formId ? !canUpdateFollowUp : !canEditFollowUp)}
                     />
                     <TextField
                       fullWidth
@@ -1861,7 +1807,7 @@ const IncidentForm = () => {
                       onChange={handleChange}
                       onBlur={handleBlur}
                       sx={{ mb: 2 }}
-                      disabled={formId ? !canUpdateFollowUp : !canEditFollowUp}
+                      disabled={!canEditFollowUpFields && (formId ? !canUpdateFollowUp : !canEditFollowUp)}
                     />
                   </>
                 )}
