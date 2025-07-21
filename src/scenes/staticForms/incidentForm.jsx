@@ -22,6 +22,10 @@ import { DatePicker, TimePicker, LocalizationProvider } from "@mui/x-date-picker
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import CustomButton from "../../components/CustomButton";
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 
 const incidentInvolvedData = [
   { key: "inc_invl_resident", label: "Resident" },
@@ -202,8 +206,13 @@ const IncidentForm = () => {
     return userDatas ? JSON.parse(userDatas) : null;
   });
 
-  const canEditFollowUp = userData?.role === "admin" || userData?.role === "superadmin";
+  const canEditFollowUp = userData?.role === "admin" || userData?.role === "superadmin"; 
   const canUpdateFollowUp = userData?.role === "admin" || userData?.role === "superadmin" || userData?.user_id === location?.state?.formData?.follow_up_user?.id;
+  
+  const [showFollowUpConfirm, setShowFollowUpConfirm] = useState(false);
+  const [pendingSubmitValues, setPendingSubmitValues] = useState(null);
+  const [pendingSubmitActions, setPendingSubmitActions] = useState(null);
+
   // Add this utility function above your IncidentForm component
 
   function mapIncidentInvolved(rawString) {
@@ -442,273 +451,307 @@ const IncidentForm = () => {
 
   const handleFormSubmit = useCallback(
     async (values, actions) => {
-      let incidentInvolvedArr = [];
-      (values.incident_involved || []).forEach(val => {
-        if (val !== "Other") {
-          incidentInvolvedArr.push(val);
-        }
-      });
-      if (values.incident_involved?.includes("Other") && values.inc_invl_other_text) {
-        incidentInvolvedArr.push(values.inc_invl_other_text);
-      }
+      const isFollowUpIncomplete = values.show_follow_up_details &&
+        (
+          !values.followUp_issue ||
+          !values.followUp_findings ||
+          !values.followUp_possible_solutions ||
+          !values.followUp_action_plan ||
+          !values.followUp_examine_result
+        );
 
-      // Type Of Incident
-      let typeOfIncidentArr = [];
-      let otherTypeValue = "";
-      (values.type_of_incident || []).forEach(type => {
-        if (type === "Other" && values.type_of_inc_other_text) {
-          otherTypeValue = values.type_of_inc_other_text;
-        } else if (type !== "Other") {
-          typeOfIncidentArr.push(type);
-        }
-      });
-      if (otherTypeValue) {
-        typeOfIncidentArr.push(otherTypeValue);
-      }
 
-      // Condition At Time of Incident
-      let conditionAtIncidentArr = (values.condition_at_incident || []).filter(
-        (item) => item !== "Other (Specify)"
-      );
-      if (
-        values.condition_at_incident?.includes("Other (Specify)") &&
-        values.condition_at_inc_other_text
-      ) {
-        conditionAtIncidentArr.push(values.condition_at_inc_other_text);
-      }
-      const conditionAtIncidentStr = conditionAtIncidentArr.join(",");
+      const userRole = userData?.role;
+      const isConciergeOrNurse = userRole === "concierge" || userRole === "nurse";
+      const isFollowUpHidden = !values.show_follow_up_details;
 
-      // Build ambulation string for payload
-      let ambulationArr = (values.ambulation || []).filter(item => item !== "Other (Specify)");
-      if (
-        values.ambulation?.includes("Other (Specify)") &&
-        values.ambulation_other_text
-      ) {
-        ambulationArr.push(values.ambulation_other_text);
-      }
-      const ambulationStr = ambulationArr.length > 0 ? ambulationArr.join(",") : "";
-
-      // informedOfIncident
-      let informedOfIncidentArr = [];
-      let otherValue = "";
-      (values.informed_of_incident || []).forEach(label => {
-        if (label === "Other" && values.informed_of_inc_other_text) {
-          otherValue = values.informed_of_inc_other_text;
-        } else {
-          informedOfIncidentArr.push(label);
-        }
-      });
-      if (otherValue) {
-        informedOfIncidentArr.push(otherValue);
-      }
-      // IncidentDateTime set
-      const incidentDateTime = values.incident_date && values.incident_tm
-        ? dayjs(`${values.incident_date} ${values.incident_tm}`, "YYYY-MM-DD HH:mm")
-        : null;
-      const discoveryDateTime = values.discovery_date && values.discovery_tm
-        ? dayjs(`${values.discovery_date} ${values.discovery_tm}`, "YYYY-MM-DD HH:mm")
-        : null;
-
-      const notifiedFamilyDoctorDateTime = values.notified_family_doctor_date && values.notified_family_doctor_tm
-        ? dayjs(`${values.notified_family_doctor_date} ${values.notified_family_doctor_tm}`, "YYYY-MM-DD HH:mm")
-        : null;
-
-      const notifiedResidentDateTime = values.notified_resident_date && values.notified_resident_tm
-        ? dayjs(`${values.notified_resident_date} ${values.notified_resident_tm}`, "YYYY-MM-DD HH:mm")
-        : null;
-
-      const completedDateTime = values.completed_date && values.completed_tm
-        ? dayjs(`${values.completed_date} ${values.completed_tm}`, "YYYY-MM-DD HH:mm")
-        : null;
-
-      const payload = {
-        incident_involved: incidentInvolvedArr.join(","),
-        inc_invl_staff: values.incident_involved?.includes("Staff") ? 1 : 0,
-        inc_invl_resident: values.incident_involved?.includes("Resident") ? 1 : 0,
-        inc_invl_visitor: values.incident_involved?.includes("Visitor") ? 1 : 0,
-        inc_invl_other: values.incident_involved?.includes("Other") ? 1 : 0,
-        incident_date: incidentDateTime
-          ? dayjs(incidentDateTime).format("DD MMM YYYY hh:mm A")
-          : "",
-        incident_dt: incidentDateTime
-          ? dayjs(incidentDateTime).format("DD MMM YYYY")
-          : "",
-        incident_tm: values.incident_tm
-          ? dayjs(values.incident_tm, "HH:mm").format("hh:mm A")
-          : "",
-        incident_location: values.incident_location || "",
-        witnessed_by: values.witnessed_by || "",
-        discovery_date: discoveryDateTime
-          ? dayjs(discoveryDateTime).format("DD MMM YYYY hh:mm A")
-          : "",
-        discovery_dt: discoveryDateTime
-          ? dayjs(discoveryDateTime).format("DD MMM YYYY")
-          : "",
-        discovery_tm: values.discovery_tm
-          ? dayjs(values.discovery_tm, "HH:mm").format("hh:mm A")
-          : "",
-        discovery_location: values.discovery_location || "",
-        discovered_by: values.discovered_by || "",
-
-        type_of_incident: typeOfIncidentArr.join(","),
-        ...typeOfIncidentOptions.reduce((acc, option) => {
-          acc[option.key] = values.type_of_incident?.includes(option.label) ? 1 : 0;
-          return acc;
-        }, {}),
-
-        ...(values.type_of_inc_other_text
-          ? { type_of_inc_other_text: values.type_of_inc_other_text }
-          : {}),
-
-        ...(values.safety_fob ? { safety_fob: values.safety_fob } : {}),
-        ...(values.safety_callbell ? { safety_callbell: values.safety_callbell } : {}),
-        ...(values.safety_caution ? { safety_caution: values.safety_caution } : {}),
-        ...(values.safety_other ? { safety_other: values.safety_other } : {}),
-
-        other_witnesses: values.other_witnesses || "",
-        ...(values.other_witnesses === "Yes" && {
-          ...(values.witness_name1 ? { witness_name1: values.witness_name1 } : {}),
-          ...(values.witness_position1 ? { witness_position1: values.witness_position1 } : {}),
-          ...(values.witness_name2 ? { witness_name2: values.witness_name2 } : {}),
-          ...(values.witness_position2 ? { witness_position2: values.witness_position2 } : {}),
-        }),
-
-        condition_at_incident: conditionAtIncidentStr,
-        ...conditionAtTimeOptions.reduce((acc, option) => {
-          acc[option.key] = values.condition_at_incident?.includes(option.label) ? 1 : 0;
-          return acc;
-        }, {}),
-        ...(values.condition_at_incident?.includes('Other (Specify)') && values.condition_at_inc_other_text
-          ? { condition_at_inc_other_text: values.condition_at_inc_other_text }
-          : {}),
-
-        // fall_assessment 
-        fall_assessment: (values.fall_assessment || []).join(","),
-        ...fallAssessmentOptions.reduce((acc, option) => {
-          acc[option.key] = values.fall_assessment?.includes(option.label) ? 1 : 0;
-          return acc;
-        }, {}),
-
-        // ambulation: incidentFormDetails?.ambulation || [],
-        ...(ambulationStr ? { ambulation: ambulationStr } : {}),
-        ...(values.ambulation?.includes("Other (Specify)") && values.ambulation_other_text
-          ? { ambulation_other_text: values.ambulation_other_text }
-          : {}),
-        ...ambulationOptions.reduce((acc, option) => {
-          acc[option.key] = values.ambulation?.includes(option.label) ? 1 : 0;
-          return acc;
-        }, {}),
-
-        // Fire
-        ...(values.fire_alarm_pulled ? { fire_alarm_pulled: values.fire_alarm_pulled } : {}),
-        ...(values.fire_false_alarm ? { fire_false_alarm: values.fire_false_alarm } : {}),
-        ...(values.fire_extinguisher_used ? { fire_extinguisher_used: values.fire_extinguisher_used } : {}),
-        ...(values.fire_personal_injury ? { fire_personal_injury: values.fire_personal_injury } : {}),
-        ...(values.fire_property_damage ? { fire_property_damage: values.fire_property_damage } : {}),
-
-        // Factual
-        factual_description: values?.factual_description || "",
-
-        // Informed Of Incidents
-        informed_of_incident: informedOfIncidentArr.join(","),
-        ...InformedOfIncident.reduce((acc, option) => {
-          acc[option.key] = values.informed_of_incident?.includes(option.label) ? 1 : 0;
-          return acc;
-        }, {}),
-        ...(values.informed_of_incident?.includes("Other") && values.informed_of_inc_other_text
-          ? { informed_of_inc_other_text: values.informed_of_inc_other_text }
-          : {}),
-        initial_assistant_gm: values?.initial_assistant_gm || "",
-        initial_gm: values?.initial_gm || "",
-        initial_risk_mng_committee: values?.initial_risk_mng_committee || "",
-        initial_other: values?.initial_other || "",
-
-        notified_family_doctor: values.notified_family_doctor || "",
-        notified_family_doctor_date: notifiedFamilyDoctorDateTime
-          ? dayjs(notifiedFamilyDoctorDateTime).format("DD MMM YYYY hh:mm A")
-          : "",
-        notified_family_doctor_dt: notifiedFamilyDoctorDateTime
-          ? dayjs(notifiedFamilyDoctorDateTime).format("DD MMM YYYY")
-          : "",
-        notified_family_doctor_tm: values.notified_family_doctor_tm
-          ? dayjs(values.notified_family_doctor_tm, "HH:mm").format("hh:mm A")
-          : "",
-        notified_other: values.notified_other || "",
-
-        notified_resident_responsible_party: values.notified_resident_responsible_party || "",
-        notified_resident_name: values.notified_resident_name || "",
-        notified_resident_date: notifiedResidentDateTime
-          ? dayjs(notifiedResidentDateTime).format("DD MMM YYYY hh:mm A")
-          : "",
-        notified_resident_dt: notifiedResidentDateTime
-          ? dayjs(notifiedResidentDateTime).format("DD MMM YYYY")
-          : "",
-        notified_resident_tm: values.notified_resident_tm
-          ? dayjs(values.notified_resident_tm, "HH:mm").format("hh:mm A")
-          : "",
-
-        // Completed
-        completed_by: values.completed_by || "",
-        completed_position: values.completed_position || "",
-        completed_date: completedDateTime
-          ? dayjs(completedDateTime).format("DD MMM YYYY hh:mm A")
-          : "",
-        completed_dt: completedDateTime
-          ? dayjs(completedDateTime).format("DD MMM YYYY")
-          : "",
-        completed_tm: values.completed_tm
-          ? dayjs(values.completed_tm, "HH:mm").format("hh:mm A")
-          : "",
-
-        followUp_issue: values.followUp_issue || "",
-        followUp_findings: values?.followUp_findings || '',
-        followUp_possible_solutions: values?.followUp_possible_solutions || '',
-        followUp_action_plan: values?.followUp_action_plan || '',
-        followUp_examine_result: values?.followUp_examine_result || '',
-
-      };
-      // console.log("Payload", payload);
-      const now = new Date();
-      const pad = n => n.toString().padStart(2, '0');
-      const logged_at = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-      const rawStringData = { ...payload };
-      rawStringData['is_completed'] = incidentFormDetails?.is_completed ? incidentFormDetails?.is_completed : 0;
-      rawStringData['logged_at'] = incidentFormDetails?.logged_at ? incidentFormDetails?.logged_at : logged_at;
-
-      // console.log("rawStringData", rawStringData)
-      const found = userData.rooms.find(r =>
-        String(r.name).toLowerCase() === String(values?.room_number).toLowerCase()
-      );
-      const finalPayload = {
-        form_type: 1,
-        ...(formId && { form_id: formId }),
-        ...(!formId && { room_id: found?.id }),
-        follow_up_assigned_to: values?.follow_up_assigned_to,
-        data: JSON.stringify(rawStringData)
-      };
-      // console.log("finalPayload", finalPayload)
-      try {
-        if (formId) {
-          const response = await StaticFormServices.logFormUpdate(finalPayload);
-          if (response?.ResponseCode === "1") {
-            toast.success("Form Updated successfully.");
-          }
-        } else {
-          const response = await StaticFormServices.logFormSubmit(finalPayload);
-          if (response?.ResponseCode === "1") {
-            toast.success(response?.ResponseText || "Form submitted successfully.");
-          }
-        }
-      } catch (error) {
-        toast.error("Form is not submitted. Please try again.");
-      } finally {
+      if (!isConciergeOrNurse && !isFollowUpHidden && isFollowUpIncomplete) {
+        setPendingSubmitValues(values);
+        setPendingSubmitActions(actions);
+        setShowFollowUpConfirm(true);
         setLoading(false);
+        return;
       }
-      // Submit payload to API here
+
+      // If no confirmation needed, call API directly
+      await submitIncidentForm(values, actions);
     },
     [initialValues, navigate]
   );
 
+  // Move API logic here
+  const submitIncidentForm = async (values, actions) => {
+    let incidentInvolvedArr = [];
+    (values.incident_involved || []).forEach(val => {
+      if (val !== "Other") {
+        incidentInvolvedArr.push(val);
+      }
+    });
+    if (values.incident_involved?.includes("Other") && values.inc_invl_other_text) {
+      incidentInvolvedArr.push(values.inc_invl_other_text);
+    }
+
+    // Type Of Incident
+    let typeOfIncidentArr = [];
+    let otherTypeValue = "";
+    (values.type_of_incident || []).forEach(type => {
+      if (type === "Other" && values.type_of_inc_other_text) {
+        otherTypeValue = values.type_of_inc_other_text;
+      } else if (type !== "Other") {
+        typeOfIncidentArr.push(type);
+      }
+    });
+    if (otherTypeValue) {
+      typeOfIncidentArr.push(otherTypeValue);
+    }
+
+    // Condition At Time of Incident
+    let conditionAtIncidentArr = (values.condition_at_incident || []).filter(
+      (item) => item !== "Other (Specify)"
+    );
+    if (
+      values.condition_at_incident?.includes("Other (Specify)") &&
+      values.condition_at_inc_other_text
+    ) {
+      conditionAtIncidentArr.push(values.condition_at_inc_other_text);
+    }
+    const conditionAtIncidentStr = conditionAtIncidentArr.join(",");
+
+    // Build ambulation string for payload
+    let ambulationArr = (values.ambulation || []).filter(item => item !== "Other (Specify)");
+    if (
+      values.ambulation?.includes("Other (Specify)") &&
+      values.ambulation_other_text
+    ) {
+      ambulationArr.push(values.ambulation_other_text);
+    }
+    const ambulationStr = ambulationArr.length > 0 ? ambulationArr.join(",") : "";
+
+    // informedOfIncident
+    let informedOfIncidentArr = [];
+    let otherValue = "";
+    (values.informed_of_incident || []).forEach(label => {
+      if (label === "Other" && values.informed_of_inc_other_text) {
+        otherValue = values.informed_of_inc_other_text;
+      } else {
+        informedOfIncidentArr.push(label);
+      }
+    });
+    if (otherValue) {
+      informedOfIncidentArr.push(otherValue);
+    }
+    // IncidentDateTime set
+    const incidentDateTime = values.incident_date && values.incident_tm
+      ? dayjs(`${values.incident_date} ${values.incident_tm}`, "YYYY-MM-DD HH:mm")
+      : null;
+    const discoveryDateTime = values.discovery_date && values.discovery_tm
+      ? dayjs(`${values.discovery_date} ${values.discovery_tm}`, "YYYY-MM-DD HH:mm")
+      : null;
+
+    const notifiedFamilyDoctorDateTime = values.notified_family_doctor_date && values.notified_family_doctor_tm
+      ? dayjs(`${values.notified_family_doctor_date} ${values.notified_family_doctor_tm}`, "YYYY-MM-DD HH:mm")
+      : null;
+
+    const notifiedResidentDateTime = values.notified_resident_date && values.notified_resident_tm
+      ? dayjs(`${values.notified_resident_date} ${values.notified_resident_tm}`, "YYYY-MM-DD HH:mm")
+      : null;
+
+    const completedDateTime = values.completed_date && values.completed_tm
+      ? dayjs(`${values.completed_date} ${values.completed_tm}`, "YYYY-MM-DD HH:mm")
+      : null;
+
+    const payload = {
+      incident_involved: incidentInvolvedArr.join(","),
+      inc_invl_staff: values.incident_involved?.includes("Staff") ? 1 : 0,
+      inc_invl_resident: values.incident_involved?.includes("Resident") ? 1 : 0,
+      inc_invl_visitor: values.incident_involved?.includes("Visitor") ? 1 : 0,
+      inc_invl_other: values.incident_involved?.includes("Other") ? 1 : 0,
+      incident_date: incidentDateTime
+        ? dayjs(incidentDateTime).format("DD MMM YYYY hh:mm A")
+        : "",
+      incident_dt: incidentDateTime
+        ? dayjs(incidentDateTime).format("DD MMM YYYY")
+        : "",
+      incident_tm: values.incident_tm
+        ? dayjs(values.incident_tm, "HH:mm").format("hh:mm A")
+        : "",
+      incident_location: values.incident_location || "",
+      witnessed_by: values.witnessed_by || "",
+      discovery_date: discoveryDateTime
+        ? dayjs(discoveryDateTime).format("DD MMM YYYY hh:mm A")
+        : "",
+      discovery_dt: discoveryDateTime
+        ? dayjs(discoveryDateTime).format("DD MMM YYYY")
+        : "",
+      discovery_tm: values.discovery_tm
+        ? dayjs(values.discovery_tm, "HH:mm").format("hh:mm A")
+        : "",
+      discovery_location: values.discovery_location || "",
+      discovered_by: values.discovered_by || "",
+
+      type_of_incident: typeOfIncidentArr.join(","),
+      ...typeOfIncidentOptions.reduce((acc, option) => {
+        acc[option.key] = values.type_of_incident?.includes(option.label) ? 1 : 0;
+        return acc;
+      }, {}),
+
+      ...(values.type_of_inc_other_text
+        ? { type_of_inc_other_text: values.type_of_inc_other_text }
+        : {}),
+
+      ...(values.safety_fob ? { safety_fob: values.safety_fob } : {}),
+      ...(values.safety_callbell ? { safety_callbell: values.safety_callbell } : {}),
+      ...(values.safety_caution ? { safety_caution: values.safety_caution } : {}),
+      ...(values.safety_other ? { safety_other: values.safety_other } : {}),
+
+      other_witnesses: values.other_witnesses || "",
+      ...(values.other_witnesses === "Yes" && {
+        ...(values.witness_name1 ? { witness_name1: values.witness_name1 } : {}),
+        ...(values.witness_position1 ? { witness_position1: values.witness_position1 } : {}),
+        ...(values.witness_name2 ? { witness_name2: values.witness_name2 } : {}),
+        ...(values.witness_position2 ? { witness_position2: values.witness_position2 } : {}),
+      }),
+
+      condition_at_incident: conditionAtIncidentStr,
+      ...conditionAtTimeOptions.reduce((acc, option) => {
+        acc[option.key] = values.condition_at_incident?.includes(option.label) ? 1 : 0;
+        return acc;
+      }, {}),
+      ...(values.condition_at_incident?.includes('Other (Specify)') && values.condition_at_inc_other_text
+        ? { condition_at_inc_other_text: values.condition_at_inc_other_text }
+        : {}),
+
+      // fall_assessment 
+      fall_assessment: (values.fall_assessment || []).join(","),
+      ...fallAssessmentOptions.reduce((acc, option) => {
+        acc[option.key] = values.fall_assessment?.includes(option.label) ? 1 : 0;
+        return acc;
+      }, {}),
+
+      // ambulation: incidentFormDetails?.ambulation || [],
+      ...(ambulationStr ? { ambulation: ambulationStr } : {}),
+      ...(values.ambulation?.includes("Other (Specify)") && values.ambulation_other_text
+        ? { ambulation_other_text: values.ambulation_other_text }
+        : {}),
+      ...ambulationOptions.reduce((acc, option) => {
+        acc[option.key] = values.ambulation?.includes(option.label) ? 1 : 0;
+        return acc;
+      }, {}),
+
+      // Fire
+      ...(values.fire_alarm_pulled ? { fire_alarm_pulled: values.fire_alarm_pulled } : {}),
+      ...(values.fire_false_alarm ? { fire_false_alarm: values.fire_false_alarm } : {}),
+      ...(values.fire_extinguisher_used ? { fire_extinguisher_used: values.fire_extinguisher_used } : {}),
+      ...(values.fire_personal_injury ? { fire_personal_injury: values.fire_personal_injury } : {}),
+      ...(values.fire_property_damage ? { fire_property_damage: values.fire_property_damage } : {}),
+
+      // Factual
+      factual_description: values?.factual_description || "",
+
+      // Informed Of Incidents
+      informed_of_incident: informedOfIncidentArr.join(","),
+      ...InformedOfIncident.reduce((acc, option) => {
+        acc[option.key] = values.informed_of_incident?.includes(option.label) ? 1 : 0;
+        return acc;
+      }, {}),
+      ...(values.informed_of_incident?.includes("Other") && values.informed_of_inc_other_text
+        ? { informed_of_inc_other_text: values.informed_of_inc_other_text }
+        : {}),
+      initial_assistant_gm: values?.initial_assistant_gm || "",
+      initial_gm: values?.initial_gm || "",
+      initial_risk_mng_committee: values?.initial_risk_mng_committee || "",
+      initial_other: values?.initial_other || "",
+
+      notified_family_doctor: values.notified_family_doctor || "",
+      notified_family_doctor_date: notifiedFamilyDoctorDateTime
+        ? dayjs(notifiedFamilyDoctorDateTime).format("DD MMM YYYY hh:mm A")
+        : "",
+      notified_family_doctor_dt: notifiedFamilyDoctorDateTime
+        ? dayjs(notifiedFamilyDoctorDateTime).format("DD MMM YYYY")
+        : "",
+      notified_family_doctor_tm: values.notified_family_doctor_tm
+        ? dayjs(values.notified_family_doctor_tm, "HH:mm").format("hh:mm A")
+        : "",
+      notified_other: values.notified_other || "",
+
+      notified_resident_responsible_party: values.notified_resident_responsible_party || "",
+      notified_resident_name: values.notified_resident_name || "",
+      notified_resident_date: notifiedResidentDateTime
+        ? dayjs(notifiedResidentDateTime).format("DD MMM YYYY hh:mm A")
+        : "",
+      notified_resident_dt: notifiedResidentDateTime
+        ? dayjs(notifiedResidentDateTime).format("DD MMM YYYY")
+        : "",
+      notified_resident_tm: values.notified_resident_tm
+        ? dayjs(values.notified_resident_tm, "HH:mm").format("hh:mm A")
+        : "",
+
+      // Completed
+      completed_by: values.completed_by || "",
+      completed_position: values.completed_position || "",
+      completed_date: completedDateTime
+        ? dayjs(completedDateTime).format("DD MMM YYYY hh:mm A")
+        : "",
+      completed_dt: completedDateTime
+        ? dayjs(completedDateTime).format("DD MMM YYYY")
+        : "",
+      completed_tm: values.completed_tm
+        ? dayjs(values.completed_tm, "HH:mm").format("hh:mm A")
+        : "",
+
+      followUp_issue: values.followUp_issue || "",
+      followUp_findings: values?.followUp_findings || '',
+      followUp_possible_solutions: values?.followUp_possible_solutions || '',
+      followUp_action_plan: values?.followUp_action_plan || '',
+      followUp_examine_result: values?.followUp_examine_result || '',
+
+    };
+    // console.log("Payload", payload);
+    const now = new Date();
+    const pad = n => n.toString().padStart(2, '0');
+    const logged_at = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    const rawStringData = { ...payload };
+    rawStringData['is_completed'] = incidentFormDetails?.is_completed ? incidentFormDetails?.is_completed : 0;
+    rawStringData['logged_at'] = incidentFormDetails?.logged_at ? incidentFormDetails?.logged_at : logged_at;
+
+    // console.log("rawStringData", rawStringData)
+    const found = userData.rooms.find(r =>
+      String(r.name).toLowerCase() === String(values?.room_number).toLowerCase()
+    );
+    const finalPayload = {
+      form_type: 1,
+      ...(formId && { form_id: formId }),
+      ...(!formId && { room_id: found?.id }),
+      follow_up_assigned_to: values?.follow_up_assigned_to,
+      data: JSON.stringify(rawStringData)
+    };
+    // console.log("finalPayload", finalPayload)
+    try {
+      if (formId) {
+        const response = await StaticFormServices.logFormUpdate(finalPayload);
+        if (response?.ResponseCode === "1") {
+          toast.success("Form Updated successfully.");
+        }
+      } else {
+        const response = await StaticFormServices.logFormSubmit(finalPayload);
+        if (response?.ResponseCode === "1") {
+          toast.success(response?.ResponseText || "Form submitted successfully.");
+        }
+      }
+    } catch (error) {
+      toast.error("Form is not submitted. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmSubmit = async () => {
+    setShowFollowUpConfirm(false);
+    setLoading(true);
+    if (pendingSubmitValues && pendingSubmitActions) {
+      await submitIncidentForm(pendingSubmitValues, pendingSubmitActions);
+    }
+  };
 
   return (
     <Box m="20px">
@@ -1857,6 +1900,20 @@ const IncidentForm = () => {
                   {loading ? "Loading..." : "Submit"}
                 </CustomButton>
               </Box>
+              <Dialog open={showFollowUpConfirm} onClose={() => setShowFollowUpConfirm(false)}>
+        <DialogTitle>Incomplete Follow Up</DialogTitle>
+        <DialogContent>
+          Follow Up form is not completely filled. Do you still want to submit it?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowFollowUpConfirm(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmSubmit} color="primary" autoFocus>
+            Yes, Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
             </form>
           )}
         </Formik>
