@@ -206,14 +206,13 @@ const IncidentForm = () => {
     return userDatas ? JSON.parse(userDatas) : null;
   });
 
-  const canEditFollowUp = userData?.role === "admin" || userData?.role === "superadmin"; 
+  const canEditFollowUp = userData?.role === "admin" || userData?.role === "superadmin";
   const canUpdateFollowUp = userData?.role === "admin" || userData?.role === "superadmin" || userData?.user_id === location?.state?.formData?.follow_up_user?.id;
-  
+
   const [showFollowUpConfirm, setShowFollowUpConfirm] = useState(false);
   const [pendingSubmitValues, setPendingSubmitValues] = useState(null);
   const [pendingSubmitActions, setPendingSubmitActions] = useState(null);
 
-  // Add this utility function above your IncidentForm component
 
   function mapIncidentInvolved(rawString) {
     if (!rawString) return { incident_involved: [], inc_invl_other_text: "" };
@@ -309,7 +308,6 @@ const IncidentForm = () => {
   }
   useEffect(() => {
     setLoading(true);
-
     if (location.state?.formData?.ResponseCode === "1") {
       const data = location.state.formData.form_data || {};
       setFormId(location.state?.id)
@@ -322,7 +320,6 @@ const IncidentForm = () => {
 
       setIncidentFormDetails({
         ...data,
-        // Parse comma-separated strings to arrays for multi-select fields
         ...mapIncidentInvolved(data.incident_involved),
         ...mapTypeOfIncident(data.type_of_incident),
         ...mapConditionAtIncident(data.condition_at_incident),
@@ -330,14 +327,11 @@ const IncidentForm = () => {
         ...mapInformedOfIncident(data.informed_of_incident),
         fall_assessment: data.fall_assessment ? data.fall_assessment.split(",") : [],
         follow_up_assigned_to: incidentFormDetails?.follow_up_assigned_to || 1,
-        // show_follow_up_details: followUpFilled || incidentFormDetails?.show_follow_up_details || false,
         show_follow_up_details: formId ? true : (followUpFilled || incidentFormDetails?.show_follow_up_details || false),
         attachments: location.state.formData.attachments || [],
-        // Fill other fields as needed
       });
       setLoading(false);
     } else {
-      // Default: use location.state or empty object
       const timer = setTimeout(() => {
         setIncidentFormDetails(location.state || {});
         setLoading(false);
@@ -473,13 +467,11 @@ const IncidentForm = () => {
         return;
       }
 
-      // If no confirmation needed, call API directly
       await submitIncidentForm(values, actions);
     },
     [initialValues, navigate]
   );
 
-  // Move API logic here
   const submitIncidentForm = async (values, actions) => {
     let incidentInvolvedArr = [];
     (values.incident_involved || []).forEach(val => {
@@ -1901,19 +1893,19 @@ const IncidentForm = () => {
                 </CustomButton>
               </Box>
               <Dialog open={showFollowUpConfirm} onClose={() => setShowFollowUpConfirm(false)}>
-        <DialogTitle>Incomplete Follow Up</DialogTitle>
-        <DialogContent>
-          Follow Up form is not completely filled. Do you still want to submit it?
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowFollowUpConfirm(false)} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleConfirmSubmit} color="primary" autoFocus>
-            Yes, Submit
-          </Button>
-        </DialogActions>
-      </Dialog>
+                <DialogTitle>Incomplete Follow Up</DialogTitle>
+                <DialogContent>
+                  Follow Up form is not completely filled. Do you still want to submit it?
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setShowFollowUpConfirm(false)} color="primary">
+                    Cancel
+                  </Button>
+                  <Button onClick={handleConfirmSubmit} color="primary" autoFocus>
+                    Yes, Submit
+                  </Button>
+                </DialogActions>
+              </Dialog>
             </form>
           )}
         </Formik>
