@@ -20,6 +20,10 @@ const StaticFormServices = {
     return requests.post(`/form-details`, payload);
   },
 
+  getDefaultValue: async () => {
+    return requests.get(`/get-move-in-summary-values`);
+  },
+
   getRoomList: async () => {
     return requests.get(`/rooms`);
   },

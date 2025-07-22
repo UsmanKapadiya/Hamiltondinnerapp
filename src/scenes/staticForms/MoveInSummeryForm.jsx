@@ -1,7 +1,6 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Box, Checkbox, FormControlLabel, FormGroup, TextField, Button } from "@mui/material";
 import CustomButton from "../../components/CustomButton";
-import { LoginOutlined } from "@mui/icons-material";
 import { Formik } from "formik";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
 import { Header } from "../../components";
@@ -9,74 +8,162 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import SignatureCanvas from "react-signature-canvas";
+import StaticFormServices from "../../services/staticFormServices";
 
+const contarctTeam = [
+    { 'Yearly': 'contract_term_yearly' },
+    { 'Monthly': 'contract_term_monthly' },
+    { 'Weekly': 'contract_term_weekly' },
+    { 'Daily': 'contract_term_daily' }]
+
+const payor_information = [
+    { "PAD": "payor_information_PAD" },
+    { "Post Dated-Cheque": "payor_information_Post_Dated_Cheque" }
+]
+const Others = [
+    { 'Unit Key': 'unit_key' },
+    { 'Elpas Fob': 'elpas_fob' }
+]
 const initialValues = {
-    suiteNumber: "",
-    contarctSignDate: "",
-    salesName: "",
+    suite_number: "",
+    contract_signing_date: "",
+    sales_name: "",
     contartTeam: [],
-    tenancyCommenceDate: "",
-    contractExpiryDate: "",
+    contract_term_yearly: 0,
+    contract_term_monthly: 0,
+    contract_term_weekly: 0,
+    contract_term_daily: 0,
+    tenancy_commence_date: "",
+    contract_expiry_date: "",
     // 1st Resident
-    firstName: "",
-    middleName: "",
-    lastName: "",
-    dob: "",
+    first_resident_name_first_name: "",
+    first_resident_name_middle_name: "",
+    first_resident_name_last_name: "",
+    first_resident_dob: "",
     // 2nd Resident
-    showSecondResident: false,
-    secondFirstName: "",
-    secondMiddleName: "",
-    secondLastName: "",
-    secondDob: "",
+    has_2nd_resident: false,
+    second_resident_name_first_name: "",
+    second_resident_name_middle_name: "",
+    second_resident_name_last_name: "",
+    second_resident_dob: "",
     // 1st Month Payment
-    firstMonthPaymentReceived: false,
-    monthlyRate: "",
-    carePlanRate: "",
-    parkingCount: 1,
-    parkingFee: "",
-    scooterCount: 1,
-    scooterFee: "",
-    windowScreenCount: 1,
-    windowScreenFee: "",
-    grabBarCount: 1,
-    grabBarFee: "",
-    othersFee: "",
-    elpasCount: 1,
-    garageFobCount: 1,
-    othersFullRowFee: "",
-    securityDepositReceived: false,
-    padChecked: false,
-    postDatedChequeChecked: false,
+    first_month_payment_received: false,
+    monthly_rate: "",
+    care_plan_rate: "",
+    one_time_move_in_fee: null,
+
+    parking_rate: "",
+    parking_gst_val: "",
+    parking_quantity: 1,
+
+    scooter_rate: "",
+    scooter_quantity: 1,
+
+    window_screen_rate: "",
+    window_screen_quantity: 1,
+    grab_bar_rate: "",
+    grab_bar_quantity: 1,
+    payment_others_rate: "",
+
+    security_deposit_received: false,
+    half_month_deposit_for_first_resident_rate: "",
+    half_month_care_plan_rate: "",
+
+    move_in_out_rate: "",
+
+    elpas_rate: "",
+    elpas_quantity: 1,
+    garage_fob_rate: "",
+    garage_fob_quantity: 1,
+    deposit_others_rate: "",
+
+    payor_information_PAD: false,
+    payor_information_Post_Dated_Cheque: false,
+
+    // Keys Pendings
     padPayorName: "",
     padBankName: "",
     padBankId: "",
     padAccountNumber: "",
     padTransitNumber: "",
-    unitKeyValue: "",
-    elpasFobValue: "",
-    suiteInsuranceCopyReceived: false,
-    suiteInsuranceCoverageApproved: false,
-    suiteInsuranceCopyReceivedDate: "",
-    suiteInsuranceCoverageApprovedCompany: "",
-    suiteInsuranceCoverageApprovedPolicy: "",
-    reviewedBy: "",
-    reviewedDate: "",
+
+    unit_key: 0,
+    unit_key_other_val: "",
+    elpas_fob: 0,
+    elpas_fob_other_val: "",
+
+    suite_insurance_copy_received: false,
+    suite_insurance_copy_received_date: "",
+
+    suite_insurance_coverage_approved: false,
+    suite_insurance_coverage_approved_company: "",
+    suite_insurance_coverage_approved_policy: "",
+
+    reviewed_by: "",
+    date: "",
 };
 
 const MoveInSummeryForm = () => {
     const sigPadRef = useRef();
 
     const [loading, setLoading] = useState(false);
+    const [apiDefaults, setApiDefaults] = useState({});
+    const [initialFormValues, setInitialFormValues] = useState(initialValues);
+    const [defaultElpasRate, setDefaultElpasRate] = useState(0);
+    const [defaultGaregeFobRate, setDefaultGaregeFobRate] = useState(0);
+
+
+    useEffect(() => {
+        const fetchFormData = async () => {
+            setLoading(true);
+            try {
+                const response = await StaticFormServices.getDefaultValue();
+                const data = response?.Data || {};
+
+                // Calculate derived values
+                const parkingRate = parseFloat(data.parking_rate || 0);
+                const gstParkingPercentage = parseFloat(data.gst_percentage_for_parking || 0);
+                const parkingGST = parkingRate * gstParkingPercentage / 100;
+                console.log("pa", parkingGST)
+                const monthlyRate2ndRes = parseFloat(data.monthly_rate_for_second_resident || 0);
+                const halfRentalDeposit2ndRes = monthlyRate2ndRes / 2;
+                console.log(halfRentalDeposit2ndRes)
+                setDefaultElpasRate(Number(data?.elpas_rate) || 0);
+                setDefaultGaregeFobRate(Number(data?.garage_fob_rate) || 0);
+                setInitialFormValues({
+                    ...initialValues,
+                    elpas_rate: Number(data?.elpas_rate) || 0,
+                    garage_fob_rate: Number(data.garage_fob_rate) || 0,
+                    gst_percentage_for_parking: parkingGST.toFixed(2),
+                    one_time_move_in_fee: data.one_time_move_in_fee || "",
+                    parking_rate: data.parking_rate || "",
+
+                    halfRentalDeposit2ndRes: halfRentalDeposit2ndRes.toFixed(2), //KEy verify
+                    move_in_out_rate: data.move_in_out_rate || "",
+                    elpas_quantity: 1,
+
+
+                    // ...add other fields as needed
+                });
+            } catch (error) {
+                // Handle error
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchFormData();
+    }, []);
     const handleSubmit = (values, actions) => {
         // Replace with your submit logic
         console.log("Log Form Values", values);
         actions.resetForm();
     };
 
+    console.log(initialFormValues);
     return (
         <Box m="20px">
             <Header
-                title={"LOG FORM"}
+                title={"MOVEIN SUMMARY FORM"}
                 Buttons={false}
             />
             {loading ? (
@@ -90,15 +177,15 @@ const MoveInSummeryForm = () => {
                 </Box>
             ) : (
                 <>
-                    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+                    <Formik initialValues={initialFormValues} onSubmit={handleSubmit}>
                         {({ values, handleChange, handleBlur, handleSubmit, setFieldValue }) => (
                             <form onSubmit={handleSubmit}>
                                 <Box display="flex" flexDirection="column" gap={2} mx="auto">
                                     <Box display="flex" gap={2}>
                                         <TextField
                                             label="Suite Number"
-                                            name="suiteNumber"
-                                            value={values.suiteNumber}
+                                            name="suite_number"
+                                            value={values.suite_number}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                             variant="filled"
@@ -107,9 +194,9 @@ const MoveInSummeryForm = () => {
                                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                                             <DatePicker
                                                 label="Contract Sign Date"
-                                                value={values.contarctSignDate ? dayjs(values.contarctSignDate) : null}
+                                                value={values.contract_signing_date ? dayjs(values.contract_signing_date) : null}
                                                 onChange={(newValue) =>
-                                                    setFieldValue("contarctSignDate", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                    setFieldValue("contract_signing_date", newValue ? newValue.format("YYYY-MM-DD") : "")
                                                 }
                                                 slotProps={{
                                                     textField: {
@@ -122,8 +209,8 @@ const MoveInSummeryForm = () => {
                                         </LocalizationProvider>
                                         <TextField
                                             label="Sales Name"
-                                            name="salesName"
-                                            value={values.salesName}
+                                            name="sales_name"
+                                            value={values.sales_name}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                             variant="filled"
@@ -135,30 +222,34 @@ const MoveInSummeryForm = () => {
                                             <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
                                                 Cotract Team
                                             </Box>
-                                            {['Yearly', 'Monthly', 'Weekly', 'Daily'].map((option) => (
-                                                <Box key={option} sx={{ width: "50%" }}>
-                                                    <FormControlLabel
-                                                        control={
-                                                            <Checkbox
-                                                                checked={values.contartTeam?.includes(option) || false}
-                                                                onChange={() => {
-                                                                    const current = values.contartTeam || [];
-                                                                    if (current.includes(option)) {
-                                                                        setFieldValue(
-                                                                            "contartTeam",
-                                                                            current.filter((item) => item !== option)
-                                                                        );
-                                                                    } else {
-                                                                        setFieldValue("contartTeam", [...current, option]);
-                                                                    }
-                                                                }}
-                                                                name="contartTeam"
-                                                            />
-                                                        }
-                                                        label={option}
-                                                    />
-                                                </Box>
-                                            ))}
+                                            {contarctTeam.map((item) => {
+                                                const label = Object.keys(item)[0];
+                                                const value = label;
+                                                return (
+                                                    <Box key={value} sx={{ width: "50%" }}>
+                                                        <FormControlLabel
+                                                            control={
+                                                                <Checkbox
+                                                                    checked={values.contartTeam?.includes(value) || false}
+                                                                    onChange={() => {
+                                                                        const current = values.contartTeam || [];
+                                                                        if (current.includes(value)) {
+                                                                            setFieldValue(
+                                                                                "contartTeam",
+                                                                                current.filter((item) => item !== value)
+                                                                            );
+                                                                        } else {
+                                                                            setFieldValue("contartTeam", [...current, value]);
+                                                                        }
+                                                                    }}
+                                                                    name="contartTeam"
+                                                                />
+                                                            }
+                                                            label={label}
+                                                        />
+                                                    </Box>
+                                                );
+                                            })}
                                         </FormGroup>
                                     </Box>
                                     <Box sx={{ gridColumn: "span 4", mt: 2 }}>
@@ -166,9 +257,9 @@ const MoveInSummeryForm = () => {
                                             <Box display="flex" gap={2}>
                                                 <DatePicker
                                                     label="Tenancy Commence Date"
-                                                    value={values.tenancyCommenceDate ? dayjs(values.tenancyCommenceDate) : null}
+                                                    value={values.tenancy_commence_date ? dayjs(values.tenancy_commence_date) : null}
                                                     onChange={(newValue) =>
-                                                        setFieldValue("tenancyCommenceDate", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                        setFieldValue("tenancy_commence_date", newValue ? newValue.format("YYYY-MM-DD") : "")
                                                     }
                                                     slotProps={{
                                                         textField: {
@@ -179,9 +270,9 @@ const MoveInSummeryForm = () => {
                                                 />
                                                 <DatePicker
                                                     label="Contract Expiry Date"
-                                                    value={values.contractExpiryDate ? dayjs(values.contractExpiryDate) : null}
+                                                    value={values.contract_expiry_date ? dayjs(values.contract_expiry_date) : null}
                                                     onChange={(newValue) =>
-                                                        setFieldValue("contractExpiryDate", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                        setFieldValue("contract_expiry_date", newValue ? newValue.format("YYYY-MM-DD") : "")
                                                     }
                                                     slotProps={{
                                                         textField: {
@@ -200,8 +291,8 @@ const MoveInSummeryForm = () => {
                                         <Box display="flex" gap={2} mb={2}>
                                             <TextField
                                                 label="First Name"
-                                                name="firstName"
-                                                value={values.firstName || ''}
+                                                name="first_resident_name_first_name"
+                                                value={values.first_resident_name_first_name || ''}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
                                                 variant="filled"
@@ -209,8 +300,8 @@ const MoveInSummeryForm = () => {
                                             />
                                             <TextField
                                                 label="Middle Name"
-                                                name="middleName"
-                                                value={values.middleName || ''}
+                                                name="first_resident_name_middle_name"
+                                                value={values.first_resident_name_middle_name || ''}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
                                                 variant="filled"
@@ -220,8 +311,8 @@ const MoveInSummeryForm = () => {
                                         <Box display="flex" gap={2}>
                                             <TextField
                                                 label="Last Name"
-                                                name="lastName"
-                                                value={values.lastName || ''}
+                                                name="first_resident_name_last_name"
+                                                value={values.first_resident_name_last_name || ''}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
                                                 variant="filled"
@@ -230,9 +321,9 @@ const MoveInSummeryForm = () => {
                                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                                 <DatePicker
                                                     label="Date of Birth"
-                                                    value={values.dob ? dayjs(values.dob) : null}
+                                                    value={values.first_resident_dob ? dayjs(values.first_resident_dob) : null}
                                                     onChange={(newValue) =>
-                                                        setFieldValue("dob", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                        setFieldValue("first_resident_dob", newValue ? newValue.format("YYYY-MM-DD") : "")
                                                     }
                                                     slotProps={{
                                                         textField: {
@@ -246,20 +337,20 @@ const MoveInSummeryForm = () => {
                                         <FormControlLabel
                                             control={
                                                 <Checkbox
-                                                    checked={values.showSecondResident || false}
-                                                    onChange={e => setFieldValue('showSecondResident', e.target.checked)}
+                                                    checked={values.has_2nd_resident || false}
+                                                    onChange={e => setFieldValue('has_2nd_resident', e.target.checked)}
                                                 />
                                             }
                                             label={<Box component="span" sx={{ fontWeight: 600, fontSize: 16, }}>2nd Resident</Box>}
                                             sx={{ mb: 1, mt: 3, width: '100%' }}
                                         />
-                                        {values.showSecondResident && (
+                                        {values.has_2nd_resident && (
                                             <>
                                                 <Box display="flex" gap={2} mb={2}>
                                                     <TextField
                                                         label="First Name"
-                                                        name="secondFirstName"
-                                                        value={values.secondFirstName || ''}
+                                                        name="second_resident_name_first_name"
+                                                        value={values.second_resident_name_first_name || ''}
                                                         onChange={handleChange}
                                                         onBlur={handleBlur}
                                                         variant="filled"
@@ -267,8 +358,8 @@ const MoveInSummeryForm = () => {
                                                     />
                                                     <TextField
                                                         label="Middle Name"
-                                                        name="secondMiddleName"
-                                                        value={values.secondMiddleName || ''}
+                                                        name="second_resident_name_middle_name"
+                                                        value={values.second_resident_name_middle_name || ''}
                                                         onChange={handleChange}
                                                         onBlur={handleBlur}
                                                         variant="filled"
@@ -278,8 +369,8 @@ const MoveInSummeryForm = () => {
                                                 <Box display="flex" gap={2}>
                                                     <TextField
                                                         label="Last Name"
-                                                        name="secondLastName"
-                                                        value={values.secondLastName || ''}
+                                                        name="second_resident_name_last_name"
+                                                        value={values.second_resident_name_last_name || ''}
                                                         onChange={handleChange}
                                                         onBlur={handleBlur}
                                                         variant="filled"
@@ -288,9 +379,9 @@ const MoveInSummeryForm = () => {
                                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                                                         <DatePicker
                                                             label="Date of Birth"
-                                                            value={values.secondDob ? dayjs(values.secondDob) : null}
+                                                            value={values.second_resident_dob ? dayjs(values.second_resident_dob) : null}
                                                             onChange={(newValue) =>
-                                                                setFieldValue("secondDob", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                                setFieldValue("second_resident_dob", newValue ? newValue.format("YYYY-MM-DD") : "")
                                                             }
                                                             slotProps={{
                                                                 textField: {
@@ -312,9 +403,9 @@ const MoveInSummeryForm = () => {
                                             <FormControlLabel
                                                 control={
                                                     <Checkbox
-                                                        checked={values.firstMonthPaymentReceived}
-                                                        onChange={e => setFieldValue('firstMonthPaymentReceived', e.target.checked)}
-                                                        name="firstMonthPaymentReceived"
+                                                        checked={values.first_month_payment_received}
+                                                        onChange={e => setFieldValue('first_month_payment_received', e.target.checked)}
+                                                        name="first_month_payment_received"
                                                     />
                                                 }
                                                 label={<Box component="span" sx={{ fontWeight: 600, fontSize: 14 }}>Received</Box>}
@@ -324,9 +415,9 @@ const MoveInSummeryForm = () => {
                                         <Box display="flex" gap={2} mt={2}>
                                             <TextField
                                                 label="Monthly Rate $"
-                                                name="monthlyRate"
+                                                name="monthly_rate"
                                                 type="number"
-                                                value={values.monthlyRate || ''}
+                                                value={values.monthly_rate || ''}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
                                                 variant="filled"
@@ -334,9 +425,9 @@ const MoveInSummeryForm = () => {
                                             />
                                             <TextField
                                                 label="Care Plan Rate $"
-                                                name="carePlanRate"
+                                                name="care_plan_rate"
                                                 type="number"
-                                                value={values.carePlanRate || ''}
+                                                value={values.care_plan_rate || ''}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
                                                 variant="filled"
@@ -349,16 +440,16 @@ const MoveInSummeryForm = () => {
                                                     One time move in Fees $
                                                 </Box>
                                                 <Box component="span" sx={{ fontWeight: 600, fontSize: 16, ml: 2 }}>
-                                                    250
+                                                    {values?.one_time_move_in_fee}
                                                 </Box>
                                             </Box>
                                             <Box display="flex" alignItems="center" gap={2} flex={1}>
                                                 <Box component="span" sx={{ fontWeight: 600, fontSize: 16 }}>
                                                     Parking X (
                                                     <TextField
-                                                        name="parkingCount"
+                                                        name="parking_quantity"
                                                         type="number"
-                                                        value={values.parkingCount || 1}
+                                                        value={values.parking_quantity || 1}
                                                         onChange={handleChange}
                                                         onBlur={handleBlur}
                                                         variant="standard"
@@ -369,15 +460,23 @@ const MoveInSummeryForm = () => {
                                                 </Box>
                                                 <TextField
                                                     label=""
-                                                    name="parkingFee"
+                                                    name="parking_rate"
                                                     type="number"
-                                                    value={values.parkingFee || ''}
-                                                    onChange={handleChange}
+                                                    value={values.parking_rate || ''}
+                                                    onChange={e => {
+                                                        const rate = Number(e.target.value) || 0;
+                                                        setFieldValue("parking_rate", rate);
+
+                                                        const gst = (rate * 0.05).toFixed(1);
+                                                        setFieldValue("gst_percentage_for_parking", gst);
+                                                    }}
                                                     onBlur={handleBlur}
                                                     variant="filled"
                                                     sx={{ width: 120 }}
                                                 />
-                                                <Box component="span" sx={{ fontWeight: 500, fontSize: 15, color: '#888' }}>+ GST 7.5</Box>
+                                                <Box component="span" sx={{ fontWeight: 500, fontSize: 15, color: '#888' }}>
+                                                    + GST {values?.gst_percentage_for_parking}
+                                                </Box>
                                             </Box>
                                         </Box>
                                         <Box display="flex" gap={2} mt={2}>
@@ -385,9 +484,9 @@ const MoveInSummeryForm = () => {
                                                 <Box component="span" sx={{ fontWeight: 600, fontSize: 16 }}>
                                                     Scooter X (
                                                     <TextField
-                                                        name="scooterCount"
+                                                        name="scooter_quantity"
                                                         type="number"
-                                                        value={values.scooterCount || 1}
+                                                        value={values.scooter_quantity || 1}
                                                         onChange={handleChange}
                                                         onBlur={handleBlur}
                                                         variant="standard"
@@ -398,9 +497,9 @@ const MoveInSummeryForm = () => {
                                                 </Box>
                                                 <TextField
                                                     label=""
-                                                    name="scooterFee"
+                                                    name="scooter_rate"
                                                     type="number"
-                                                    value={values.scooterFee || ''}
+                                                    value={values.scooter_rate || ''}
                                                     onChange={handleChange}
                                                     onBlur={handleBlur}
                                                     variant="filled"
@@ -411,9 +510,9 @@ const MoveInSummeryForm = () => {
                                                 <Box component="span" sx={{ fontWeight: 600, fontSize: 16 }}>
                                                     Window Screen X (
                                                     <TextField
-                                                        name="windowScreenCount"
+                                                        name="window_screen_quantity"
                                                         type="number"
-                                                        value={values.windowScreenCount || 1}
+                                                        value={values.window_screen_quantity || 1}
                                                         onChange={handleChange}
                                                         onBlur={handleBlur}
                                                         variant="standard"
@@ -424,9 +523,9 @@ const MoveInSummeryForm = () => {
                                                 </Box>
                                                 <TextField
                                                     label=""
-                                                    name="windowScreenFee"
+                                                    name="window_screen_rate"
                                                     type="number"
-                                                    value={values.windowScreenFee || ''}
+                                                    value={values.window_screen_rate || ''}
                                                     onChange={handleChange}
                                                     onBlur={handleBlur}
                                                     variant="filled"
@@ -439,9 +538,9 @@ const MoveInSummeryForm = () => {
                                                 <Box component="span" sx={{ fontWeight: 600, fontSize: 16 }}>
                                                     Grab Bar X (
                                                     <TextField
-                                                        name="grabBarCount"
+                                                        name="grab_bar_quantity"
                                                         type="number"
-                                                        value={values.grabBarCount || 1}
+                                                        value={values.grab_bar_quantity || 1}
                                                         onChange={handleChange}
                                                         onBlur={handleBlur}
                                                         variant="standard"
@@ -452,9 +551,9 @@ const MoveInSummeryForm = () => {
                                                 </Box>
                                                 <TextField
                                                     label=""
-                                                    name="grabBarFee"
+                                                    name="grab_bar_rate"
                                                     type="number"
-                                                    value={values.grabBarFee || ''}
+                                                    value={values.grab_bar_rate || ''}
                                                     onChange={handleChange}
                                                     onBlur={handleBlur}
                                                     variant="filled"
@@ -466,9 +565,9 @@ const MoveInSummeryForm = () => {
                                                     Others $
                                                 </Box>
                                                 <TextField
-                                                    name="othersFee"
+                                                    name="payment_others_rate"
                                                     type="number"
-                                                    value={values.othersFee || ''}
+                                                    value={values.payment_others_rate || ''}
                                                     onChange={handleChange}
                                                     onBlur={handleBlur}
                                                     variant="filled"
@@ -484,9 +583,9 @@ const MoveInSummeryForm = () => {
                                                 <FormControlLabel
                                                     control={
                                                         <Checkbox
-                                                            checked={values.securityDepositReceived}
-                                                            onChange={e => setFieldValue('securityDepositReceived', e.target.checked)}
-                                                            name="securityDepositReceived"
+                                                            checked={values.security_deposit_received}
+                                                            onChange={e => setFieldValue('security_deposit_received', e.target.checked)}
+                                                            name="security_deposit_received"
                                                         />
                                                     }
                                                     label={<Box component="span" sx={{ fontWeight: 600, fontSize: 14 }}>Received</Box>}
@@ -497,9 +596,15 @@ const MoveInSummeryForm = () => {
                                         <Box display="flex" gap={2} mt={2}>
                                             <Box component="label" sx={{ mb: 1, fontWeight: 600, fontSize: 16, width: '100%' }}>
                                                 1/2 Month Rental Deposit for 1st Resident $
+                                                <Box component="span" sx={{ fontWeight: 600, fontSize: 16, ml: 2 }}>
+                                                    {values.half_month_deposit_for_first_resident_rate}
+                                                </Box>
                                             </Box>
                                             <Box component="label" sx={{ mb: 1, fontWeight: 600, fontSize: 16, width: '100%' }}>
                                                 1/2 Month Care Plan $
+                                                <Box component="span" sx={{ fontWeight: 600, fontSize: 16, ml: 2 }}>
+                                                    {values.half_month_care_plan_rate}
+                                                </Box>
                                             </Box>
                                         </Box>
                                         <Box display="flex" gap={2} mt={2}>
@@ -508,7 +613,7 @@ const MoveInSummeryForm = () => {
                                                     1/2 Month Rental Deposit for 2nd Resident $
                                                 </Box>
                                                 <Box component="span" sx={{ fontWeight: 600, fontSize: 16, ml: 2 }}>
-                                                    500.0
+                                                    {values?.has_2nd_resident && values.halfRentalDeposit2ndRes}
                                                 </Box>
                                             </Box>
                                             <Box display="flex" alignItems="center" gap={2} flex={1}>
@@ -516,7 +621,7 @@ const MoveInSummeryForm = () => {
                                                     Move In/Out $
                                                 </Box>
                                                 <Box component="span" sx={{ fontWeight: 600, fontSize: 16, ml: 2 }}>
-                                                    500
+                                                    {values?.move_in_out_rate}
                                                 </Box>
                                             </Box>
                                         </Box>
@@ -525,26 +630,14 @@ const MoveInSummeryForm = () => {
                                                 <Box component="span" sx={{ fontWeight: 600, fontSize: 16 }}>
                                                     Elpas X (
                                                     <TextField
-                                                        name="elpasCount"
+                                                        name="elpas_quantity"
                                                         type="number"
-                                                        value={values.elpasCount || 1}
-                                                        onChange={handleChange}
-                                                        onBlur={handleBlur}
-                                                        variant="standard"
-                                                        sx={{ width: 40, mx: 0.5, '& input': { textAlign: 'center', fontWeight: 600, fontSize: 16, } }}
-                                                        inputProps={{ min: 1 }}
-                                                    />
-                                                    ) $
-                                                </Box>
-                                            </Box>
-                                            <Box display="flex" alignItems="center" gap={2} flex={1}>
-                                                <Box component="span" sx={{ fontWeight: 600, fontSize: 16 }}>
-                                                    Garage Fob X (
-                                                    <TextField
-                                                        name="garageFobCount"
-                                                        type="number"
-                                                        value={values.garageFobCount || 1}
-                                                        onChange={handleChange}
+                                                        value={values.elpas_quantity || 1}
+                                                        onChange={e => {
+                                                            const count = Number(e.target.value) || 1;
+                                                            setFieldValue("elpas_quantity", count);
+                                                            setFieldValue("elpas_rate", count * defaultElpasRate);
+                                                        }}
                                                         onBlur={handleBlur}
                                                         variant="standard"
                                                         sx={{ width: 40, mx: 0.5, '& input': { textAlign: 'center', fontWeight: 600, fontSize: 16, } }}
@@ -553,7 +646,30 @@ const MoveInSummeryForm = () => {
                                                     ) $
                                                 </Box>
                                                 <Box component="span" sx={{ fontWeight: 600, fontSize: 16, ml: 2 }}>
-                                                    250
+                                                    {values.elpas_rate}
+                                                </Box>
+                                            </Box>
+                                            <Box display="flex" alignItems="center" gap={2} flex={1}>
+                                                <Box component="span" sx={{ fontWeight: 600, fontSize: 16 }}>
+                                                    Garage Fob X (
+                                                    <TextField
+                                                        name="garage_fob_quantity"
+                                                        type="number"
+                                                        value={values.garage_fob_quantity || 1}
+                                                        onChange={e => {
+                                                            const count = Number(e.target.value) || 1;
+                                                            setFieldValue("garage_fob_quantity", count);
+                                                            setFieldValue("garage_fob_rate", count * defaultGaregeFobRate);
+                                                        }}
+                                                        onBlur={handleBlur}
+                                                        variant="standard"
+                                                        sx={{ width: 40, mx: 0.5, '& input': { textAlign: 'center', fontWeight: 600, fontSize: 16, } }}
+                                                        inputProps={{ min: 1 }}
+                                                    />
+                                                    ) $
+                                                </Box>
+                                                <Box component="span" sx={{ fontWeight: 600, fontSize: 16, ml: 2 }}>
+                                                    {values?.garage_fob_rate}
                                                 </Box>
                                             </Box>
                                         </Box>
@@ -562,9 +678,9 @@ const MoveInSummeryForm = () => {
                                                 Others $
                                             </Box>
                                             <TextField
-                                                name="othersFullRowFee"
+                                                name="deposit_others_rate"
                                                 type="number"
-                                                value={values.othersFullRowFee || ''}
+                                                value={values.deposit_others_rate || ''}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
                                                 variant="filled"
@@ -577,32 +693,33 @@ const MoveInSummeryForm = () => {
                                                 <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
                                                     Payor Information
                                                 </Box>
-                                                {['PAD', 'Post Dated-Cheque'].map((option) => (
-                                                    <Box key={option} sx={{ width: "50%" }}>
-                                                        <FormControlLabel
-                                                            control={
-                                                                <Checkbox
-                                                                    checked={values.contartTeam?.includes(option) || false}
-                                                                    onChange={() => {
-                                                                        const current = values.contartTeam || [];
-                                                                        if (current.includes(option)) {
-                                                                            setFieldValue(
-                                                                                "contartTeam",
-                                                                                current.filter((item) => item !== option)
-                                                                            );
-                                                                        } else {
-                                                                            setFieldValue("contartTeam", [...current, option]);
-                                                                        }
-                                                                    }}
-                                                                    name="contartTeam"
-                                                                />
-                                                            }
-                                                            label={option}
-                                                        />
-                                                    </Box>
-                                                ))}
+                                                {payor_information.map((item) => {
+                                                    const label = Object.keys(item)[0];
+                                                    const stateKey = item[label];
+                                                    const checked = values[stateKey] || false;
+                                                    return (
+                                                        <Box key={label} sx={{ width: "50%" }}>
+                                                            <FormControlLabel
+                                                                control={
+                                                                    <Checkbox
+                                                                        checked={checked}
+                                                                        onChange={() => {
+                                                                            // Uncheck all, then check only the selected one
+                                                                            payor_information.forEach((itm) => {
+                                                                                const key = itm[Object.keys(itm)[0]];
+                                                                                setFieldValue(key, key === stateKey);
+                                                                            });
+                                                                        }}
+                                                                        name={stateKey}
+                                                                    />
+                                                                }
+                                                                label={label}
+                                                            />
+                                                        </Box>
+                                                    );
+                                                })}
                                                 {/* PAD extra fields */}
-                                                {values.contartTeam?.includes('PAD') && (
+                                                {values.payor_information_PAD && (
                                                     <Box display="flex" flexDirection="column" gap={2} width="100%" mt={2}>
                                                         <Box display="flex" gap={2}>
                                                             <TextField
@@ -664,89 +781,78 @@ const MoveInSummeryForm = () => {
                                                 <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
                                                     Others
                                                 </Box>
-                                                {['Unit Key', 'Elpas Fob'].map((option) => (
-                                                    <Box key={option} sx={{ width: "50%" }}>
-                                                        <FormControlLabel
-                                                            control={
-                                                                <Checkbox
-                                                                    checked={values.contartTeam?.includes(option) || false}
-                                                                    onChange={() => {
-                                                                        const current = values.contartTeam || [];
-                                                                        if (current.includes(option)) {
-                                                                            setFieldValue(
-                                                                                "contartTeam",
-                                                                                current.filter((item) => item !== option)
-                                                                            );
-                                                                        } else {
-                                                                            setFieldValue("contartTeam", [...current, option]);
-                                                                        }
-                                                                    }}
-                                                                    name="contartTeam"
+                                                {Others.map((item) => {
+                                                    const label = Object.keys(item)[0];
+                                                    const stateKey = item[label];
+                                                    const checked = Boolean(values[stateKey]);
+                                                    const otherValKey = stateKey === "unit_key" ? "unit_key_other_val" : stateKey === "elpas_fob" ? "elpas_fob_other_val" : "";
+
+                                                    return (
+                                                        <Box key={label} sx={{ width: "50%" }}>
+                                                            <FormControlLabel
+                                                                control={
+                                                                    <Checkbox
+                                                                        checked={checked}
+                                                                        onChange={() => {
+                                                                            setFieldValue(stateKey, checked ? 0 : 1);
+                                                                            if (!checked && otherValKey) setFieldValue(otherValKey, "");
+                                                                        }}
+                                                                        name={stateKey}
+                                                                    />
+                                                                }
+                                                                label={label}
+                                                            />
+                                                            {/* Show input for other_val if checked */}
+                                                            {checked && otherValKey && (
+                                                                <TextField
+                                                                    label={`${label} Value`}
+                                                                    name={otherValKey}
+                                                                    value={values[otherValKey] || ''}
+                                                                    onChange={handleChange}
+                                                                    onBlur={handleBlur}
+                                                                    variant="filled"
+                                                                    sx={{ mt: 1, width: '95%' }}
                                                                 />
-                                                            }
-                                                            label={option}
-                                                        />
-                                                        {/* Show input if checked */}
-                                                        {option === 'Unit Key' && values.contartTeam?.includes('Unit Key') && (
-                                                            <TextField
-                                                                label="Unit Key Value"
-                                                                name="unitKeyValue"
-                                                                value={values.unitKeyValue || ''}
-                                                                onChange={handleChange}
-                                                                onBlur={handleBlur}
-                                                                variant="filled"
-                                                                sx={{ mt: 1, width: '100%' }}
-                                                            />
-                                                        )}
-                                                        {option === 'Elpas Fob' && values.contartTeam?.includes('Elpas Fob') && (
-                                                            <TextField
-                                                                label="Elpas Fob Value"
-                                                                name="elpasFobValue"
-                                                                value={values.elpasFobValue || ''}
-                                                                onChange={handleChange}
-                                                                onBlur={handleBlur}
-                                                                variant="filled"
-                                                                sx={{ mt: 1, width: '100%' }}
-                                                            />
-                                                        )}
-                                                    </Box>
-                                                ))}
+                                                            )}
+                                                        </Box>
+                                                    );
+                                                })}
                                             </FormGroup>
-                                              <Box sx={{ mt: 3 }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ marginRight: 8 }} xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M3 17.25V21h3.75l11.06-11.06-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z" fill="#1976d2" />
-                                                </svg>
-                                                <Box component="label" sx={{ fontWeight: 600, fontSize: 16 }}>
-                                                    Resident Signature
+                                            <Box sx={{ mt: 3 }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ marginRight: 8 }} xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M3 17.25V21h3.75l11.06-11.06-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z" fill="#1976d2" />
+                                                    </svg>
+                                                    <Box component="label" sx={{ fontWeight: 600, fontSize: 16 }}>
+                                                        Resident Signature
+                                                    </Box>
+                                                </Box>
+                                                <Box sx={{ position: 'relative', display: 'inline-block', width: 400 }}>
+                                                    <SignatureCanvas
+                                                        ref={sigPadRef}
+                                                        penColor="black"
+                                                        backgroundColor="#fff"
+                                                        canvasProps={{
+                                                            width: 400,
+                                                            height: 150,
+                                                            style: {
+                                                                border: '2px solid #1976d2',
+                                                                borderRadius: 8,
+                                                                background: '#fff',
+                                                                boxShadow: '0 2px 8px rgba(25, 118, 210, 0.08)',
+                                                            },
+                                                            className: "sigCanvas"
+                                                        }}
+                                                    />
+                                                    <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                                                        <Button onClick={() => sigPadRef.current.clear()} sx={{ mt: 1 }} variant="outlined" color="primary">Clear</Button>
+                                                    </Box>
                                                 </Box>
                                             </Box>
-                                            <Box sx={{ position: 'relative', display: 'inline-block', width: 400 }}>
-                                                <SignatureCanvas
-                                                    ref={sigPadRef}
-                                                    penColor="black"
-                                                    backgroundColor="#fff"
-                                                    canvasProps={{
-                                                        width: 400,
-                                                        height: 150,
-                                                        style: {
-                                                            border: '2px solid #1976d2',
-                                                            borderRadius: 8,
-                                                            background: '#fff',
-                                                            boxShadow: '0 2px 8px rgba(25, 118, 210, 0.08)',
-                                                        },
-                                                        className: "sigCanvas"
-                                                    }}
-                                                />
-                                                <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                                    <Button onClick={() => sigPadRef.current.clear()} sx={{ mt: 1 }} variant="outlined" color="primary">Clear</Button>
-                                                </Box>
-                                            </Box>
-                                        </Box>
                                             <FormGroup row sx={{ mt: 2 }}>
                                                 {[
-                                                    { label: 'Suite insurance Copy Received', name: 'suiteInsuranceCopyReceived' },
-                                                    { label: 'Suite insurance Coverage Approved', name: 'suiteInsuranceCoverageApproved' }
+                                                    { label: 'Suite insurance Copy Received', name: 'suite_insurance_copy_received' },
+                                                    { label: 'Suite insurance Coverage Approved', name: 'suite_insurance_coverage_approved' }
                                                 ].map((item) => (
                                                     <Box key={item.name} sx={{ width: "50%" }}>
                                                         <FormControlLabel
@@ -760,29 +866,29 @@ const MoveInSummeryForm = () => {
                                                             label={item.label}
                                                         />
                                                         {/* Show date picker if Suite insurance Copy Received is checked */}
-                                                        {item.name === 'suiteInsuranceCopyReceived' && values.suiteInsuranceCopyReceived && (
+                                                        {item.name === 'suite_insurance_copy_received' && values.suite_insurance_copy_received && (
                                                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                                                 <DatePicker
                                                                     label="Copy Received Date"
-                                                                    value={values.suiteInsuranceCopyReceivedDate ? dayjs(values.suiteInsuranceCopyReceivedDate) : null}
-                                                                    onChange={newValue => setFieldValue('suiteInsuranceCopyReceivedDate', newValue ? newValue.format('YYYY-MM-DD') : '')}
+                                                                    value={values.suite_insurance_copy_received_date ? dayjs(values.suite_insurance_copy_received_date) : null}
+                                                                    onChange={newValue => setFieldValue('suite_insurance_copy_received_date', newValue ? newValue.format('YYYY-MM-DD') : '')}
                                                                     slotProps={{
                                                                         textField: {
                                                                             fullWidth: true,
                                                                             variant: 'filled',
-                                                                            sx: { mt: 1 }
+                                                                            sx: { mt: 1, width: '95%' }
                                                                         },
                                                                     }}
                                                                 />
                                                             </LocalizationProvider>
                                                         )}
                                                         {/* Show insurance company and policy number if Coverage Approved is checked */}
-                                                        {item.name === 'suiteInsuranceCoverageApproved' && values.suiteInsuranceCoverageApproved && (
-                                                            <Box display="flex" flexDirection="column" gap={1} mt={1}>
+                                                        {item.name === 'suite_insurance_coverage_approved' && values.suite_insurance_coverage_approved && (
+                                                            <Box display="flex" flexDirection="column" gap={2} mt={1}>
                                                                 <TextField
                                                                     label="Insurance Company Name"
-                                                                    name="suiteInsuranceCoverageApprovedCompany"
-                                                                    value={values.suiteInsuranceCoverageApprovedCompany || ''}
+                                                                    name="suite_insurance_coverage_approved_company"
+                                                                    value={values.suite_insurance_coverage_approved_company || ''}
                                                                     onChange={handleChange}
                                                                     onBlur={handleBlur}
                                                                     variant="filled"
@@ -790,8 +896,8 @@ const MoveInSummeryForm = () => {
                                                                 />
                                                                 <TextField
                                                                     label="Policy Number"
-                                                                    name="suiteInsuranceCoverageApprovedPolicy"
-                                                                    value={values.suiteInsuranceCoverageApprovedPolicy || ''}
+                                                                    name="suite_insurance_coverage_approved_policy"
+                                                                    value={values.suite_insurance_coverage_approved_policy || ''}
                                                                     onChange={handleChange}
                                                                     onBlur={handleBlur}
                                                                     variant="filled"
@@ -807,8 +913,8 @@ const MoveInSummeryForm = () => {
                                             <Box display="flex" gap={2}>
                                                 <TextField
                                                     label="Reviewed by"
-                                                    name="reviewedBy"
-                                                    value={values.reviewedBy || ''}
+                                                    name="reviewed_by"
+                                                    value={values.reviewed_by || ''}
                                                     onChange={handleChange}
                                                     onBlur={handleBlur}
                                                     variant="filled"
@@ -817,8 +923,8 @@ const MoveInSummeryForm = () => {
                                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                                     <DatePicker
                                                         label="Date"
-                                                        value={values.reviewedDate ? dayjs(values.reviewedDate) : null}
-                                                        onChange={newValue => setFieldValue('reviewedDate', newValue ? newValue.format('YYYY-MM-DD') : '')}
+                                                        value={values.date ? dayjs(values.date) : null}
+                                                        onChange={newValue => setFieldValue('date', newValue ? newValue.format('YYYY-MM-DD') : '')}
                                                         slotProps={{
                                                             textField: {
                                                                 fullWidth: true,
@@ -829,7 +935,7 @@ const MoveInSummeryForm = () => {
                                                 </LocalizationProvider>
                                             </Box>
                                         </Box>
-                                      
+
 
                                     </Box>
 
