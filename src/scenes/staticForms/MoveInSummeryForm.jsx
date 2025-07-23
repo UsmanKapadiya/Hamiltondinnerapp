@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Checkbox, FormControlLabel, FormGroup, TextField, Button } from "@mui/material";
+import { Box, Checkbox, FormControlLabel, FormGroup, TextField, Button, Grid } from "@mui/material";
 import CustomButton from "../../components/CustomButton";
 import { Formik } from "formik";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
@@ -9,6 +9,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import SignatureCanvas from "react-signature-canvas";
 import StaticFormServices from "../../services/staticFormServices";
+import * as Yup from "yup";
 
 const contarctTeam = [
     { 'Yearly': 'contract_term_yearly' },
@@ -24,6 +25,156 @@ const Others = [
     { 'Unit Key': 'unit_key' },
     { 'Elpas Fob': 'elpas_fob' }
 ]
+// ...existing code...
+const validationSchema = Yup.object().shape({
+    suite_number: Yup.string()
+        .trim()
+        .required("Please enter Suite Number."),
+    contract_signing_date: Yup.string()
+        .required("Please select Contract Signing Date."),
+    sales_name: Yup.string()
+        .trim()
+        .required("Please enter Sales Name."),
+    contartTeam: Yup.array()
+        .min(1, "Please select Contract Term."),
+    tenancy_commence_date: Yup.string()
+        .required("Please select Tenancy Commence Date."),
+    contract_expiry_date: Yup.string()
+        .required("Please select Contract Expiry Date."),
+    first_resident_name_first_name: Yup.string()
+        .trim()
+        .required("Please enter First Name of 1st Resident."),
+    first_resident_name_last_name: Yup.string()
+        .trim()
+        .required("Please enter Last Name of 1st Resident."),
+    first_resident_dob: Yup.string()
+        .required("Please select DOB of 1st Resident."),
+    // 2nd Resident validations (conditional)
+    second_resident_name_first_name: Yup.string().when('has_2nd_resident', {
+        is: true,
+        then: schema => schema.trim().required("Please enter First Name of 2nd Resident."),
+        otherwise: schema => schema,
+    }),
+    second_resident_name_last_name: Yup.string().when('has_2nd_resident', {
+        is: true,
+        then: schema => schema.trim().required("Please enter Last Name of 2nd Resident."),
+        otherwise: schema => schema,
+    }),
+    second_resident_dob: Yup.string().when('has_2nd_resident', {
+        is: true,
+        then: schema => schema.required("Please select DOB of 2nd Resident."),
+        otherwise: schema => schema,
+    }),
+
+    first_month_payment_received: Yup.boolean(),
+    first_month_payment_cheque_number: Yup.string().when('first_month_payment_received', {
+        is: true,
+        then: schema => schema.trim().required("Please enter Cheque Number for 1st Month Payment."),
+        otherwise: schema => schema,
+    }),
+    first_month_payment_cheque_date: Yup.string().when('first_month_payment_received', {
+        is: true,
+        then: schema => schema.required("Please select Cheque Date for 1st Month Payment."),
+        otherwise: schema => schema,
+    }),
+    monthly_rate: Yup.string()
+        .trim()
+        .required("Please enter Monthly Rate."),
+    security_deposit_received: Yup.boolean(),
+    security_deposit_cheque_number: Yup.string().when('security_deposit_received', {
+        is: true,
+        then: schema => schema.trim().required("Please enter Cheque Number for Security Deposit."),
+        otherwise: schema => schema,
+    }),
+    security_deposit_cheque_date: Yup.string().when('security_deposit_received', {
+        is: true,
+        then: schema => schema.required("Please select Cheque Date for Security Deposit."),
+        otherwise: schema => schema,
+    }),
+    security_deposit_total: Yup.number().when('security_deposit_received', {
+        is: true,
+        then: schema => schema.typeError("Please enter Total for Security Deposit.").required("Please enter Total for Security Deposit."),
+        otherwise: schema => schema,
+    }),
+    payor_information_PAD: Yup.boolean(),
+    payor_information_Post_Dated_Cheque: Yup.boolean(),
+    payor_information_selected: Yup.string().test(
+        "payor-information-required",
+        "Please select Payor Information",
+        function () {
+            const { payor_information_PAD, payor_information_Post_Dated_Cheque } = this.parent;
+            return payor_information_PAD || payor_information_Post_Dated_Cheque;
+        }
+    ),
+    // ...existing code...
+    padPayorName: Yup.string().when('payor_information_PAD', {
+        is: true,
+        then: schema => schema.trim().required("Please enter Payor's Name."),
+        otherwise: schema => schema,
+    }),
+    padBankName: Yup.string().when('payor_information_PAD', {
+        is: true,
+        then: schema => schema.trim().required("Please enter Bank Name."),
+        otherwise: schema => schema,
+    }),
+    padBankId: Yup.string().when('payor_information_PAD', {
+        is: true,
+        then: schema => schema
+            .trim()
+            .required("Please enter Bank ID.")
+            .length(3, "Bank ID must be of 3 digits Only.")
+            .matches(/^\d{3}$/, "Bank ID must be of 3 digits Only."),
+        otherwise: schema => schema,
+    }),
+    padAccountNumber: Yup.string().when('payor_information_PAD', {
+        is: true,
+        then: schema => schema.trim().required("Please enter Account Number."),
+        otherwise: schema => schema,
+    }),
+    padTransitNumber: Yup.string().when('payor_information_PAD', {
+        is: true,
+        then: schema => schema
+            .trim()
+            .required("Please enter Transit.")
+            .length(5, "Transit must be of 5 digits Only.")
+            .matches(/^\d{5}$/, "Transit must be of 5 digits Only."),
+        otherwise: schema => schema,
+    }),
+
+    unit_key_other_val: Yup.string().when('unit_key', {
+        is: (val) => Boolean(val),
+        then: schema => schema.trim().required("Please enter Unit Key."),
+        otherwise: schema => schema,
+    }),
+    elpas_fob_other_val: Yup.string().when('elpas_fob', {
+        is: (val) => Boolean(val),
+        then: schema => schema.trim().required("Please enter Elpas Fob."),
+        otherwise: schema => schema,
+    }),
+    resident_signature: Yup.string().required("Please provide Resident Signature."),
+    suite_insurance_copy_received_date: Yup.string().when('suite_insurance_copy_received', {
+        is: true,
+        then: schema => schema.required("Please select Date for Suite Insurance Copy Received."),
+        otherwise: schema => schema,
+    }),
+
+    suite_insurance_coverage_approved_company: Yup.string().when('suite_insurance_coverage_approved', {
+        is: true,
+        then: schema => schema.trim().required("Please enter Insurance Company Name."),
+        otherwise: schema => schema,
+    }),
+    suite_insurance_coverage_approved_policy: Yup.string().when('suite_insurance_coverage_approved', {
+        is: true,
+        then: schema => schema.trim().required("Please enter Policy Number."),
+        otherwise: schema => schema,
+    }),
+    reviewed_by: Yup.string()
+        .trim()
+        .required("Please enter Reviewed by."),
+    date: Yup.string()
+        .required("Please select Date."),
+});
+// ...existing code...
 const initialValues = {
     suite_number: "",
     contract_signing_date: "",
@@ -66,6 +217,10 @@ const initialValues = {
     payment_others_rate: "",
 
     security_deposit_received: false,
+    security_deposit_cheque_number: "",
+    security_deposit_cheque_date: "",
+    security_deposit_total: "",
+
     half_month_deposit_for_first_resident_rate: "",
     half_month_care_plan_rate: "",
 
@@ -79,7 +234,7 @@ const initialValues = {
 
     payor_information_PAD: false,
     payor_information_Post_Dated_Cheque: false,
-
+    payor_information_selected: "",
     // Keys Pendings
     padPayorName: "",
     padBankName: "",
@@ -91,6 +246,8 @@ const initialValues = {
     unit_key_other_val: "",
     elpas_fob: 0,
     elpas_fob_other_val: "",
+
+    resident_signature: "",
 
     suite_insurance_copy_received: false,
     suite_insurance_copy_received_date: "",
@@ -177,8 +334,8 @@ const MoveInSummeryForm = () => {
                 </Box>
             ) : (
                 <>
-                    <Formik initialValues={initialFormValues} onSubmit={handleSubmit}>
-                        {({ values, handleChange, handleBlur, handleSubmit, setFieldValue }) => (
+                    <Formik initialValues={initialFormValues} onSubmit={handleSubmit} validationSchema={validationSchema}>
+                        {({ values, handleChange, handleBlur, handleSubmit, setFieldValue, errors, touched, submitCount }) => (
                             <form onSubmit={handleSubmit}>
                                 <Box display="flex" flexDirection="column" gap={2} mx="auto">
                                     <Box display="flex" gap={2}>
@@ -190,6 +347,8 @@ const MoveInSummeryForm = () => {
                                             onBlur={handleBlur}
                                             variant="filled"
                                             fullWidth
+                                            error={touched.suite_number && Boolean(errors.suite_number)}
+                                            helperText={touched.suite_number && errors.suite_number}
                                         />
                                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                                             <DatePicker
@@ -203,6 +362,8 @@ const MoveInSummeryForm = () => {
                                                         fullWidth: true,
                                                         variant: "filled",
                                                         sx: {},
+                                                        error: touched.contract_signing_date && Boolean(errors.contract_signing_date),
+                                                        helperText: touched.contract_signing_date && errors.contract_signing_date,
                                                     },
                                                 }}
                                             />
@@ -215,6 +376,8 @@ const MoveInSummeryForm = () => {
                                             onBlur={handleBlur}
                                             variant="filled"
                                             fullWidth
+                                            error={touched.sales_name && Boolean(errors.sales_name)}
+                                            helperText={touched.sales_name && errors.sales_name}
                                         />
                                     </Box>
                                     <Box sx={{ gridColumn: "span 4", mt: 2 }}>
@@ -251,36 +414,57 @@ const MoveInSummeryForm = () => {
                                                 );
                                             })}
                                         </FormGroup>
+                                        {touched.contartTeam && errors.contartTeam && (
+                                            <Box sx={{ color: "error.main", fontSize: 13, mt: 1 }}>
+                                                {errors.contartTeam}
+                                            </Box>
+                                        )}
                                     </Box>
                                     <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                                             <Box display="flex" gap={2}>
-                                                <DatePicker
-                                                    label="Tenancy Commence Date"
-                                                    value={values.tenancy_commence_date ? dayjs(values.tenancy_commence_date) : null}
-                                                    onChange={(newValue) =>
-                                                        setFieldValue("tenancy_commence_date", newValue ? newValue.format("YYYY-MM-DD") : "")
-                                                    }
-                                                    slotProps={{
-                                                        textField: {
-                                                            fullWidth: true,
-                                                            variant: "filled",
-                                                        },
-                                                    }}
-                                                />
-                                                <DatePicker
-                                                    label="Contract Expiry Date"
-                                                    value={values.contract_expiry_date ? dayjs(values.contract_expiry_date) : null}
-                                                    onChange={(newValue) =>
-                                                        setFieldValue("contract_expiry_date", newValue ? newValue.format("YYYY-MM-DD") : "")
-                                                    }
-                                                    slotProps={{
-                                                        textField: {
-                                                            fullWidth: true,
-                                                            variant: "filled",
-                                                        },
-                                                    }}
-                                                />
+                                                <Box flex={1}>
+                                                    <DatePicker
+                                                        label="Tenancy Commence Date"
+                                                        value={values.tenancy_commence_date ? dayjs(values.tenancy_commence_date) : null}
+                                                        onChange={(newValue) =>
+                                                            setFieldValue("tenancy_commence_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                        }
+                                                        slotProps={{
+                                                            textField: {
+                                                                fullWidth: true,
+                                                                variant: "filled",
+                                                                error: touched.tenancy_commence_date && Boolean(errors.tenancy_commence_date),
+                                                            },
+                                                        }}
+                                                    />
+                                                    {touched.tenancy_commence_date && errors.tenancy_commence_date && (
+                                                        <Box sx={{ color: "error.main", fontSize: 13, mt: 0.5 }}>
+                                                            {errors.tenancy_commence_date}
+                                                        </Box>
+                                                    )}
+                                                </Box>
+                                                <Box flex={1}>
+                                                    <DatePicker
+                                                        label="Contract Expiry Date"
+                                                        value={values.contract_expiry_date ? dayjs(values.contract_expiry_date) : null}
+                                                        onChange={(newValue) =>
+                                                            setFieldValue("contract_expiry_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                        }
+                                                        slotProps={{
+                                                            textField: {
+                                                                fullWidth: true,
+                                                                variant: "filled",
+                                                                error: touched.contract_expiry_date && Boolean(errors.contract_expiry_date),
+                                                            },
+                                                        }}
+                                                    />
+                                                    {touched.contract_expiry_date && errors.contract_expiry_date && (
+                                                        <Box sx={{ color: "error.main", fontSize: 13, mt: 0.5 }}>
+                                                            {errors.contract_expiry_date}
+                                                        </Box>
+                                                    )}
+                                                </Box>
                                             </Box>
                                         </LocalizationProvider>
                                     </Box>
@@ -297,6 +481,8 @@ const MoveInSummeryForm = () => {
                                                 onBlur={handleBlur}
                                                 variant="filled"
                                                 fullWidth
+                                                error={touched.first_resident_name_first_name && Boolean(errors.first_resident_name_first_name)}
+                                                helperText={touched.first_resident_name_first_name && errors.first_resident_name_first_name}
                                             />
                                             <TextField
                                                 label="Middle Name"
@@ -317,22 +503,32 @@ const MoveInSummeryForm = () => {
                                                 onBlur={handleBlur}
                                                 variant="filled"
                                                 fullWidth
+                                                error={touched.first_resident_name_last_name && Boolean(errors.first_resident_name_last_name)}
+                                                helperText={touched.first_resident_name_last_name && errors.first_resident_name_last_name}
                                             />
-                                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                                <DatePicker
-                                                    label="Date of Birth"
-                                                    value={values.first_resident_dob ? dayjs(values.first_resident_dob) : null}
-                                                    onChange={(newValue) =>
-                                                        setFieldValue("first_resident_dob", newValue ? newValue.format("YYYY-MM-DD") : "")
-                                                    }
-                                                    slotProps={{
-                                                        textField: {
-                                                            fullWidth: true,
-                                                            variant: "filled",
-                                                        },
-                                                    }}
-                                                />
-                                            </LocalizationProvider>
+                                            <Box flex={1}>
+                                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                    <DatePicker
+                                                        label="Date of Birth"
+                                                        value={values.first_resident_dob ? dayjs(values.first_resident_dob) : null}
+                                                        onChange={(newValue) =>
+                                                            setFieldValue("first_resident_dob", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                        }
+                                                        slotProps={{
+                                                            textField: {
+                                                                fullWidth: true,
+                                                                variant: "filled",
+                                                                error: touched.first_resident_dob && Boolean(errors.first_resident_dob),
+                                                            },
+                                                        }}
+                                                    />
+                                                </LocalizationProvider>
+                                                {touched.first_resident_dob && errors.first_resident_dob && (
+                                                    <Box sx={{ color: "error.main", fontSize: 13, mt: 0.5 }}>
+                                                        {errors.first_resident_dob}
+                                                    </Box>
+                                                )}
+                                            </Box>
                                         </Box>
                                         <FormControlLabel
                                             control={
@@ -355,6 +551,8 @@ const MoveInSummeryForm = () => {
                                                         onBlur={handleBlur}
                                                         variant="filled"
                                                         fullWidth
+                                                        error={touched.second_resident_name_first_name && Boolean(errors.second_resident_name_first_name)}
+                                                        helperText={touched.second_resident_name_first_name && errors.second_resident_name_first_name}
                                                     />
                                                     <TextField
                                                         label="Middle Name"
@@ -375,22 +573,32 @@ const MoveInSummeryForm = () => {
                                                         onBlur={handleBlur}
                                                         variant="filled"
                                                         fullWidth
+                                                        error={touched.second_resident_name_last_name && Boolean(errors.second_resident_name_last_name)}
+                                                        helperText={touched.second_resident_name_last_name && errors.second_resident_name_last_name}
                                                     />
-                                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                                        <DatePicker
-                                                            label="Date of Birth"
-                                                            value={values.second_resident_dob ? dayjs(values.second_resident_dob) : null}
-                                                            onChange={(newValue) =>
-                                                                setFieldValue("second_resident_dob", newValue ? newValue.format("YYYY-MM-DD") : "")
-                                                            }
-                                                            slotProps={{
-                                                                textField: {
-                                                                    fullWidth: true,
-                                                                    variant: "filled",
-                                                                },
-                                                            }}
-                                                        />
-                                                    </LocalizationProvider>
+                                                    <Box flex={1}>
+                                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                            <DatePicker
+                                                                label="Date of Birth"
+                                                                value={values.second_resident_dob ? dayjs(values.second_resident_dob) : null}
+                                                                onChange={(newValue) =>
+                                                                    setFieldValue("second_resident_dob", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                                }
+                                                                slotProps={{
+                                                                    textField: {
+                                                                        fullWidth: true,
+                                                                        variant: "filled",
+                                                                        error: touched.second_resident_dob && Boolean(errors.second_resident_dob),
+                                                                    },
+                                                                }}
+                                                            />
+                                                        </LocalizationProvider>
+                                                        {touched.second_resident_dob && errors.second_resident_dob && (
+                                                            <Box sx={{ color: "error.main", fontSize: 13, mt: 0.5 }}>
+                                                                {errors.second_resident_dob}
+                                                            </Box>
+                                                        )}
+                                                    </Box>
                                                 </Box>
                                             </>
                                         )}
@@ -399,6 +607,19 @@ const MoveInSummeryForm = () => {
                                         <Box component="label" sx={{ mb: 1, fontWeight: 600, fontSize: 16, width: '100%' }}>
                                             1st Month Payment
                                         </Box>
+                                        {/* <Box>
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={values.first_month_payment_received}
+                                                        onChange={e => setFieldValue('first_month_payment_received', e.target.checked)}
+                                                        name="first_month_payment_received"
+                                                    />
+                                                }
+                                                label={<Box component="span" sx={{ fontWeight: 600, fontSize: 14 }}>Received</Box>}
+                                                sx={{ mt: 1 }}
+                                            />
+                                        </Box> */}
                                         <Box>
                                             <FormControlLabel
                                                 control={
@@ -412,6 +633,47 @@ const MoveInSummeryForm = () => {
                                                 sx={{ mt: 1 }}
                                             />
                                         </Box>
+                                        {values.first_month_payment_received && (
+                                            <Box display="flex" gap={2} mt={2}>
+                                                <TextField
+                                                    label="Cheque Number"
+                                                    name="first_month_payment_cheque_number"
+                                                    value={values.first_month_payment_cheque_number || ''}
+                                                    onChange={handleChange}
+                                                    onBlur={handleBlur}
+                                                    variant="filled"
+                                                    fullWidth
+                                                    error={Boolean(errors.first_month_payment_cheque_number) && (touched.first_month_payment_cheque_number || submitCount > 0)}
+                                                    helperText={Boolean(errors.first_month_payment_cheque_number) && (touched.first_month_payment_cheque_number || submitCount > 0) ? errors.first_month_payment_cheque_number : ""}
+                                                />
+
+                                                <Box flex={1}>
+                                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                        <DatePicker
+                                                            label="Cheque Date"
+                                                            value={values.first_month_payment_cheque_date ? dayjs(values.first_month_payment_cheque_date) : null}
+                                                            onChange={newValue =>
+                                                                setFieldValue("first_month_payment_cheque_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                            }
+                                                            slotProps={{
+                                                                textField: {
+                                                                    fullWidth: true,
+                                                                    variant: "filled",
+                                                                    error: touched.first_month_payment_cheque_date && Boolean(errors.first_month_payment_cheque_date),
+                                                                    // Remove helperText here!
+                                                                },
+                                                            }}
+                                                        />
+                                                    </LocalizationProvider>
+                                                    {/* Render error message below the DatePicker */}
+                                                    {(Boolean(errors.first_month_payment_cheque_date) && (touched.first_month_payment_cheque_date || submitCount > 0)) && (
+                                                        <Box sx={{ color: "error.main", fontSize: 13, mt: 0.5 }}>
+                                                            {errors.first_month_payment_cheque_date}
+                                                        </Box>
+                                                    )}
+                                                </Box>
+                                            </Box>
+                                        )}
                                         <Box display="flex" gap={2} mt={2}>
                                             <TextField
                                                 label="Monthly Rate $"
@@ -422,6 +684,9 @@ const MoveInSummeryForm = () => {
                                                 onBlur={handleBlur}
                                                 variant="filled"
                                                 fullWidth
+                                                error={Boolean(errors.monthly_rate) && (touched.monthly_rate || submitCount > 0)}
+                                                helperText={Boolean(errors.monthly_rate) && (touched.monthly_rate || submitCount > 0) ? errors.monthly_rate : ""}
+
                                             />
                                             <TextField
                                                 label="Care Plan Rate $"
@@ -576,10 +841,10 @@ const MoveInSummeryForm = () => {
                                             </Box>
                                         </Box>
                                         <Box sx={{ gridColumn: "span 4", mt: 2 }}>
-                                            <Box component="label" sx={{ mb: 1, fontWeight: 600, fontSize: 16, width: '100%' }}>
-                                                Security Deposit
-                                            </Box>
-                                            <Box>
+                                            <Box display="flex" alignItems="center" sx={{ mb: 1, fontWeight: 600, fontSize: 16, width: '100%' }}>
+                                                <Box component="span" sx={{ fontWeight: 600, fontSize: 16 }}>
+                                                    Security Deposit
+                                                </Box>
                                                 <FormControlLabel
                                                     control={
                                                         <Checkbox
@@ -589,9 +854,59 @@ const MoveInSummeryForm = () => {
                                                         />
                                                     }
                                                     label={<Box component="span" sx={{ fontWeight: 600, fontSize: 14 }}>Received</Box>}
-                                                    sx={{ mt: 1 }}
+                                                    sx={{ ml: 3 }}
                                                 />
                                             </Box>
+                                            {values.security_deposit_received && (
+                                                <Box display="flex" gap={2} mt={2}>
+                                                    <TextField
+                                                        label="Cheque Number"
+                                                        name="security_deposit_cheque_number"
+                                                        value={values.security_deposit_cheque_number || ''}
+                                                        onChange={handleChange}
+                                                        onBlur={handleBlur}
+                                                        variant="filled"
+                                                        fullWidth
+                                                        error={Boolean(errors.security_deposit_cheque_number) && (touched.security_deposit_cheque_number || submitCount > 0)}
+                                                        helperText={Boolean(errors.security_deposit_cheque_number) && (touched.security_deposit_cheque_number || submitCount > 0) ? errors.security_deposit_cheque_number : ""}
+                                                    />
+                                                    <Box flex={1}>
+                                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                            <DatePicker
+                                                                label="Cheque Date"
+                                                                value={values.security_deposit_cheque_date ? dayjs(values.security_deposit_cheque_date) : null}
+                                                                onChange={newValue =>
+                                                                    setFieldValue("security_deposit_cheque_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                                }
+                                                                slotProps={{
+                                                                    textField: {
+                                                                        fullWidth: true,
+                                                                        variant: "filled",
+                                                                        error: Boolean(errors.security_deposit_cheque_date) && (touched.security_deposit_cheque_date || submitCount > 0),
+                                                                    },
+                                                                }}
+                                                            />
+                                                        </LocalizationProvider>
+                                                        {(Boolean(errors.security_deposit_cheque_date) && (touched.security_deposit_cheque_date || submitCount > 0)) && (
+                                                            <Box sx={{ color: "error.main", fontSize: 13, mt: 0.5 }}>
+                                                                {errors.security_deposit_cheque_date}
+                                                            </Box>
+                                                        )}
+                                                    </Box>
+                                                    <TextField
+                                                        label="Total"
+                                                        name="security_deposit_total"
+                                                        type="number"
+                                                        value={values.security_deposit_total || ''}
+                                                        onChange={handleChange}
+                                                        onBlur={handleBlur}
+                                                        variant="filled"
+                                                        fullWidth
+                                                        error={Boolean(errors.security_deposit_total) && (touched.security_deposit_total || submitCount > 0)}
+                                                        helperText={Boolean(errors.security_deposit_total) && (touched.security_deposit_total || submitCount > 0) ? errors.security_deposit_total : ""}
+                                                    />
+                                                </Box>
+                                            )}
                                         </Box>
                                         <Box display="flex" gap={2} mt={2}>
                                             <Box component="label" sx={{ mb: 1, fontWeight: 600, fontSize: 16, width: '100%' }}>
@@ -704,11 +1019,11 @@ const MoveInSummeryForm = () => {
                                                                     <Checkbox
                                                                         checked={checked}
                                                                         onChange={() => {
-                                                                            // Uncheck all, then check only the selected one
                                                                             payor_information.forEach((itm) => {
                                                                                 const key = itm[Object.keys(itm)[0]];
                                                                                 setFieldValue(key, key === stateKey);
                                                                             });
+                                                                            setFieldValue("payor_information_selected", label);
                                                                         }}
                                                                         name={stateKey}
                                                                     />
@@ -718,6 +1033,11 @@ const MoveInSummeryForm = () => {
                                                         </Box>
                                                     );
                                                 })}
+                                                {(Boolean(errors.payor_information_selected) && submitCount > 0) && (
+                                                    <Box sx={{ color: "error.main", fontSize: 13, mt: 1, width: "100%" }}>
+                                                        {errors.payor_information_selected}
+                                                    </Box>
+                                                )}
                                                 {/* PAD extra fields */}
                                                 {values.payor_information_PAD && (
                                                     <Box display="flex" flexDirection="column" gap={2} width="100%" mt={2}>
@@ -730,6 +1050,8 @@ const MoveInSummeryForm = () => {
                                                                 onBlur={handleBlur}
                                                                 variant="filled"
                                                                 fullWidth
+                                                                error={Boolean(errors.padPayorName) && (touched.padPayorName || submitCount > 0)}
+                                                                helperText={Boolean(errors.padPayorName) && (touched.padPayorName || submitCount > 0) ? errors.padPayorName : ""}
                                                             />
                                                             <TextField
                                                                 label="Bank Name"
@@ -739,9 +1061,11 @@ const MoveInSummeryForm = () => {
                                                                 onBlur={handleBlur}
                                                                 variant="filled"
                                                                 fullWidth
+                                                                error={Boolean(errors.padBankName) && (touched.padBankName || submitCount > 0)}
+                                                                helperText={Boolean(errors.padBankName) && (touched.padBankName || submitCount > 0) ? errors.padBankName : ""}
                                                             />
                                                         </Box>
-                                                        <Box display="flex" gap={2}>
+                                                        <Box display="flex" gap={2} width="100%">
                                                             <TextField
                                                                 label="Bank ID # (3 digits)"
                                                                 name="padBankId"
@@ -750,7 +1074,9 @@ const MoveInSummeryForm = () => {
                                                                 onBlur={handleBlur}
                                                                 variant="filled"
                                                                 inputProps={{ maxLength: 3 }}
-                                                                sx={{ maxWidth: 200 }}
+                                                                fullWidth
+                                                                error={Boolean(errors.padBankId) && (touched.padBankId || submitCount > 0)}
+                                                                helperText={Boolean(errors.padBankId) && (touched.padBankId || submitCount > 0) ? errors.padBankId : ""}
                                                             />
                                                             <TextField
                                                                 label="Account Number"
@@ -759,7 +1085,9 @@ const MoveInSummeryForm = () => {
                                                                 onChange={handleChange}
                                                                 onBlur={handleBlur}
                                                                 variant="filled"
-                                                                sx={{ maxWidth: 250 }}
+                                                                fullWidth
+                                                                error={Boolean(errors.padAccountNumber) && (touched.padAccountNumber || submitCount > 0)}
+                                                                helperText={Boolean(errors.padAccountNumber) && (touched.padAccountNumber || submitCount > 0) ? errors.padAccountNumber : ""}
                                                             />
                                                             <TextField
                                                                 label="Transit # (5 digits)"
@@ -769,7 +1097,9 @@ const MoveInSummeryForm = () => {
                                                                 onBlur={handleBlur}
                                                                 variant="filled"
                                                                 inputProps={{ maxLength: 5 }}
-                                                                sx={{ maxWidth: 200 }}
+                                                                fullWidth
+                                                                error={Boolean(errors.padTransitNumber) && (touched.padTransitNumber || submitCount > 0)}
+                                                                helperText={Boolean(errors.padTransitNumber) && (touched.padTransitNumber || submitCount > 0) ? errors.padTransitNumber : ""}
                                                             />
                                                         </Box>
                                                     </Box>
@@ -802,7 +1132,6 @@ const MoveInSummeryForm = () => {
                                                                 }
                                                                 label={label}
                                                             />
-                                                            {/* Show input for other_val if checked */}
                                                             {checked && otherValKey && (
                                                                 <TextField
                                                                     label={`${label} Value`}
@@ -812,6 +1141,8 @@ const MoveInSummeryForm = () => {
                                                                     onBlur={handleBlur}
                                                                     variant="filled"
                                                                     sx={{ mt: 1, width: '95%' }}
+                                                                    error={Boolean(errors[otherValKey]) && (touched[otherValKey] || submitCount > 0)}
+                                                                    helperText={Boolean(errors[otherValKey]) && (touched[otherValKey] || submitCount > 0) ? errors[otherValKey] : ""}
                                                                 />
                                                             )}
                                                         </Box>
@@ -832,6 +1163,7 @@ const MoveInSummeryForm = () => {
                                                         ref={sigPadRef}
                                                         penColor="black"
                                                         backgroundColor="#fff"
+                                                        onEnd={() => setFieldValue("resident_signature", sigPadRef.current.getTrimmedCanvas().toDataURL())}
                                                         canvasProps={{
                                                             width: 400,
                                                             height: 150,
@@ -844,6 +1176,11 @@ const MoveInSummeryForm = () => {
                                                             className: "sigCanvas"
                                                         }}
                                                     />
+                                                    {Boolean(errors.resident_signature) && submitCount > 0 && (
+                                                        <Box sx={{ color: "error.main", fontSize: 13, mt: 1 }}>
+                                                            {errors.resident_signature}
+                                                        </Box>
+                                                    )}
                                                     <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                                                         <Button onClick={() => sigPadRef.current.clear()} sx={{ mt: 1 }} variant="outlined" color="primary">Clear</Button>
                                                     </Box>
@@ -867,20 +1204,27 @@ const MoveInSummeryForm = () => {
                                                         />
                                                         {/* Show date picker if Suite insurance Copy Received is checked */}
                                                         {item.name === 'suite_insurance_copy_received' && values.suite_insurance_copy_received && (
-                                                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                                                <DatePicker
-                                                                    label="Copy Received Date"
-                                                                    value={values.suite_insurance_copy_received_date ? dayjs(values.suite_insurance_copy_received_date) : null}
-                                                                    onChange={newValue => setFieldValue('suite_insurance_copy_received_date', newValue ? newValue.format('YYYY-MM-DD') : '')}
-                                                                    slotProps={{
-                                                                        textField: {
-                                                                            fullWidth: true,
-                                                                            variant: 'filled',
-                                                                            sx: { mt: 1, width: '95%' }
-                                                                        },
-                                                                    }}
-                                                                />
-                                                            </LocalizationProvider>
+                                                            <>
+                                                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                                    <DatePicker
+                                                                        label="Copy Received Date"
+                                                                        value={values.suite_insurance_copy_received_date ? dayjs(values.suite_insurance_copy_received_date) : null}
+                                                                        onChange={newValue => setFieldValue('suite_insurance_copy_received_date', newValue ? newValue.format('YYYY-MM-DD') : '')}
+                                                                        slotProps={{
+                                                                            textField: {
+                                                                                fullWidth: true,
+                                                                                variant: 'filled',
+                                                                                sx: { mt: 1, width: '95%' }
+                                                                            },
+                                                                        }}
+                                                                    />
+                                                                </LocalizationProvider>
+                                                                {Boolean(errors.suite_insurance_copy_received_date) && (touched.suite_insurance_copy_received_date || submitCount > 0) && (
+                                                                    <Box sx={{ color: "error.main", fontSize: 13, mt: 0.5 }}>
+                                                                        {errors.suite_insurance_copy_received_date}
+                                                                    </Box>
+                                                                )}
+                                                            </>
                                                         )}
                                                         {/* Show insurance company and policy number if Coverage Approved is checked */}
                                                         {item.name === 'suite_insurance_coverage_approved' && values.suite_insurance_coverage_approved && (
@@ -893,6 +1237,8 @@ const MoveInSummeryForm = () => {
                                                                     onBlur={handleBlur}
                                                                     variant="filled"
                                                                     fullWidth
+                                                                    error={Boolean(errors.suite_insurance_coverage_approved_company) && (touched.suite_insurance_coverage_approved_company || submitCount > 0)}
+                                                                    helperText={Boolean(errors.suite_insurance_coverage_approved_company) && (touched.suite_insurance_coverage_approved_company || submitCount > 0) ? errors.suite_insurance_coverage_approved_company : ""}
                                                                 />
                                                                 <TextField
                                                                     label="Policy Number"
@@ -902,6 +1248,8 @@ const MoveInSummeryForm = () => {
                                                                     onBlur={handleBlur}
                                                                     variant="filled"
                                                                     fullWidth
+                                                                    error={Boolean(errors.suite_insurance_coverage_approved_policy) && (touched.suite_insurance_coverage_approved_policy || submitCount > 0)}
+                                                                    helperText={Boolean(errors.suite_insurance_coverage_approved_policy) && (touched.suite_insurance_coverage_approved_policy || submitCount > 0) ? errors.suite_insurance_coverage_approved_policy : ""}
                                                                 />
                                                             </Box>
                                                         )}
@@ -910,30 +1258,44 @@ const MoveInSummeryForm = () => {
                                             </FormGroup>
                                         </Box>
                                         <Box sx={{ gridColumn: "span 4", mt: 2 }}>
-                                            <Box display="flex" gap={2}>
-                                                <TextField
-                                                    label="Reviewed by"
-                                                    name="reviewed_by"
-                                                    value={values.reviewed_by || ''}
-                                                    onChange={handleChange}
-                                                    onBlur={handleBlur}
-                                                    variant="filled"
-                                                    fullWidth
-                                                />
-                                                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                                    <DatePicker
-                                                        label="Date"
-                                                        value={values.date ? dayjs(values.date) : null}
-                                                        onChange={newValue => setFieldValue('date', newValue ? newValue.format('YYYY-MM-DD') : '')}
-                                                        slotProps={{
-                                                            textField: {
-                                                                fullWidth: true,
-                                                                variant: 'filled',
-                                                            },
-                                                        }}
+                                            <Grid container spacing={2}>
+                                                <Grid item xs={6}>
+                                                    <TextField
+                                                        label="Reviewed by"
+                                                        name="reviewed_by"
+                                                        value={values.reviewed_by || ''}
+                                                        onChange={handleChange}
+                                                        onBlur={handleBlur}
+                                                        variant="filled"
+                                                        fullWidth
+                                                        error={Boolean(errors.reviewed_by) && (touched.reviewed_by || submitCount > 0)}
+                                                        helperText={Boolean(errors.reviewed_by) && (touched.reviewed_by || submitCount > 0) ? errors.reviewed_by : ""}
                                                     />
-                                                </LocalizationProvider>
-                                            </Box>
+                                                </Grid>
+                                                <Grid item xs={6}>
+                                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                            <DatePicker
+                                                                label="Date"
+                                                                value={values.date ? dayjs(values.date) : null}
+                                                                onChange={newValue => setFieldValue('date', newValue ? newValue.format('YYYY-MM-DD') : '')}
+                                                                slotProps={{
+                                                                    textField: {
+                                                                        fullWidth: true,
+                                                                        variant: 'filled',
+                                                                        sx: { width: '95%' },
+                                                                        error: Boolean(errors.date) && (touched.date || submitCount > 0), // <-- Add this line
+                                                                    },
+                                                                }}
+                                                            />
+                                                        </LocalizationProvider>
+                                                        {Boolean(errors.date) && (touched.date || submitCount > 0) && (
+                                                            <Box sx={{ color: "error.main", fontSize: 13, mt: 0.5 }}>
+                                                                {errors.date}
+                                                            </Box>
+                                                        )}
+                                                  
+                                                </Grid>
+                                            </Grid>
                                         </Box>
 
 
