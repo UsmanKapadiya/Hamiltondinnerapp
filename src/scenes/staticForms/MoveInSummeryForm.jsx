@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Checkbox, FormControlLabel, FormGroup, TextField, Button, Grid } from "@mui/material";
+import { Box, Checkbox, FormControlLabel, FormGroup, TextField, Button, Grid, Radio, Typography } from "@mui/material";
 import CustomButton from "../../components/CustomButton";
 import { Formik } from "formik";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
@@ -8,6 +8,8 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import SignatureCanvas from "react-signature-canvas";
+import SignaturePad from 'react-signature-pad-wrapper';
+
 import StaticFormServices from "../../services/staticFormServices";
 import * as Yup from "yup";
 
@@ -25,7 +27,7 @@ const Others = [
     { 'Unit Key': 'unit_key' },
     { 'Elpas Fob': 'elpas_fob' }
 ]
-// ...existing code...
+
 const validationSchema = Yup.object().shape({
     suite_number: Yup.string()
         .trim()
@@ -151,7 +153,8 @@ const validationSchema = Yup.object().shape({
         then: schema => schema.trim().required("Please enter Elpas Fob."),
         otherwise: schema => schema,
     }),
-    resident_signature: Yup.string().required("Please provide Resident Signature."),
+    resident_signature: Yup.string().required("Signature is required"),
+
     suite_insurance_copy_received_date: Yup.string().when('suite_insurance_copy_received', {
         is: true,
         then: schema => schema.required("Please select Date for Suite Insurance Copy Received."),
@@ -174,7 +177,7 @@ const validationSchema = Yup.object().shape({
     date: Yup.string()
         .required("Please select Date."),
 });
-// ...existing code...
+
 const initialValues = {
     suite_number: "",
     contract_signing_date: "",
@@ -263,6 +266,7 @@ const initialValues = {
 const MoveInSummeryForm = () => {
     const sigPadRef = useRef();
 
+
     const [loading, setLoading] = useState(false);
     const [apiDefaults, setApiDefaults] = useState({});
     const [initialFormValues, setInitialFormValues] = useState(initialValues);
@@ -310,10 +314,45 @@ const MoveInSummeryForm = () => {
         };
         fetchFormData();
     }, []);
-    const handleSubmit = (values, actions) => {
-        // Replace with your submit logic
-        console.log("Log Form Values", values);
-        actions.resetForm();
+    const handleSubmit = async (values, actions) => {
+        setLoading(true);
+        try {
+            // Convert DataURL to Blob
+            const dataURL = values.resident_signature;
+            console.log(dataURL)
+            let formData;
+            if (dataURL) {
+                const byteString = atob(dataURL.split(',')[1]);
+                const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                for (let i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                const blob = new Blob([ab], { type: mimeString });
+
+                // Prepare FormData
+                formData = new FormData();
+                formData.append("file", blob, `Img_${crypto.randomUUID()}.jpg`);
+                formData.append("form_type", "3");
+                formData.append("data", JSON.stringify(values));
+            } else {
+                // Fallback to JSON if no signature
+                formData = new FormData();
+                formData.append("form_type", "3");
+                formData.append("data", JSON.stringify(values));
+
+            }
+
+            // const response = await StaticFormServices.moveInSummerySubmit(formData);
+            // if (response?.ResponseCode === "1") {
+            //     toast.success(response?.ResponseText || "Form submitted successfully.");
+            // }
+        } catch (error) {
+            toast.error("Form is not submitted. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     console.log(initialFormValues);
@@ -335,7 +374,7 @@ const MoveInSummeryForm = () => {
             ) : (
                 <>
                     <Formik initialValues={initialFormValues} onSubmit={handleSubmit} validationSchema={validationSchema}>
-                        {({ values, handleChange, handleBlur, handleSubmit, setFieldValue, errors, touched, submitCount }) => (
+                        {({ values, handleChange, handleBlur, handleSubmit, setFieldValue, setFieldTouched, errors, touched, submitCount }) => (
                             <form onSubmit={handleSubmit}>
                                 <Box display="flex" flexDirection="column" gap={2} mx="auto">
                                     <Box display="flex" gap={2}>
@@ -387,23 +426,19 @@ const MoveInSummeryForm = () => {
                                             </Box>
                                             {contarctTeam.map((item) => {
                                                 const label = Object.keys(item)[0];
-                                                const value = label;
+                                                const value = item[label]; // Use the value from your data structure
                                                 return (
                                                     <Box key={value} sx={{ width: "50%" }}>
                                                         <FormControlLabel
                                                             control={
-                                                                <Checkbox
-                                                                    checked={values.contartTeam?.includes(value) || false}
+                                                                <Radio
+                                                                    checked={values.contartTeam === value}
                                                                     onChange={() => {
-                                                                        const current = values.contartTeam || [];
-                                                                        if (current.includes(value)) {
-                                                                            setFieldValue(
-                                                                                "contartTeam",
-                                                                                current.filter((item) => item !== value)
-                                                                            );
-                                                                        } else {
-                                                                            setFieldValue("contartTeam", [...current, value]);
-                                                                        }
+                                                                        setFieldValue("contartTeam", value);
+                                                                        setFieldValue("contract_term_yearly", value === "contract_term_yearly" ? 1 : 0);
+                                                                        setFieldValue("contract_term_monthly", value === "contract_term_monthly" ? 1 : 0);
+                                                                        setFieldValue("contract_term_weekly", value === "contract_term_weekly" ? 1 : 0);
+                                                                        setFieldValue("contract_term_daily", value === "contract_term_daily" ? 1 : 0);
                                                                     }}
                                                                     name="contartTeam"
                                                                 />
@@ -1158,12 +1193,17 @@ const MoveInSummeryForm = () => {
                                                         Resident Signature
                                                     </Box>
                                                 </Box>
-                                                <Box sx={{ position: 'relative', display: 'inline-block', width: 400 }}>
-                                                    <SignatureCanvas
+                                                {/* <Box sx={{ position: 'relative', display: 'inline-block', width: 400 }}>
+                                                    <SignaturePad
                                                         ref={sigPadRef}
-                                                        penColor="black"
-                                                        backgroundColor="#fff"
-                                                        onEnd={() => setFieldValue("resident_signature", sigPadRef.current.getTrimmedCanvas().toDataURL())}
+                                                        options={{
+                                                            penColor: 'black',
+                                                        }}
+                                                        onEnd={() => {
+                                                            const dataURL = sigPadRef.current.toDataURL();
+                                                            setFieldValue("resident_signature", dataURL);
+                                                            setFieldTouched("resident_signature", true);
+                                                        }}
                                                         canvasProps={{
                                                             width: 400,
                                                             height: 150,
@@ -1173,17 +1213,71 @@ const MoveInSummeryForm = () => {
                                                                 background: '#fff',
                                                                 boxShadow: '0 2px 8px rgba(25, 118, 210, 0.08)',
                                                             },
-                                                            className: "sigCanvas"
                                                         }}
                                                     />
-                                                    {Boolean(errors.resident_signature) && submitCount > 0 && (
-                                                        <Box sx={{ color: "error.main", fontSize: 13, mt: 1 }}>
+
+                                                    {Boolean(errors.resident_signature) &&
+                                                        (touched.resident_signature || submitCount > 0) && (
+                                                            <Typography sx={{ color: "error.main", fontSize: 13, mt: 1 }}>
+                                                                {errors.resident_signature}
+                                                            </Typography>
+                                                        )}
+
+                                                    <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                                                        <Button
+                                                            onClick={() => {
+                                                                sigPadRef.current.clear();
+                                                                setFieldValue("resident_signature", "");
+                                                                setFieldTouched("resident_signature", true);
+                                                            }}
+                                                            sx={{ mt: 1 }}
+                                                            variant="outlined"
+                                                            color="primary"
+                                                        >
+                                                            Clear
+                                                        </Button>
+                                                    </Box>
+                                                </Box> */}
+                                                <Box sx={{ position: 'relative', display: 'inline-block', width: 400 }}>
+                                                    <SignaturePad
+                                                        ref={sigPadRef}
+                                                        options={{
+                                                            penColor: 'black',
+                                                        }}
+                                                        onEnd={() => {
+                                                            const dataURL = sigPadRef.current.toDataURL();
+                                                            console.log("Signature DataURL:", dataURL); // Debug line
+                                                            setFieldValue("resident_signature", dataURL);
+                                                            setFieldTouched("resident_signature", true);
+                                                        }}
+                                                        canvasProps={{
+                                                            width: 400,
+                                                            height: 150,
+                                                            style: {
+                                                                border: '2px solid #1976d2',
+                                                                borderRadius: 8,
+                                                                background: '#fff',
+                                                                boxShadow: '0 2px 8px rgba(25, 118, 210, 0.08)',
+                                                            },
+                                                        }}
+                                                    />
+
+                                                    {(errors.resident_signature && (touched.resident_signature || submitCount > 0)) && (
+                                                        <Typography sx={{ color: "error.main", fontSize: 13, mt: 1 }}>
                                                             {errors.resident_signature}
+                                                        </Typography>
+                                                    )}
+
+                                                    {values.resident_signature && (
+                                                        <Box sx={{ mt: 2, textAlign: 'center' }}>
+                                                            <Typography sx={{ fontSize: 13, mb: 1 }}>Signature Preview:</Typography>
+                                                            <img
+                                                                src={values.resident_signature}
+                                                                alt="Resident Signature"
+                                                                style={{ border: '1px solid #1976d2', borderRadius: 8, maxWidth: '100%', height: 'auto' }}
+                                                            />
                                                         </Box>
                                                     )}
-                                                    <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                                        <Button onClick={() => sigPadRef.current.clear()} sx={{ mt: 1 }} variant="outlined" color="primary">Clear</Button>
-                                                    </Box>
                                                 </Box>
                                             </Box>
                                             <FormGroup row sx={{ mt: 2 }}>
@@ -1274,26 +1368,26 @@ const MoveInSummeryForm = () => {
                                                 </Grid>
                                                 <Grid item xs={6}>
                                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                                            <DatePicker
-                                                                label="Date"
-                                                                value={values.date ? dayjs(values.date) : null}
-                                                                onChange={newValue => setFieldValue('date', newValue ? newValue.format('YYYY-MM-DD') : '')}
-                                                                slotProps={{
-                                                                    textField: {
-                                                                        fullWidth: true,
-                                                                        variant: 'filled',
-                                                                        sx: { width: '95%' },
-                                                                        error: Boolean(errors.date) && (touched.date || submitCount > 0), // <-- Add this line
-                                                                    },
-                                                                }}
-                                                            />
-                                                        </LocalizationProvider>
-                                                        {Boolean(errors.date) && (touched.date || submitCount > 0) && (
-                                                            <Box sx={{ color: "error.main", fontSize: 13, mt: 0.5 }}>
-                                                                {errors.date}
-                                                            </Box>
-                                                        )}
-                                                  
+                                                        <DatePicker
+                                                            label="Date"
+                                                            value={values.date ? dayjs(values.date) : null}
+                                                            onChange={newValue => setFieldValue('date', newValue ? newValue.format('YYYY-MM-DD') : '')}
+                                                            slotProps={{
+                                                                textField: {
+                                                                    fullWidth: true,
+                                                                    variant: 'filled',
+                                                                    sx: { width: '95%' },
+                                                                    error: Boolean(errors.date) && (touched.date || submitCount > 0), // <-- Add this line
+                                                                },
+                                                            }}
+                                                        />
+                                                    </LocalizationProvider>
+                                                    {Boolean(errors.date) && (touched.date || submitCount > 0) && (
+                                                        <Box sx={{ color: "error.main", fontSize: 13, mt: 0.5 }}>
+                                                            {errors.date}
+                                                        </Box>
+                                                    )}
+
                                                 </Grid>
                                             </Grid>
                                         </Box>

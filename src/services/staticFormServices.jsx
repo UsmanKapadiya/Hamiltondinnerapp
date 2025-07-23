@@ -19,6 +19,9 @@ const StaticFormServices = {
   getFormById: async (payload) => {
     return requests.post(`/form-details`, payload);
   },
+  moveInSummerySubmit: async (payload) => {
+    return requests.uploadPosts(`/general-form-submit-phase1`, payload);
+  },
 
   getDefaultValue: async () => {
     return requests.get(`/get-move-in-summary-values`);
