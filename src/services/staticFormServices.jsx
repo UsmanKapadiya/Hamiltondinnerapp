@@ -23,7 +23,7 @@ const StaticFormServices = {
     return requests.uploadPosts(`/general-form-submit-phase1`, payload);
   },
   moveInSummeryUpdate: async (data) => {
-    return requests.post(`/edit-form-phase1`, data);
+    return requests.uploadPosts(`/edit-form-phase1`, data);
   },
 
 

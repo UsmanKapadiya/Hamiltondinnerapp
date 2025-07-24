@@ -12,7 +12,8 @@ import SignaturePad from 'react-signature-canvas'
 
 import StaticFormServices from "../../services/staticFormServices";
 import * as Yup from "yup";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const contarctTeam = [
     { 'Yearly': 'contract_term_yearly' },
@@ -154,7 +155,6 @@ const validationSchema = Yup.object().shape({
         otherwise: schema => schema,
     }),
     resident_signature: Yup.string().required("Signature is required"),
-
     suite_insurance_copy_received_date: Yup.string().when('suite_insurance_copy_received', {
         is: true,
         then: schema => schema.required("Please select Date for Suite Insurance Copy Received."),
@@ -267,6 +267,7 @@ const initialValues = {
 const MoveInSummeryForm = () => {
     const sigPadRef = useRef(null)
     const location = useLocation();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [formId, setFormId] = useState();
     const [initialFormValues, setInitialFormValues] = useState(initialValues);
@@ -323,12 +324,57 @@ const MoveInSummeryForm = () => {
         };
         fetchFormData();
     }, []);
+    // const handleSubmit = async (values, actions) => {
+    //     setLoading(true);
+    //     try {
+    //         const dataURL = values.resident_signature;
+    //         const byteString = atob(dataURL.split(',')[1]);
+    //         const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+    //         const ab = new ArrayBuffer(byteString.length);
+    //         const ia = new Uint8Array(ab);
+    //         for (let i = 0; i < byteString.length; i++) {
+    //             ia[i] = byteString.charCodeAt(i);
+    //         }
+    //         const blob = new Blob([ab], { type: mimeString });
+
+    //         // Prepare FormData
+    //         const formData = new FormData();
+    //         if (formId) {
+    //             formData.append("form_id", formId);
+    //         } formData.append("file", blob, `Img_${crypto.randomUUID()}.jpg`);
+    //         formData.append("form_type", "3");
+    //         formData.append("data", JSON.stringify(values));
+    //         if (formId) {
+    //             const response = await StaticFormServices.moveInSummeryUpdate(formData);
+    //             if (response?.ResponseCode === "1") {
+    //                 toast.success("Form Updated successfully.");
+    //             }
+    //         } else {
+    //             const response = await StaticFormServices.moveInSummerySubmit(formData);
+    //             if (response?.ResponseCode === "1") {
+    //                 toast.success(response?.ResponseText || "Form submitted successfully.");
+    //             }
+    //         }
+    //     } catch (error) {
+    //         toast.error("Form is not submitted. Please try again.");
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
     const handleSubmit = async (values, actions) => {
         setLoading(true);
         try {
-            const dataURL = values.resident_signature;
-            const byteString = atob(dataURL.split(',')[1]);
-            const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+            let signatureData = values.resident_signature;
+
+            // If editing, ensure the signature is sent even if it's unchanged
+            if (!signatureData) {
+                // Handle the case where no signature is provided (e.g., set it as an empty string or use a placeholder)
+                signatureData = ""; // Or some default if required
+            }
+
+            // Convert the base64 string to a Blob if needed (API might require this)
+            const byteString = atob(signatureData.split(',')[1]);
+            const mimeString = signatureData.split(',')[0].split(':')[1].split(';')[0];
             const ab = new ArrayBuffer(byteString.length);
             const ia = new Uint8Array(ab);
             for (let i = 0; i < byteString.length; i++) {
@@ -336,25 +382,41 @@ const MoveInSummeryForm = () => {
             }
             const blob = new Blob([ab], { type: mimeString });
 
-            // Prepare FormData
+            // Prepare the FormData to send to the API
             const formData = new FormData();
             if (formId) {
-                formData.append("form_id", formId);
-            } formData.append("file", blob, `Img_${crypto.randomUUID()}.jpg`);
+                formData.append("form_id", formId); // Include the form ID for updating
+            }
+
+            // Only append file if there is a new signature
+            if (signatureData) {
+                formData.append("file", blob, `Img_${crypto.randomUUID()}.jpg`);
+            }
+
             formData.append("form_type", "3");
             formData.append("data", JSON.stringify(values));
+
+            // Make the API call based on whether it's a new form or an update
+            let response;
             if (formId) {
-                const response = await StaticFormServices.moveInSummeryUpdate(formData);
+                response = await StaticFormServices.moveInSummeryUpdate(formData);
                 if (response?.ResponseCode === "1") {
                     toast.success("Form Updated successfully.");
+                    setTimeout(() => {
+                        navigate("/staticForms");
+                    }, 1200);
                 }
             } else {
-                const response = await StaticFormServices.moveInSummerySubmit(formData);
+                response = await StaticFormServices.moveInSummerySubmit(formData);
                 if (response?.ResponseCode === "1") {
                     toast.success(response?.ResponseText || "Form submitted successfully.");
+                  setTimeout(() => {
+            navigate("/staticForms");
+        }, 1200);
                 }
             }
         } catch (error) {
+            console.error("Error during form submission:", error);
             toast.error("Form is not submitted. Please try again.");
         } finally {
             setLoading(false);
@@ -390,23 +452,27 @@ const MoveInSummeryForm = () => {
                             const handleEnd = () => {
                                 if (sigPadRef.current.isEmpty()) {
                                     setFieldValue("resident_signature", "");
+                                    setFieldTouched("resident_signature", true, false); // Mark as touched, do not validate immediately
                                 } else {
-                                    setFieldValue("resident_signature", sigPadRef.current.getCanvas().toDataURL('image/png'));
+                                    const dataUrl = sigPadRef.current.getCanvas().toDataURL('image/png');
+                                    setFieldValue("resident_signature", dataUrl);
+                                    setFieldTouched("resident_signature", true, true); // Mark as touched and validate
                                 }
-                                setFieldTouched("resident_signature", true);
-                                console.log(typeof (values?.resident_signature))
                             };
 
                             useEffect(() => {
-                                if (sigPadRef.current && values.resident_signature) {
+                                if (
+                                    sigPadRef.current &&
+                                    values.resident_signature &&
+                                    sigPadRef.current.isEmpty()
+                                ) {
                                     try {
                                         sigPadRef.current.fromDataURL(values.resident_signature);
+
                                     } catch (e) {
-                                        // Ignore if signature is invalid
                                     }
-                                } else if (sigPadRef.current) {
-                                    sigPadRef.current.clear();
                                 }
+                                // No need to clear here, only load if empty
                             }, [values.resident_signature]);
 
                             return (
@@ -1264,7 +1330,7 @@ const MoveInSummeryForm = () => {
                                                             >
                                                                 Clear
                                                             </Button>
-                                                        </Box>                                        
+                                                        </Box>
                                                     </Box>
 
                                                 </Box>
