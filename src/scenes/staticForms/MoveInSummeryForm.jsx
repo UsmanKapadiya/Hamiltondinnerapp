@@ -410,9 +410,9 @@ const MoveInSummeryForm = () => {
                 response = await StaticFormServices.moveInSummerySubmit(formData);
                 if (response?.ResponseCode === "1") {
                     toast.success(response?.ResponseText || "Form submitted successfully.");
-                  setTimeout(() => {
-            navigate("/staticForms");
-        }, 1200);
+                    setTimeout(() => {
+                        navigate("/staticForms");
+                    }, 1200);
                 }
             }
         } catch (error) {

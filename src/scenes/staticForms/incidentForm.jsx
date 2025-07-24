@@ -630,11 +630,17 @@ const IncidentForm = () => {
         const response = await StaticFormServices.logFormUpdate(finalPayload);
         if (response?.ResponseCode === "1") {
           toast.success("Form Updated successfully.");
+          setTimeout(() => {
+            navigate("/staticForms");
+          }, 1200);
         }
       } else {
         const response = await StaticFormServices.logFormSubmit(finalPayload);
         if (response?.ResponseCode === "1") {
           toast.success(response?.ResponseText || "Form submitted successfully.");
+          setTimeout(() => {
+            navigate("/staticForms");
+          }, 1200);
         }
       }
     } catch (error) {

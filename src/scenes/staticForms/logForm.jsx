@@ -26,6 +26,7 @@ const validationSchema = Yup.object({
 
 const LogForm = () => {
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
     const [userData] = useState(() => {
         const userDatas = localStorage.getItem("userData");
         return userDatas ? JSON.parse(userDatas) : null;
@@ -84,6 +85,10 @@ const LogForm = () => {
             // Only show toast if success and use ResponseText
             if (response?.ResponseCode === "1") {
                 toast.success(response?.ResponseText || "Form submitted successfully.");
+                setTimeout(() => {
+                    navigate("/staticForms");
+                }, 1200);
+
             }
         } catch (error) {
             toast.error("Form is not submitted. Please try again.");
