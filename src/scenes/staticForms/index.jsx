@@ -209,7 +209,12 @@ const StaticForms = () => {
                     const response = await StaticFormServices.getFormById(payload);
                     if (response?.ResponseCode === '1') {
                       console.log("here", response)
-                      navigate(`incidentForm-edit/${params.row.id}`, { state: { formData: response, id: params.row.id } })
+                      if (form_type_id === 1) {
+                        navigate(`incidentForm-edit/${params.row.id}`, { state: { formData: response, id: params.row.id } })
+                      }
+                      else if (form_type_id === 3) {
+                        navigate(`moveInSummaryForm-edit/${params.row.id}`, { state: { formData: response, id: params.row.id } })
+                      }
                     }
                     console.log(response)
                     // Navigate to the incident form edit screen, passing the form data

@@ -22,6 +22,10 @@ const StaticFormServices = {
   moveInSummerySubmit: async (payload) => {
     return requests.uploadPosts(`/general-form-submit-phase1`, payload);
   },
+  moveInSummeryUpdate: async (data) => {
+    return requests.post(`/edit-form-phase1`, data);
+  },
+
 
   getDefaultValue: async () => {
     return requests.get(`/get-move-in-summary-values`);
