@@ -15,6 +15,14 @@ import * as Yup from "yup";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
+function generateUUID() {
+    // Simple RFC4122 version 4 compliant UUID generator
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 const contarctTeam = [
     { 'Yearly': 'contract_term_yearly' },
     { 'Monthly': 'contract_term_monthly' },
@@ -390,7 +398,7 @@ const MoveInSummeryForm = () => {
 
             // Only append file if there is a new signature
             if (signatureData) {
-                formData.append("file", blob, `Img_${crypto.randomUUID()}.jpg`);
+                formData.append("file", blob, `Img_${generateUUID()}.jpg`);
             }
 
             formData.append("form_type", "3");
