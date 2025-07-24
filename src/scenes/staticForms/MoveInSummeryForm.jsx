@@ -1228,51 +1228,6 @@ const MoveInSummeryForm = () => {
                                                             Resident Signature
                                                         </Box>
                                                     </Box>
-                                                    {/* <Box sx={{ position: 'relative', display: 'inline-block', width: 400 }}>
-                                                    <SignaturePad
-                                                        ref={sigPadRef}
-                                                        options={{
-                                                            penColor: 'black',
-                                                        }}
-                                                        onEnd={() => {
-                                                            const dataURL = sigPadRef.current.toDataURL();
-                                                            setFieldValue("resident_signature", dataURL);
-                                                            setFieldTouched("resident_signature", true);
-                                                        }}
-                                                        canvasProps={{
-                                                            width: 400,
-                                                            height: 150,
-                                                            style: {
-                                                                border: '2px solid #1976d2',
-                                                                borderRadius: 8,
-                                                                background: '#fff',
-                                                                boxShadow: '0 2px 8px rgba(25, 118, 210, 0.08)',
-                                                            },
-                                                        }}
-                                                    />
-
-                                                    {Boolean(errors.resident_signature) &&
-                                                        (touched.resident_signature || submitCount > 0) && (
-                                                            <Typography sx={{ color: "error.main", fontSize: 13, mt: 1 }}>
-                                                                {errors.resident_signature}
-                                                            </Typography>
-                                                        )}
-
-                                                    <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                                        <Button
-                                                            onClick={() => {
-                                                                sigPadRef.current.clear();
-                                                                setFieldValue("resident_signature", "");
-                                                                setFieldTouched("resident_signature", true);
-                                                            }}
-                                                            sx={{ mt: 1 }}
-                                                            variant="outlined"
-                                                            color="primary"
-                                                        >
-                                                            Clear
-                                                        </Button>
-                                                    </Box>
-                                                </Box> */}
                                                     <Box sx={{ position: 'relative', display: 'inline-block', width: 400 }}>
                                                         <SignaturePad
                                                             canvasProps={{
@@ -1286,7 +1241,7 @@ const MoveInSummeryForm = () => {
                                                                 },
                                                             }}
                                                             ref={sigPadRef}
-                                                            onEnd={handleEnd} // Automatically capture the signature on end
+                                                            onEnd={handleEnd}
                                                         />
 
                                                         {Boolean(errors.resident_signature) &&
@@ -1309,39 +1264,7 @@ const MoveInSummeryForm = () => {
                                                             >
                                                                 Clear
                                                             </Button>
-                                                        </Box>
-
-                                                        {/* <Box sx={{ mt: 2, textAlign: 'center' }}>
-                                                            <Typography sx={{ fontSize: 13, mb: 1 }}>Signature Preview:</Typography>
-                                                            {values.resident_signature ? (
-                                                                <>
-                                                                    <img
-                                                                        className={styles.sigImage}
-                                                                        src={values.resident_signature}
-                                                                        alt="Resident Signature"
-                                                                    />
-                                                                    <Button
-                                                                        variant="outlined"
-                                                                        color="primary"
-                                                                        sx={{ mt: 2 }}
-                                                                        onClick={() => {
-                                                                            const link = document.createElement('a')
-                                                                            link.href = values.resident_signature
-                                                                            link.download = 'resident_signature.png'
-                                                                            document.body.appendChild(link)
-                                                                            link.click()
-                                                                            document.body.removeChild(link)
-                                                                        }}
-                                                                    >
-                                                                        Download Signature
-                                                                    </Button>
-                                                                </>
-                                                            ) : (
-                                                                <Typography sx={{ color: "#888", fontSize: 13 }}>
-                                                                    No signature yet.
-                                                                </Typography>
-                                                            )}
-                                                        </Box> */}
+                                                        </Box>                                        
                                                     </Box>
 
                                                 </Box>
