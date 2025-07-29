@@ -17,7 +17,7 @@ import { toast } from "react-toastify";
 
 function generateUUID() {
     // Simple RFC4122 version 4 compliant UUID generator
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
@@ -1067,14 +1067,16 @@ const MoveInSummeryForm = () => {
                                                 </Box>
                                             </Box>
                                             <Box display="flex" gap={2} mt={2}>
-                                                <Box display="flex" alignItems="center" gap={2} flex={1}>
-                                                    <Box component="span" sx={{ fontWeight: 600, fontSize: 16 }}>
-                                                        1/2 Month Rental Deposit for 2nd Resident $
+                                                {values?.has_2nd_resident && (
+                                                    <Box display="flex" alignItems="center" gap={2} flex={1}>
+                                                        <Box component="span" sx={{ fontWeight: 600, fontSize: 16 }}>
+                                                            1/2 Month Rental Deposit for 2nd Resident $
+                                                        </Box>
+                                                        <Box component="span" sx={{ fontWeight: 600, fontSize: 16, ml: 2 }}>
+                                                            {values?.has_2nd_resident && values.halfRentalDeposit2ndRes}
+                                                        </Box>
                                                     </Box>
-                                                    <Box component="span" sx={{ fontWeight: 600, fontSize: 16, ml: 2 }}>
-                                                        {values?.has_2nd_resident && values.halfRentalDeposit2ndRes}
-                                                    </Box>
-                                                </Box>
+                                                )}
                                                 <Box display="flex" alignItems="center" gap={2} flex={1}>
                                                     <Box component="span" sx={{ fontWeight: 600, fontSize: 16 }}>
                                                         Move In/Out $
