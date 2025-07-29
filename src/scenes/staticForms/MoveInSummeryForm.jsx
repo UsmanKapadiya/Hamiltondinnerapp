@@ -79,31 +79,36 @@ const validationSchema = Yup.object().shape({
     }),
 
     first_month_payment_received: Yup.boolean(),
-    first_month_payment_cheque_number: Yup.string().when('first_month_payment_received', {
+    first_month_payment_received_cheque_note: Yup.string().when('first_month_payment_received', {
         is: true,
         then: schema => schema.trim().required("Please enter Cheque Number for 1st Month Payment."),
         otherwise: schema => schema,
     }),
-    first_month_payment_cheque_date: Yup.string().when('first_month_payment_received', {
+    first_month_payment_received_cheque_date: Yup.string().when('first_month_payment_received', {
         is: true,
         then: schema => schema.required("Please select Cheque Date for 1st Month Payment."),
+        otherwise: schema => schema,
+    }),
+    first_month_payment_received_cheque_amount:Yup.number().when('first_month_payment_received', {
+        is: true,
+        then: schema => schema.typeError("Please enter Total for 1st Month Payment..").required("Please enter Total for 1st Month Payment."),
         otherwise: schema => schema,
     }),
     monthly_rate: Yup.string()
         .trim()
         .required("Please enter Monthly Rate."),
     security_deposit_received: Yup.boolean(),
-    security_deposit_cheque_number: Yup.string().when('security_deposit_received', {
+    security_deposit_received_cheque_note: Yup.string().when('security_deposit_received', {
         is: true,
         then: schema => schema.trim().required("Please enter Cheque Number for Security Deposit."),
         otherwise: schema => schema,
     }),
-    security_deposit_cheque_date: Yup.string().when('security_deposit_received', {
+    security_deposit_received_cheque_date: Yup.string().when('security_deposit_received', {
         is: true,
         then: schema => schema.required("Please select Cheque Date for Security Deposit."),
         otherwise: schema => schema,
     }),
-    security_deposit_total: Yup.number().when('security_deposit_received', {
+    security_deposit_received_cheque_amount: Yup.number().when('security_deposit_received', {
         is: true,
         then: schema => schema.typeError("Please enter Total for Security Deposit.").required("Please enter Total for Security Deposit."),
         otherwise: schema => schema,
@@ -118,17 +123,17 @@ const validationSchema = Yup.object().shape({
             return payor_information_PAD || payor_information_Post_Dated_Cheque;
         }
     ),
-    padPayorName: Yup.string().when('payor_information_PAD', {
+    payor_name: Yup.string().when('payor_information_PAD', {
         is: true,
         then: schema => schema.trim().required("Please enter Payor's Name."),
         otherwise: schema => schema,
     }),
-    padBankName: Yup.string().when('payor_information_PAD', {
+    bank_name: Yup.string().when('payor_information_PAD', {
         is: true,
         then: schema => schema.trim().required("Please enter Bank Name."),
         otherwise: schema => schema,
     }),
-    padBankId: Yup.string().when('payor_information_PAD', {
+    bank_ID: Yup.string().when('payor_information_PAD', {
         is: true,
         then: schema => schema
             .trim()
@@ -137,12 +142,12 @@ const validationSchema = Yup.object().shape({
             .matches(/^\d{3}$/, "Bank ID must be of 3 digits Only."),
         otherwise: schema => schema,
     }),
-    padAccountNumber: Yup.string().when('payor_information_PAD', {
+    account_number: Yup.string().when('payor_information_PAD', {
         is: true,
         then: schema => schema.trim().required("Please enter Account Number."),
         otherwise: schema => schema,
     }),
-    padTransitNumber: Yup.string().when('payor_information_PAD', {
+    transit: Yup.string().when('payor_information_PAD', {
         is: true,
         then: schema => schema
             .trim()
@@ -152,12 +157,12 @@ const validationSchema = Yup.object().shape({
         otherwise: schema => schema,
     }),
 
-    unit_key_other_val: Yup.string().when('unit_key', {
+    unit_key_value: Yup.string().when('unit_key', {
         is: (val) => Boolean(val),
         then: schema => schema.trim().required("Please enter Unit Key."),
         otherwise: schema => schema,
     }),
-    elpas_fob_other_val: Yup.string().when('elpas_fob', {
+    elpas_fob_value: Yup.string().when('elpas_fob', {
         is: (val) => Boolean(val),
         then: schema => schema.trim().required("Please enter Elpas Fob."),
         otherwise: schema => schema,
@@ -169,12 +174,12 @@ const validationSchema = Yup.object().shape({
         otherwise: schema => schema,
     }),
 
-    suite_insurance_coverage_approved_company: Yup.string().when('suite_insurance_coverage_approved', {
+    insurance_company_name: Yup.string().when('suite_insurance_coverage_approved', {
         is: true,
         then: schema => schema.trim().required("Please enter Insurance Company Name."),
         otherwise: schema => schema,
     }),
-    suite_insurance_coverage_approved_policy: Yup.string().when('suite_insurance_coverage_approved', {
+    policy_number: Yup.string().when('suite_insurance_coverage_approved', {
         is: true,
         then: schema => schema.trim().required("Please enter Policy Number."),
         otherwise: schema => schema,
@@ -211,6 +216,11 @@ const initialValues = {
     second_resident_dob: "",
     // 1st Month Payment
     first_month_payment_received: false,
+
+    first_month_payment_received_cheque_note: "",
+    first_month_payment_received_cheque_date: "",
+    first_month_payment_received_cheque_amount: "",
+
     monthly_rate: "",
     care_plan_rate: "",
     one_time_move_in_fee: null,
@@ -229,9 +239,9 @@ const initialValues = {
     payment_others_rate: "",
 
     security_deposit_received: false,
-    security_deposit_cheque_number: "",
-    security_deposit_cheque_date: "",
-    security_deposit_total: "",
+    security_deposit_received_cheque_note: "",
+    security_deposit_received_cheque_date: "",
+    security_deposit_received_cheque_amount: "",
 
     half_month_deposit_for_first_resident_rate: "",
     half_month_care_plan_rate: "",
@@ -248,16 +258,16 @@ const initialValues = {
     payor_information_Post_Dated_Cheque: false,
     payor_information_selected: "",
     // Keys Pendings
-    padPayorName: "",
-    padBankName: "",
-    padBankId: "",
-    padAccountNumber: "",
-    padTransitNumber: "",
+    payor_name: "",
+    bank_name: "",
+    bank_ID: "",
+    account_number: "",
+    transit: "",
 
     unit_key: 0,
-    unit_key_other_val: "",
+    unit_key_value: "",
     elpas_fob: 0,
-    elpas_fob_other_val: "",
+    elpas_fob_value: "",
 
     resident_signature: "",
 
@@ -265,8 +275,8 @@ const initialValues = {
     suite_insurance_copy_received_date: "",
 
     suite_insurance_coverage_approved: false,
-    suite_insurance_coverage_approved_company: "",
-    suite_insurance_coverage_approved_policy: "",
+    insurance_company_name: "",
+    policy_number: "",
 
     reviewed_by: "",
     date: "",
@@ -781,41 +791,53 @@ const MoveInSummeryForm = () => {
                                                 <Box display="flex" gap={2} mt={2}>
                                                     <TextField
                                                         label="Cheque Number"
-                                                        name="first_month_payment_cheque_number"
-                                                        value={values.first_month_payment_cheque_number || ''}
+                                                        name="first_month_payment_received_cheque_note"
+                                                        value={values.first_month_payment_received_cheque_note || ''}
                                                         onChange={handleChange}
                                                         onBlur={handleBlur}
                                                         variant="filled"
                                                         fullWidth
-                                                        error={Boolean(errors.first_month_payment_cheque_number) && (touched.first_month_payment_cheque_number || submitCount > 0)}
-                                                        helperText={Boolean(errors.first_month_payment_cheque_number) && (touched.first_month_payment_cheque_number || submitCount > 0) ? errors.first_month_payment_cheque_number : ""}
+                                                        error={Boolean(errors.first_month_payment_received_cheque_note) && (touched.first_month_payment_received_cheque_note || submitCount > 0)}
+                                                        helperText={Boolean(errors.first_month_payment_received_cheque_note) && (touched.first_month_payment_received_cheque_note || submitCount > 0) ? errors.first_month_payment_received_cheque_note : ""}
                                                     />
 
                                                     <Box flex={1}>
                                                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                                                             <DatePicker
                                                                 label="Cheque Date"
-                                                                value={values.first_month_payment_cheque_date ? dayjs(values.first_month_payment_cheque_date) : null}
+                                                                value={values.first_month_payment_received_cheque_date ? dayjs(values.first_month_payment_received_cheque_date) : null}
                                                                 onChange={newValue =>
-                                                                    setFieldValue("first_month_payment_cheque_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                                    setFieldValue("first_month_payment_received_cheque_date", newValue ? newValue.format("YYYY-MM-DD") : "")
                                                                 }
                                                                 slotProps={{
                                                                     textField: {
                                                                         fullWidth: true,
                                                                         variant: "filled",
-                                                                        error: touched.first_month_payment_cheque_date && Boolean(errors.first_month_payment_cheque_date),
+                                                                        error: touched.first_month_payment_received_cheque_date && Boolean(errors.first_month_payment_received_cheque_date),
                                                                         // Remove helperText here!
                                                                     },
                                                                 }}
                                                             />
                                                         </LocalizationProvider>
                                                         {/* Render error message below the DatePicker */}
-                                                        {(Boolean(errors.first_month_payment_cheque_date) && (touched.first_month_payment_cheque_date || submitCount > 0)) && (
+                                                        {(Boolean(errors.first_month_payment_received_cheque_date) && (touched.first_month_payment_received_cheque_date || submitCount > 0)) && (
                                                             <Box sx={{ color: "error.main", fontSize: 13, mt: 0.5 }}>
-                                                                {errors.first_month_payment_cheque_date}
+                                                                {errors.first_month_payment_received_cheque_date}
                                                             </Box>
                                                         )}
                                                     </Box>
+                                                      <TextField
+                                                            label="Total"
+                                                            name="first_month_payment_received_cheque_amount"
+                                                            type="number"
+                                                            value={values.first_month_payment_received_cheque_amount || ''}
+                                                            onChange={handleChange}
+                                                            onBlur={handleBlur}
+                                                            variant="filled"
+                                                            fullWidth
+                                                            error={Boolean(errors.first_month_payment_received_cheque_amount) && (touched.first_month_payment_received_cheque_amount || submitCount > 0)}
+                                                            helperText={Boolean(errors.first_month_payment_received_cheque_amount) && (touched.first_month_payment_received_cheque_amount || submitCount > 0) ? errors.first_month_payment_received_cheque_amount : ""}
+                                                        />
                                                 </Box>
                                             )}
                                             <Box display="flex" gap={2} mt={2}>
@@ -1005,49 +1027,49 @@ const MoveInSummeryForm = () => {
                                                     <Box display="flex" gap={2} mt={2}>
                                                         <TextField
                                                             label="Cheque Number"
-                                                            name="security_deposit_cheque_number"
-                                                            value={values.security_deposit_cheque_number || ''}
+                                                            name="security_deposit_received_cheque_note"
+                                                            value={values.security_deposit_received_cheque_note || ''}
                                                             onChange={handleChange}
                                                             onBlur={handleBlur}
                                                             variant="filled"
                                                             fullWidth
-                                                            error={Boolean(errors.security_deposit_cheque_number) && (touched.security_deposit_cheque_number || submitCount > 0)}
-                                                            helperText={Boolean(errors.security_deposit_cheque_number) && (touched.security_deposit_cheque_number || submitCount > 0) ? errors.security_deposit_cheque_number : ""}
+                                                            error={Boolean(errors.security_deposit_received_cheque_note) && (touched.security_deposit_received_cheque_note || submitCount > 0)}
+                                                            helperText={Boolean(errors.security_deposit_received_cheque_note) && (touched.security_deposit_received_cheque_note || submitCount > 0) ? errors.security_deposit_received_cheque_note : ""}
                                                         />
                                                         <Box flex={1}>
                                                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                                                 <DatePicker
                                                                     label="Cheque Date"
-                                                                    value={values.security_deposit_cheque_date ? dayjs(values.security_deposit_cheque_date) : null}
+                                                                    value={values.security_deposit_received_cheque_date ? dayjs(values.security_deposit_received_cheque_date) : null}
                                                                     onChange={newValue =>
-                                                                        setFieldValue("security_deposit_cheque_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                                        setFieldValue("security_deposit_received_cheque_date", newValue ? newValue.format("YYYY-MM-DD") : "")
                                                                     }
                                                                     slotProps={{
                                                                         textField: {
                                                                             fullWidth: true,
                                                                             variant: "filled",
-                                                                            error: Boolean(errors.security_deposit_cheque_date) && (touched.security_deposit_cheque_date || submitCount > 0),
+                                                                            error: Boolean(errors.security_deposit_received_cheque_date) && (touched.security_deposit_received_cheque_date || submitCount > 0),
                                                                         },
                                                                     }}
                                                                 />
                                                             </LocalizationProvider>
-                                                            {(Boolean(errors.security_deposit_cheque_date) && (touched.security_deposit_cheque_date || submitCount > 0)) && (
+                                                            {(Boolean(errors.security_deposit_received_cheque_date) && (touched.security_deposit_received_cheque_date || submitCount > 0)) && (
                                                                 <Box sx={{ color: "error.main", fontSize: 13, mt: 0.5 }}>
-                                                                    {errors.security_deposit_cheque_date}
+                                                                    {errors.security_deposit_received_cheque_date}
                                                                 </Box>
                                                             )}
                                                         </Box>
                                                         <TextField
                                                             label="Total"
-                                                            name="security_deposit_total"
+                                                            name="security_deposit_received_cheque_amount"
                                                             type="number"
-                                                            value={values.security_deposit_total || ''}
+                                                            value={values.security_deposit_received_cheque_amount || ''}
                                                             onChange={handleChange}
                                                             onBlur={handleBlur}
                                                             variant="filled"
                                                             fullWidth
-                                                            error={Boolean(errors.security_deposit_total) && (touched.security_deposit_total || submitCount > 0)}
-                                                            helperText={Boolean(errors.security_deposit_total) && (touched.security_deposit_total || submitCount > 0) ? errors.security_deposit_total : ""}
+                                                            error={Boolean(errors.security_deposit_received_cheque_amount) && (touched.security_deposit_received_cheque_amount || submitCount > 0)}
+                                                            helperText={Boolean(errors.security_deposit_received_cheque_amount) && (touched.security_deposit_received_cheque_amount || submitCount > 0) ? errors.security_deposit_received_cheque_amount : ""}
                                                         />
                                                     </Box>
                                                 )}
@@ -1190,62 +1212,62 @@ const MoveInSummeryForm = () => {
                                                             <Box display="flex" gap={2}>
                                                                 <TextField
                                                                     label="Payor's Name"
-                                                                    name="padPayorName"
-                                                                    value={values.padPayorName || ''}
+                                                                    name="payor_name"
+                                                                    value={values.payor_name || ''}
                                                                     onChange={handleChange}
                                                                     onBlur={handleBlur}
                                                                     variant="filled"
                                                                     fullWidth
-                                                                    error={Boolean(errors.padPayorName) && (touched.padPayorName || submitCount > 0)}
-                                                                    helperText={Boolean(errors.padPayorName) && (touched.padPayorName || submitCount > 0) ? errors.padPayorName : ""}
+                                                                    error={Boolean(errors.payor_name) && (touched.payor_name || submitCount > 0)}
+                                                                    helperText={Boolean(errors.payor_name) && (touched.payor_name || submitCount > 0) ? errors.payor_name : ""}
                                                                 />
                                                                 <TextField
                                                                     label="Bank Name"
-                                                                    name="padBankName"
-                                                                    value={values.padBankName || ''}
+                                                                    name="bank_name"
+                                                                    value={values.bank_name || ''}
                                                                     onChange={handleChange}
                                                                     onBlur={handleBlur}
                                                                     variant="filled"
                                                                     fullWidth
-                                                                    error={Boolean(errors.padBankName) && (touched.padBankName || submitCount > 0)}
-                                                                    helperText={Boolean(errors.padBankName) && (touched.padBankName || submitCount > 0) ? errors.padBankName : ""}
+                                                                    error={Boolean(errors.bank_name) && (touched.bank_name || submitCount > 0)}
+                                                                    helperText={Boolean(errors.bank_name) && (touched.bank_name || submitCount > 0) ? errors.bank_name : ""}
                                                                 />
                                                             </Box>
                                                             <Box display="flex" gap={2} width="100%">
                                                                 <TextField
                                                                     label="Bank ID # (3 digits)"
-                                                                    name="padBankId"
-                                                                    value={values.padBankId || ''}
+                                                                    name="bank_ID"
+                                                                    value={values.bank_ID || ''}
                                                                     onChange={handleChange}
                                                                     onBlur={handleBlur}
                                                                     variant="filled"
                                                                     inputProps={{ maxLength: 3 }}
                                                                     fullWidth
-                                                                    error={Boolean(errors.padBankId) && (touched.padBankId || submitCount > 0)}
-                                                                    helperText={Boolean(errors.padBankId) && (touched.padBankId || submitCount > 0) ? errors.padBankId : ""}
+                                                                    error={Boolean(errors.bank_ID) && (touched.bank_ID || submitCount > 0)}
+                                                                    helperText={Boolean(errors.bank_ID) && (touched.bank_ID || submitCount > 0) ? errors.bank_ID : ""}
                                                                 />
                                                                 <TextField
                                                                     label="Account Number"
-                                                                    name="padAccountNumber"
-                                                                    value={values.padAccountNumber || ''}
+                                                                    name="account_number"
+                                                                    value={values.account_number || ''}
                                                                     onChange={handleChange}
                                                                     onBlur={handleBlur}
                                                                     variant="filled"
                                                                     fullWidth
-                                                                    error={Boolean(errors.padAccountNumber) && (touched.padAccountNumber || submitCount > 0)}
-                                                                    helperText={Boolean(errors.padAccountNumber) && (touched.padAccountNumber || submitCount > 0) ? errors.padAccountNumber : ""}
+                                                                    error={Boolean(errors.account_number) && (touched.account_number || submitCount > 0)}
+                                                                    helperText={Boolean(errors.account_number) && (touched.account_number || submitCount > 0) ? errors.account_number : ""}
                                                                 />
                                                                 <TextField
                                                                     label="Transit # (5 digits)"
-                                                                    name="padTransitNumber"
-                                                                    value={values.padTransitNumber || ''}
+                                                                    name="transit"
+                                                                    value={values.transit || ''}
                                                                     onChange={handleChange}
                                                                     onBlur={handleBlur}
                                                                     variant="filled"
                                                                     inputProps={{ maxLength: 5 }}
                                                                     fullWidth
-                                                                    error={Boolean(errors.padTransitNumber) && (touched.padTransitNumber || submitCount > 0)}
-                                                                    helperText={Boolean(errors.padTransitNumber) && (touched.padTransitNumber || submitCount > 0) ? errors.padTransitNumber : ""}
+                                                                    error={Boolean(errors.transit) && (touched.transit || submitCount > 0)}
+                                                                    helperText={Boolean(errors.transit) && (touched.transit || submitCount > 0) ? errors.transit : ""}
                                                                 />
                                                             </Box>
                                                         </Box>
@@ -1261,7 +1283,7 @@ const MoveInSummeryForm = () => {
                                                         const label = Object.keys(item)[0];
                                                         const stateKey = item[label];
                                                         const checked = Boolean(values[stateKey]);
-                                                        const otherValKey = stateKey === "unit_key" ? "unit_key_other_val" : stateKey === "elpas_fob" ? "elpas_fob_other_val" : "";
+                                                        const otherValKey = stateKey === "unit_key" ? "unit_key_value" : stateKey === "elpas_fob" ? "elpas_fob_value" : "";
 
                                                         return (
                                                             <Box key={label} sx={{ width: "50%" }}>
@@ -1389,25 +1411,25 @@ const MoveInSummeryForm = () => {
                                                                 <Box display="flex" flexDirection="column" gap={2} mt={1}>
                                                                     <TextField
                                                                         label="Insurance Company Name"
-                                                                        name="suite_insurance_coverage_approved_company"
-                                                                        value={values.suite_insurance_coverage_approved_company || ''}
+                                                                        name="insurance_company_name"
+                                                                        value={values.insurance_company_name || ''}
                                                                         onChange={handleChange}
                                                                         onBlur={handleBlur}
                                                                         variant="filled"
                                                                         fullWidth
-                                                                        error={Boolean(errors.suite_insurance_coverage_approved_company) && (touched.suite_insurance_coverage_approved_company || submitCount > 0)}
-                                                                        helperText={Boolean(errors.suite_insurance_coverage_approved_company) && (touched.suite_insurance_coverage_approved_company || submitCount > 0) ? errors.suite_insurance_coverage_approved_company : ""}
+                                                                        error={Boolean(errors.insurance_company_name) && (touched.insurance_company_name || submitCount > 0)}
+                                                                        helperText={Boolean(errors.insurance_company_name) && (touched.insurance_company_name || submitCount > 0) ? errors.insurance_company_name : ""}
                                                                     />
                                                                     <TextField
                                                                         label="Policy Number"
-                                                                        name="suite_insurance_coverage_approved_policy"
-                                                                        value={values.suite_insurance_coverage_approved_policy || ''}
+                                                                        name="policy_number"
+                                                                        value={values.policy_number || ''}
                                                                         onChange={handleChange}
                                                                         onBlur={handleBlur}
                                                                         variant="filled"
                                                                         fullWidth
-                                                                        error={Boolean(errors.suite_insurance_coverage_approved_policy) && (touched.suite_insurance_coverage_approved_policy || submitCount > 0)}
-                                                                        helperText={Boolean(errors.suite_insurance_coverage_approved_policy) && (touched.suite_insurance_coverage_approved_policy || submitCount > 0) ? errors.suite_insurance_coverage_approved_policy : ""}
+                                                                        error={Boolean(errors.policy_number) && (touched.policy_number || submitCount > 0)}
+                                                                        helperText={Boolean(errors.policy_number) && (touched.policy_number || submitCount > 0) ? errors.policy_number : ""}
                                                                     />
                                                                 </Box>
                                                             )}
