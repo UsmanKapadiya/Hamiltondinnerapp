@@ -117,7 +117,7 @@ const StaticForms = () => {
   };
 
   const columns = [
-    { field: "id", headerName: "ID" },
+    // { field: "id", headerName: "ID" },
     {
       field: "displayName",
       headerName: "Name",
