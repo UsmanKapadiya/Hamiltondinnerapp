@@ -23,6 +23,7 @@ const validationSchema = Yup.object({
     room_number: Yup.string().required("Room Number is required"),
     resident_name: Yup.string().required("Resident Name is required"),
     log_text: Yup.string().required("This field is required"),
+    logged_by: Yup.string().required("Logged By is required"),
 });
 
 const LogForm = () => {
@@ -207,6 +208,8 @@ const LogForm = () => {
                                                     variant="filled"
                                                     fullWidth
                                                     onBlur={handleBlur}
+                                                    error={touched.logged_by && Boolean(errors.logged_by)}
+                                                    helperText={touched.logged_by && errors.logged_by}
                                                 />
                                             )}
                                             ListboxProps={{
