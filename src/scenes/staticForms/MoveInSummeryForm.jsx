@@ -16,7 +16,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 function generateUUID() {
-    // Simple RFC4122 version 4 compliant UUID generator
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
@@ -257,7 +256,7 @@ const initialValues = {
     payor_information_PAD: false,
     payor_information_Post_Dated_Cheque: false,
     payor_information_selected: "",
-    // Keys Pendings
+
     payor_name: "",
     bank_name: "",
     bank_ID: "",
@@ -297,7 +296,7 @@ const MoveInSummeryForm = () => {
         const fetchFormData = async () => {
             setLoading(true);
             try {
-                // If editing, fill form with existing data
+
                 if (location?.state?.formData?.form_data) {
                     setFormId(location.state?.id);
                     setInitialFormValues({
@@ -306,12 +305,10 @@ const MoveInSummeryForm = () => {
                         id: location.state?.id || location.state.formData?.form_data?.id || "",
 
                     });
-                    // Optionally handle attachments here if needed
                     setLoading(false);
                     return;
                 }
 
-                // Otherwise, fetch defaults for new form
                 const response = await StaticFormServices.getDefaultValue();
                 const data = response?.Data || {};
 
@@ -342,55 +339,16 @@ const MoveInSummeryForm = () => {
         };
         fetchFormData();
     }, []);
-    // const handleSubmit = async (values, actions) => {
-    //     setLoading(true);
-    //     try {
-    //         const dataURL = values.resident_signature;
-    //         const byteString = atob(dataURL.split(',')[1]);
-    //         const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
-    //         const ab = new ArrayBuffer(byteString.length);
-    //         const ia = new Uint8Array(ab);
-    //         for (let i = 0; i < byteString.length; i++) {
-    //             ia[i] = byteString.charCodeAt(i);
-    //         }
-    //         const blob = new Blob([ab], { type: mimeString });
-
-    //         // Prepare FormData
-    //         const formData = new FormData();
-    //         if (formId) {
-    //             formData.append("form_id", formId);
-    //         } formData.append("file", blob, `Img_${crypto.randomUUID()}.jpg`);
-    //         formData.append("form_type", "3");
-    //         formData.append("data", JSON.stringify(values));
-    //         if (formId) {
-    //             const response = await StaticFormServices.moveInSummeryUpdate(formData);
-    //             if (response?.ResponseCode === "1") {
-    //                 toast.success("Form Updated successfully.");
-    //             }
-    //         } else {
-    //             const response = await StaticFormServices.moveInSummerySubmit(formData);
-    //             if (response?.ResponseCode === "1") {
-    //                 toast.success(response?.ResponseText || "Form submitted successfully.");
-    //             }
-    //         }
-    //     } catch (error) {
-    //         toast.error("Form is not submitted. Please try again.");
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
+    
     const handleSubmit = async (values, actions) => {
         setLoading(true);
         try {
             let signatureData = values.resident_signature;
 
-            // If editing, ensure the signature is sent even if it's unchanged
             if (!signatureData) {
-                // Handle the case where no signature is provided (e.g., set it as an empty string or use a placeholder)
-                signatureData = ""; // Or some default if required
+                signatureData = ""; 
             }
 
-            // Convert the base64 string to a Blob if needed (API might require this)
             const byteString = atob(signatureData.split(',')[1]);
             const mimeString = signatureData.split(',')[0].split(':')[1].split(';')[0];
             const ab = new ArrayBuffer(byteString.length);
@@ -400,13 +358,11 @@ const MoveInSummeryForm = () => {
             }
             const blob = new Blob([ab], { type: mimeString });
 
-            // Prepare the FormData to send to the API
             const formData = new FormData();
             if (formId) {
-                formData.append("form_id", formId); // Include the form ID for updating
+                formData.append("form_id", formId);
             }
 
-            // Only append file if there is a new signature
             if (signatureData) {
                 formData.append("file", blob, `Img_${generateUUID()}.jpg`);
             }
@@ -414,7 +370,6 @@ const MoveInSummeryForm = () => {
             formData.append("form_type", "3");
             formData.append("data", JSON.stringify(values));
 
-            // Make the API call based on whether it's a new form or an update
             let response;
             if (formId) {
                 response = await StaticFormServices.moveInSummeryUpdate(formData);
@@ -440,10 +395,8 @@ const MoveInSummeryForm = () => {
             setLoading(false);
         }
     };
+    // console.log(initialFormValues);
 
-
-
-    console.log(initialFormValues);
     return (
         <Box m="20px">
             <Header
@@ -470,11 +423,11 @@ const MoveInSummeryForm = () => {
                             const handleEnd = () => {
                                 if (sigPadRef.current.isEmpty()) {
                                     setFieldValue("resident_signature", "");
-                                    setFieldTouched("resident_signature", true, false); // Mark as touched, do not validate immediately
+                                    setFieldTouched("resident_signature", true, false);
                                 } else {
                                     const dataUrl = sigPadRef.current.getCanvas().toDataURL('image/png');
                                     setFieldValue("resident_signature", dataUrl);
-                                    setFieldTouched("resident_signature", true, true); // Mark as touched and validate
+                                    setFieldTouched("resident_signature", true, true);
                                 }
                             };
 
@@ -490,7 +443,6 @@ const MoveInSummeryForm = () => {
                                     } catch (e) {
                                     }
                                 }
-                                // No need to clear here, only load if empty
                             }, [values.resident_signature]);
 
                             return (
@@ -760,20 +712,7 @@ const MoveInSummeryForm = () => {
                                         <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                                             <Box component="label" sx={{ mb: 1, fontWeight: 600, fontSize: 16, width: '100%' }}>
                                                 1st Month Payment
-                                            </Box>
-                                            {/* <Box>
-                                            <FormControlLabel
-                                                control={
-                                                    <Checkbox
-                                                        checked={values.first_month_payment_received}
-                                                        onChange={e => setFieldValue('first_month_payment_received', e.target.checked)}
-                                                        name="first_month_payment_received"
-                                                    />
-                                                }
-                                                label={<Box component="span" sx={{ fontWeight: 600, fontSize: 14 }}>Received</Box>}
-                                                sx={{ mt: 1 }}
-                                            />
-                                        </Box> */}
+                                            </Box>                                        
                                             <Box>
                                                 <FormControlLabel
                                                     control={
@@ -814,12 +753,10 @@ const MoveInSummeryForm = () => {
                                                                         fullWidth: true,
                                                                         variant: "filled",
                                                                         error: touched.first_month_payment_received_cheque_date && Boolean(errors.first_month_payment_received_cheque_date),
-                                                                        // Remove helperText here!
                                                                     },
                                                                 }}
                                                             />
                                                         </LocalizationProvider>
-                                                        {/* Render error message below the DatePicker */}
                                                         {(Boolean(errors.first_month_payment_received_cheque_date) && (touched.first_month_payment_received_cheque_date || submitCount > 0)) && (
                                                             <Box sx={{ color: "error.main", fontSize: 13, mt: 0.5 }}>
                                                                 {errors.first_month_payment_received_cheque_date}
@@ -1206,7 +1143,7 @@ const MoveInSummeryForm = () => {
                                                             {errors.payor_information_selected}
                                                         </Box>
                                                     )}
-                                                    {/* PAD extra fields */}
+
                                                     {values.payor_information_PAD && (
                                                         <Box display="flex" flexDirection="column" gap={2} width="100%" mt={2}>
                                                             <Box display="flex" gap={2}>
@@ -1382,7 +1319,6 @@ const MoveInSummeryForm = () => {
                                                                 }
                                                                 label={item.label}
                                                             />
-                                                            {/* Show date picker if Suite insurance Copy Received is checked */}
                                                             {item.name === 'suite_insurance_copy_received' && values.suite_insurance_copy_received && (
                                                                 <>
                                                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -1406,7 +1342,6 @@ const MoveInSummeryForm = () => {
                                                                     )}
                                                                 </>
                                                             )}
-                                                            {/* Show insurance company and policy number if Coverage Approved is checked */}
                                                             {item.name === 'suite_insurance_coverage_approved' && values.suite_insurance_coverage_approved && (
                                                                 <Box display="flex" flexDirection="column" gap={2} mt={1}>
                                                                     <TextField
@@ -1490,7 +1425,6 @@ const MoveInSummeryForm = () => {
                                             <CustomButton
                                                 type="submit"
                                                 disabled={loading}
-                                                // startIcon={<LoginOutlined />}
                                                 sx={{
                                                     width: "200px",
                                                     bgcolor: '#1976d2',
