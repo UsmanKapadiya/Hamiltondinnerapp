@@ -1,7 +1,7 @@
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import { Box, useTheme, FormControl, InputLabel, Select, MenuItem, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Autocomplete } from "@mui/material";
+import { Box, useTheme, FormControl, InputLabel, Select, MenuItem, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Autocomplete, CircularProgress, useMediaQuery } from "@mui/material";
 import { Header } from "../../components";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
@@ -14,20 +14,29 @@ import { toast } from "react-toastify";
 const StaticForms = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const isMdDevices = useMediaQuery("(min-width: 724px)");
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [formist, setFormList] = useState([]);
-  const [userData] = useState(() => {
-    const userDatas = localStorage.getItem("userData");
-    return userDatas ? JSON.parse(userDatas) : null;
-  });
+  const [pdfModalOpen, setPdfModalOpen] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState("");
   const [selectedFormType, setSelectedFormType] = useState('all');
   const [markDialogOpen, setMarkDialogOpen] = useState(false);
   const [markReason, setMarkReason] = useState("");
   const [markRowId, setMarkRowId] = useState(null);
+  const [mailDialogOpen, setMailDialogOpen] = useState(false);
+  const [mailTo, setMailTo] = useState("");
+  const [mailSending, setMailSending] = useState(false);
+  const [selectedMailFormId, setSelectedMailFormId] = useState("");
+  const [pdfLoading, setPdfLoading] = useState(true);
+  const [pdfError, setPdfError] = useState(false);
   const [completedNames, setCompletedNames] = useState(() => {
     const stored = localStorage.getItem("completedNames");
     return stored ? JSON.parse(stored) : [];
+  });
+  const [userData] = useState(() => {
+    const userDatas = localStorage.getItem("userData");
+    return userDatas ? JSON.parse(userDatas) : null;
   });
 
   const handleAddNewClick = useCallback((formType) => {
@@ -116,6 +125,34 @@ const StaticForms = () => {
     }
   };
 
+  const handleCloseMailDialog = () => {
+    setMailDialogOpen(false);
+    setMailTo("");
+  };
+
+  const handleSendMail = async () => {
+    if (!mailTo) {
+      toast.error("Email is required.");
+      return;
+    }
+
+    setMailSending(true);
+    try {
+      let payload = { to_id: mailTo, form_id: selectedMailFormId };
+      const response = await StaticFormServices.sendMail(payload);
+      if (response?.ResponseCode === "1") {
+        toast.success(`Email sent to ${mailTo}`);
+        handleCloseMailDialog();
+      } else if (response?.Message) {
+        toast.error(response.Message);
+      }
+    } catch (error) {
+      toast.error("Failed to send email. Please try again.");
+    } finally {
+      setMailSending(false);
+    }
+  };
+
   const columns = [
     // { field: "id", headerName: "ID" },
     {
@@ -167,10 +204,14 @@ const StaticForms = () => {
               title="View"
               sx={{ color: colors.greenAccent[600] }}
               onClick={() => {
+                setSelectedMailFormId(params.row.id);
                 const url = params.row.formLink;
                 const isPdf = url && url.toLowerCase().endsWith('.pdf');
                 if (isPdf) {
-                  window.open(`https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`, '_blank');
+                  setPdfLoading(true);
+                  setPdfError(false);
+                  setPdfUrl(url);
+                  setPdfModalOpen(true);
                 } else {
                   window.open(url, '_blank');
                 }
@@ -388,6 +429,7 @@ const StaticForms = () => {
             },
           }}
           checkboxSelection
+          loading={loading}
           getRowClassName={(params) => {
             const role = userData?.role;
             if (role === "concierge" || role === "nurse") {
@@ -400,6 +442,174 @@ const StaticForms = () => {
           }}
         />
       </Box>
+      <Dialog
+        open={pdfModalOpen}
+        onClose={() => setPdfModalOpen(false)}
+        maxWidth="md"
+        fullWidth
+        sx={{ zIndex: 2000 }}
+        disableScrollLock
+      >
+        <DialogTitle>PDF Preview</DialogTitle>
+        <DialogContent
+          dividers
+          sx={{
+            height: '80vh',
+            p: 0,
+            backgroundColor: '#fff',
+          }}
+        >
+          {pdfLoading && (
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              height="100%"
+            >
+              <CircularProgress />
+            </Box>
+          )}
+          <iframe
+            onLoad={() => {
+              setPdfLoading(false);
+              setPdfError(false);
+            }}
+            onError={() => {
+              setPdfLoading(false);
+              setPdfError(true);
+            }}
+            src={`https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true`}
+            title="PDF Preview"
+            width="100%"
+            height="100%"
+            style={{
+              display: pdfLoading ? 'none' : 'block',
+              border: 'none',
+              backgroundColor: '#fff',
+            }}
+          />
+        </DialogContent>
+        {!pdfLoading && !pdfError && (
+          <DialogActions>
+            {formist.find(f => f.id === selectedMailFormId)?.form_type?.allow_mail === 1 && (
+              <Button
+                variant="contained"
+                onClick={() => setMailDialogOpen(true)}
+                sx={{
+                  bgcolor: colors.greenAccent[700],
+                  color: "#fcfcfc",
+                  fontSize: isMdDevices ? "12px" : "10px",
+                  fontWeight: "bold",
+                  p: "6px 12px",
+                  transition: ".3s ease",
+                  ":hover": {
+                    bgcolor: colors.greenAccent[800],
+                  },
+                }}
+              >
+                Mail
+              </Button>
+            )}
+            {formist.find(f => f.id === selectedMailFormId)?.form_type?.allow_print === 1 && (
+              <Button
+                variant="contained"
+                onClick={() => {
+                  window.open(`https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true`, '_blank');
+                }}
+                sx={{
+                  bgcolor: colors.greenAccent[700],
+                  color: "#fcfcfc",
+                  fontSize: isMdDevices ? "12px" : "10px",
+                  fontWeight: "bold",
+                  p: "6px 12px",
+                  transition: ".3s ease",
+                  ":hover": {
+                    bgcolor: colors.greenAccent[800],
+                  },
+                }}
+              >
+                Print
+              </Button>
+            )}
+            <Button
+              variant="contained"
+              onClick={() => setPdfModalOpen(false)}
+              sx={{
+                bgcolor: colors.redAccent[700],
+                color: "#fcfcfc",
+                fontSize: isMdDevices ? "12px" : "10px",
+                fontWeight: "bold",
+                p: "6px 12px",
+                transition: ".3s ease",
+                ":hover": {
+                  bgcolor: colors.redAccent[800],
+                },
+              }}
+            >
+              Close
+            </Button>
+          </DialogActions>
+        )}
+      </Dialog>
+      <Dialog
+        open={mailDialogOpen}
+        onClose={handleCloseMailDialog}
+        maxWidth="sm"
+        fullWidth
+        sx={{ zIndex: 2100 }}
+      >
+        <DialogTitle>Send Email</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Enter Email Id"
+            type="email"
+            fullWidth
+            value={mailTo}
+            onChange={(e) => setMailTo(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            onClick={handleSendMail}
+            disabled={mailSending}
+            sx={{
+              bgcolor: colors.greenAccent[700],
+              color: "#fcfcfc",
+              fontSize: isMdDevices ? "12px" : "10px",
+              fontWeight: "bold",
+              p: "6px 12px",
+              transition: ".3s ease",
+              ":hover": {
+                bgcolor: colors.greenAccent[800],
+              },
+            }}
+          >
+            {mailSending ? "Sending..." : "Send"}
+          </Button>
+
+          <Button
+            variant="contained"
+            onClick={handleCloseMailDialog}
+            sx={{
+              bgcolor: colors.redAccent[700],
+              color: "#fcfcfc",
+              fontSize: isMdDevices ? "12px" : "10px",
+              fontWeight: "bold",
+              p: "6px 12px",
+              transition: ".3s ease",
+              ":hover": {
+                bgcolor: colors.redAccent[800],
+              },
+            }}
+          >
+            Cancel
+          </Button>
+
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

@@ -26,9 +26,11 @@ const StaticFormServices = {
     return requests.uploadPosts(`/edit-form-phase1`, data);
   },
 
-
   getDefaultValue: async () => {
     return requests.get(`/get-move-in-summary-values`);
+  },
+  sendMail: async (payload) => {
+    return requests.post(`/send-email`, payload);
   },
 
   getRoomList: async () => {
