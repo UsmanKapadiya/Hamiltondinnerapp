@@ -88,7 +88,7 @@ const validationSchema = Yup.object().shape({
         then: schema => schema.required("Please select Cheque Date for 1st Month Payment."),
         otherwise: schema => schema,
     }),
-    first_month_payment_received_cheque_amount:Yup.number().when('first_month_payment_received', {
+    first_month_payment_received_cheque_amount: Yup.number().when('first_month_payment_received', {
         is: true,
         then: schema => schema.typeError("Please enter Total for 1st Month Payment..").required("Please enter Total for 1st Month Payment."),
         otherwise: schema => schema,
@@ -303,7 +303,7 @@ const MoveInSummeryForm = () => {
                         ...initialValues,
                         ...location.state.formData.form_data,
                         id: location.state?.id || location.state.formData?.form_data?.id || "",
-
+                        resident_signature: "",
                     });
                     setLoading(false);
                     return;
@@ -339,14 +339,14 @@ const MoveInSummeryForm = () => {
         };
         fetchFormData();
     }, []);
-    
+
     const handleSubmit = async (values, actions) => {
         setLoading(true);
         try {
             let signatureData = values.resident_signature;
 
             if (!signatureData) {
-                signatureData = ""; 
+                signatureData = "";
             }
 
             const byteString = atob(signatureData.split(',')[1]);
@@ -426,11 +426,10 @@ const MoveInSummeryForm = () => {
                                     setFieldTouched("resident_signature", true, false);
                                 } else {
                                     const dataUrl = sigPadRef.current.getCanvas().toDataURL('image/png');
-                                    setFieldValue("resident_signature", dataUrl);
-                                    setFieldTouched("resident_signature", true, true);
+                                    setFieldValue("resident_signature", dataUrl, true);
+                                    setFieldTouched("resident_signature", true, false);
                                 }
                             };
-
                             useEffect(() => {
                                 if (
                                     sigPadRef.current &&
@@ -712,7 +711,7 @@ const MoveInSummeryForm = () => {
                                         <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                                             <Box component="label" sx={{ mb: 1, fontWeight: 600, fontSize: 16, width: '100%' }}>
                                                 1st Month Payment
-                                            </Box>                                        
+                                            </Box>
                                             <Box>
                                                 <FormControlLabel
                                                     control={
@@ -763,18 +762,18 @@ const MoveInSummeryForm = () => {
                                                             </Box>
                                                         )}
                                                     </Box>
-                                                      <TextField
-                                                            label="Total"
-                                                            name="first_month_payment_received_cheque_amount"
-                                                            type="number"
-                                                            value={values.first_month_payment_received_cheque_amount || ''}
-                                                            onChange={handleChange}
-                                                            onBlur={handleBlur}
-                                                            variant="filled"
-                                                            fullWidth
-                                                            error={Boolean(errors.first_month_payment_received_cheque_amount) && (touched.first_month_payment_received_cheque_amount || submitCount > 0)}
-                                                            helperText={Boolean(errors.first_month_payment_received_cheque_amount) && (touched.first_month_payment_received_cheque_amount || submitCount > 0) ? errors.first_month_payment_received_cheque_amount : ""}
-                                                        />
+                                                    <TextField
+                                                        label="Total"
+                                                        name="first_month_payment_received_cheque_amount"
+                                                        type="number"
+                                                        value={values.first_month_payment_received_cheque_amount || ''}
+                                                        onChange={handleChange}
+                                                        onBlur={handleBlur}
+                                                        variant="filled"
+                                                        fullWidth
+                                                        error={Boolean(errors.first_month_payment_received_cheque_amount) && (touched.first_month_payment_received_cheque_amount || submitCount > 0)}
+                                                        helperText={Boolean(errors.first_month_payment_received_cheque_amount) && (touched.first_month_payment_received_cheque_amount || submitCount > 0) ? errors.first_month_payment_received_cheque_amount : ""}
+                                                    />
                                                 </Box>
                                             )}
                                             <Box display="flex" gap={2} mt={2}>
