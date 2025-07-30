@@ -3,7 +3,7 @@ import { Box, Typography, useTheme, useMediaQuery, IconButton } from "@mui/mater
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { tokens } from "../../theme";
-import { DynamicFormOutlined, LogoutOutlined, RestaurantMenuOutlined } from "@mui/icons-material";
+import { DynamicFormOutlined, LogoutOutlined, RestaurantMenuOutlined, SummarizeRounded } from "@mui/icons-material";
 import logo from "../../assets/images/logo.png";
 import CustomButton from "../../components/CustomButton";
 
@@ -126,7 +126,7 @@ const Home = () => {
                                 </Typography>
                             </Box>
                         )}
-                        {/* {data?.show_incident == 1 && ( */}
+                        {data?.show_incident == 1 && data?.role !== "kitchen"  && (
                             <Box display="flex" flexDirection="column" alignItems="center">
                                 <IconButton
                                     onClick={() => { navigate("/staticForms") }}
@@ -144,7 +144,26 @@ const Home = () => {
                                     Incident
                                 </Typography>
                             </Box>
-                        {/* )} */}
+                        )} 
+                        {data?.role === "kitchen" &&  (
+                            <Box display="flex" flexDirection="column" alignItems="center">
+                                <IconButton
+                                    onClick={() => { navigate("/order", { state: { Kitchen_summery: true } }) }}
+                                    sx={{
+                                        color: colors.blueAccent[700],
+                                        transition: "color 0.3s",
+                                        "&:hover": {
+                                            color: colors.blueAccent[800],
+                                        },
+                                    }}
+                                >
+                                    <SummarizeRounded sx={{ fontSize: 40 }} />
+                                </IconButton>
+                                <Typography variant="caption" sx={{ mt: 1 }}>
+                                    Summery
+                                </Typography>
+                            </Box>
+                        )} 
                     </Box>
                     <Box>
                         <CustomButton
