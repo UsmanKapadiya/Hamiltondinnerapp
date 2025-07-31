@@ -340,6 +340,65 @@ const MoveInSummeryForm = () => {
         fetchFormData();
     }, []);
 
+    const toNumber = (value) => Number(value) || 0;
+
+    const useSignatureHandler = (sigPadRef, values, setFieldValue, setFieldTouched) => {
+        const handleEnd = () => {
+            if (sigPadRef.current?.isEmpty()) {
+                setFieldValue("resident_signature", "");
+                setFieldTouched("resident_signature", true, false);
+            } else {
+                const dataUrl = sigPadRef.current.getCanvas().toDataURL("image/png");
+                setFieldValue("resident_signature", dataUrl, true);
+                setFieldTouched("resident_signature", true, false);
+            }
+        };
+
+        useEffect(() => {
+            if (sigPadRef.current && values.resident_signature && sigPadRef.current.isEmpty()) {
+                try {
+                    sigPadRef.current.fromDataURL(values.resident_signature);
+                } catch (e) {
+                    console.error("Error loading signature:", e);
+                }
+            }
+        }, [values.resident_signature]);
+
+        return handleEnd;
+    };
+
+    const useHalfMonthDeposit = (values, initialFormValues, setFieldValue) => {
+        useEffect(() => {
+            const baseDeposit = toNumber(initialFormValues?.halfRentalDeposit2ndRes) * 2;
+            const monthlyRate = toNumber(values.monthly_rate);
+
+            if (monthlyRate > 0) {
+                const value = values.has_2nd_resident
+                    ? (monthlyRate > baseDeposit ? ((monthlyRate - baseDeposit) / 2).toFixed(2) : "")
+                    : (monthlyRate / 2).toFixed(2);
+                setFieldValue("half_month_deposit_for_first_resident_rate", value);
+            } else {
+                setFieldValue("half_month_deposit_for_first_resident_rate", "");
+            }
+        }, [values.has_2nd_resident, values.monthly_rate]);
+    };
+
+    const useHalfCarePlanRate = (values, setFieldValue) => {
+        useEffect(() => {
+            const rate = toNumber(values.care_plan_rate);
+            setFieldValue("half_month_care_plan_rate", rate > 0 ? (rate / 2).toFixed(2) : "");
+        }, [values.care_plan_rate]);
+    };
+
+    const useRateCalculator = (fieldName, quantity, rate, setFieldValue) => {
+        useEffect(() => {
+            const qty = toNumber(quantity);
+            const unitRate = toNumber(rate);
+            setFieldValue(fieldName, qty > 0 && unitRate > 0 ? qty * unitRate : "");
+        }, [quantity]);
+    };
+
+
     const handleSubmit = async (values, actions) => {
         setLoading(true);
         try {
@@ -417,32 +476,26 @@ const MoveInSummeryForm = () => {
                     <Formik
                         initialValues={initialFormValues}
                         enableReinitialize
+                        validationSchema={validationSchema}
                         onSubmit={handleSubmit}
-                        validationSchema={validationSchema}>
-                        {({ values, handleChange, handleBlur, handleSubmit, setFieldValue, setFieldTouched, errors, touched, submitCount }) => {
-                            const handleEnd = () => {
-                                if (sigPadRef.current.isEmpty()) {
-                                    setFieldValue("resident_signature", "");
-                                    setFieldTouched("resident_signature", true, false);
-                                } else {
-                                    const dataUrl = sigPadRef.current.getCanvas().toDataURL('image/png');
-                                    setFieldValue("resident_signature", dataUrl, true);
-                                    setFieldTouched("resident_signature", true, false);
-                                }
-                            };
-                            useEffect(() => {
-                                if (
-                                    sigPadRef.current &&
-                                    values.resident_signature &&
-                                    sigPadRef.current.isEmpty()
-                                ) {
-                                    try {
-                                        sigPadRef.current.fromDataURL(values.resident_signature);
+                    >
+                        {({
+                            values,
+                            handleChange,
+                            handleBlur,
+                            handleSubmit,
+                            setFieldValue,
+                            setFieldTouched,
+                            errors,
+                            touched,
+                            submitCount,
+                        }) => {
+                            const handleSignatureEnd = useSignatureHandler(sigPadRef, values, setFieldValue, setFieldTouched);
 
-                                    } catch (e) {
-                                    }
-                                }
-                            }, [values.resident_signature]);
+                            useHalfMonthDeposit(values, initialFormValues, setFieldValue);
+                            useHalfCarePlanRate(values, setFieldValue);
+                            useRateCalculator("elpas_rate", values.elpas_quantity, initialFormValues?.elpas_rate, setFieldValue);
+                            useRateCalculator("garage_fob_rate", values.garage_fob_quantity, initialFormValues?.garage_fob_rate, setFieldValue);
 
                             return (
                                 <form onSubmit={handleSubmit}>
@@ -1275,7 +1328,7 @@ const MoveInSummeryForm = () => {
                                                                 },
                                                             }}
                                                             ref={sigPadRef}
-                                                            onEnd={handleEnd}
+                                                            onEnd={handleSignatureEnd}
                                                         />
 
                                                         {Boolean(errors.resident_signature) &&
