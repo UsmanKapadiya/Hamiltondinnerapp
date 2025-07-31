@@ -1008,7 +1008,9 @@ const Order = () => {
                                 )}
                                 {/* Add Additional Services */}
                                 {(
-                                    (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0))
+                                    (data.breakFastDailySpecial?.some(item => item.qty > 0) ||
+                                        data.breakFastAlternative?.some(item => item.qty > 0)) &&
+                                    !kitchenSummery
                                 ) && (
                                         <Box mt={3}>
                                             {/* <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
@@ -1077,9 +1079,11 @@ const Order = () => {
                                     </Box>
                                 )}
                                 {(
-                                    (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0)) ||
-                                    (data.lunchSoup?.some(item => item.qty > 0) || data.lunchEntree?.some(item => item.qty > 0) || data.lunchAlternative?.some(item => item.qty > 0)) ||
-                                    (data.dinnerSoup?.some(item => item.qty > 0) || data.dinnerEntree?.some(item => item.qty > 0) || data.dinnerAlternative?.some(item => item.qty > 0))
+                                    (
+                                        (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0)) ||
+                                        (data.lunchSoup?.some(item => item.qty > 0) || data.lunchEntree?.some(item => item.qty > 0) || data.lunchAlternative?.some(item => item.qty > 0)) ||
+                                        (data.dinnerSoup?.some(item => item.qty > 0) || data.dinnerEntree?.some(item => item.qty > 0) || data.dinnerAlternative?.some(item => item.qty > 0))
+                                    ) && !kitchenSummery
                                 ) && (
                                         <Box mt={3} display="flex" justifyContent="center">
                                             <CustomButton
@@ -1655,6 +1659,8 @@ const Order = () => {
                                     (data.lunchSoup?.some(item => item.qty > 0) ||
                                         data.lunchEntree?.some(item => item.qty > 0) ||
                                         data.lunchAlternative?.some(item => item.qty > 0))
+                                    &&
+                                    !kitchenSummery
                                 ) && (
                                         <Box mt={3}>
                                             {/* <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
@@ -1723,9 +1729,11 @@ const Order = () => {
                                 )}
                                 {/* Add lunch submit button,  if breakfast not submited then here breakfast and lunch submited */}
                                 {(
-                                    (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0)) ||
-                                    (data.lunchSoup?.some(item => item.qty > 0) || data.lunchEntree?.some(item => item.qty > 0) || data.lunchAlternative?.some(item => item.qty > 0)) ||
-                                    (data.dinnerSoup?.some(item => item.qty > 0) || data.dinnerEntree?.some(item => item.qty > 0) || data.dinnerAlternative?.some(item => item.qty > 0))
+                                    (
+                                        (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0)) ||
+                                        (data.lunchSoup?.some(item => item.qty > 0) || data.lunchEntree?.some(item => item.qty > 0) || data.lunchAlternative?.some(item => item.qty > 0)) ||
+                                        (data.dinnerSoup?.some(item => item.qty > 0) || data.dinnerEntree?.some(item => item.qty > 0) || data.dinnerAlternative?.some(item => item.qty > 0))
+                                    ) && !kitchenSummery
                                 ) && (
                                         <Box mt={3} display="flex" justifyContent="center">
                                             <CustomButton
@@ -2203,7 +2211,8 @@ const Order = () => {
                                 {(
                                     (data.dinnerSoup?.some(item => item.qty > 0) ||
                                         data.dinnerEntree?.some(item => item.qty > 0) ||
-                                        data.dinnerAlternative?.some(item => item.qty > 0))
+                                        data.dinnerAlternative?.some(item => item.qty > 0)) &&
+                                    !kitchenSummery
                                 ) && (
                                         <Box mt={3}>
                                             {/* <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
@@ -2264,9 +2273,11 @@ const Order = () => {
                                     </Box>
                                 )}
                                 {(
-                                    (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0)) ||
+                                   (
+                                     (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0)) ||
                                     (data.lunchSoup?.some(item => item.qty > 0) || data.lunchEntree?.some(item => item.qty > 0) || data.lunchAlternative?.some(item => item.qty > 0)) ||
                                     (data.dinnerSoup?.some(item => item.qty > 0) || data.dinnerEntree?.some(item => item.qty > 0) || data.dinnerAlternative?.some(item => item.qty > 0))
+                                   ) && !kitchenSummery
                                 ) && (
                                         <Box mt={3} display="flex" justifyContent="center">
                                             <CustomButton
