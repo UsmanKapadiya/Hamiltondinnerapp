@@ -48,6 +48,7 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
       localStorage.removeItem("authToken");
       localStorage.removeItem("userData");
       navigate("/");
+      window.location.reload();
     }, 1000);
   };
   const fetchRoomDetails = async () => {

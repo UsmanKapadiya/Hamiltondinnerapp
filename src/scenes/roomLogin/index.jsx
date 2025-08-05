@@ -55,6 +55,7 @@ const RoomEnter = () => {
             localStorage.removeItem("authToken");
             localStorage.removeItem("userData");
             navigate("/");
+            window.location.reload();
         }, 1000);
     }
     return (

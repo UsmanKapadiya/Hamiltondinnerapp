@@ -23,7 +23,14 @@ const AppRouter = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route
+          path="/"
+          element={
+            localStorage.getItem("authToken")
+              ? <Navigate to="/home" />
+              : <Login />
+          }
+        />
         <Route
           path="/"
           element={
