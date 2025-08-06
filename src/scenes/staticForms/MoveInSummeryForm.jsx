@@ -390,13 +390,15 @@ const MoveInSummeryForm = () => {
         }, [values.care_plan_rate]);
     };
 
-    const useRateCalculator = (fieldName, quantity, rate, setFieldValue) => {
-        useEffect(() => {
-            const qty = toNumber(quantity);
-            const unitRate = toNumber(rate);
-            setFieldValue(fieldName, qty > 0 && unitRate > 0 ? qty * unitRate : "");
-        }, [quantity]);
-    };
+    // Edit Time Also multiply elpas_rate and garage_fob_rate with count // commented
+    // const useRateCalculator = (fieldName, quantity, rate, setFieldValue) => {
+    //     console.log(fieldName)
+    //     useEffect(() => {
+    //         const qty = toNumber(quantity);
+    //         const unitRate = toNumber(rate);
+    //         setFieldValue(fieldName, qty > 0 && unitRate > 0 ? qty * unitRate : "");
+    //     }, [quantity]);
+    // };
 
 
     const handleSubmit = async (values, actions) => {
@@ -494,8 +496,9 @@ const MoveInSummeryForm = () => {
 
                             useHalfMonthDeposit(values, initialFormValues, setFieldValue);
                             useHalfCarePlanRate(values, setFieldValue);
-                            useRateCalculator("elpas_rate", values.elpas_quantity, initialFormValues?.elpas_rate, setFieldValue);
-                            useRateCalculator("garage_fob_rate", values.garage_fob_quantity, initialFormValues?.garage_fob_rate, setFieldValue);
+                            // Edit Time Also multiply elpas_rate and garage_fob_rate with count // commented
+                            // useRateCalculator("elpas_rate", values.elpas_quantity, initialFormValues?.elpas_rate, setFieldValue);
+                            // useRateCalculator("garage_fob_rate", values.garage_fob_quantity, initialFormValues?.garage_fob_rate, setFieldValue);
 
                             return (
                                 <form onSubmit={handleSubmit}>
