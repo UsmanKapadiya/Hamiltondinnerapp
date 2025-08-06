@@ -491,6 +491,18 @@ const Order = () => {
     const totalLunchSoupQty = (data.lunchSoup || []).reduce((sum, i) => sum + (i.qty || 0), 0);
     const totalDinnerSoupQty = (data.dinnerSoup || []).reduce((sum, i) => sum + (i.qty || 0), 0);
 
+    const showBreakFastGuideline =
+        userData?.guideline &&
+        data.breakFastDailySpecial &&
+        data.breakFastDailySpecial.length > 0;
+
+    const showLunchGuideline =
+        userData?.guideline &&
+        data.lunchSoup && data.lunchSoup.length > 0 &&
+        data.lunchEntree && data.lunchEntree.length > 0 &&
+        data.lunchAlternative && data.lunchAlternative.length > 0;
+
+
     return (
         <Box m="20px">
             <Header
@@ -1044,7 +1056,7 @@ const Order = () => {
                                             </label>
                                         </Box>
                                     )}
-                                {userData?.guideline && (
+                                {showBreakFastGuideline && (
                                     <>
                                         <hr />
                                         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
@@ -1052,6 +1064,13 @@ const Order = () => {
                                         </Typography>
                                     </>
                                 )}
+                                {data.breakFastDailySpecial && data.breakFastAlternative &&
+                                    data.breakFastDailySpecial.length === 0 &&
+                                    data.breakFastAlternative.length === 0 && (
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                            BreakFast Menu is not available
+                                        </Typography>
+                                    )}
                                 {/* Add Submit Button for BreakFast DataSubmit */}
                                 {kitchenSummery && (
                                     <Box mt={3} display="flex" justifyContent="center">
@@ -1694,7 +1713,7 @@ const Order = () => {
                                             </label>
                                         </Box>
                                     )}
-                                {userData?.guideline && (
+                                {showLunchGuideline && (
                                     <>
                                         <hr />
                                         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
@@ -1702,6 +1721,14 @@ const Order = () => {
                                         </Typography>
                                     </>
                                 )}
+                                {data.lunchSoup && data.lunchEntree && data.lunchAlternative &&
+                                    data.lunchSoup.length === 0 &&
+                                    data.lunchEntree.length === 0 &&
+                                    data.lunchAlternative.length === 0 && (
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                            Lunch Menu is not available
+                                        </Typography>
+                                    )}
                                 {kitchenSummery && (
                                     <Box mt={3} display="flex" justifyContent="center">
                                         <CustomButton
@@ -2246,6 +2273,14 @@ const Order = () => {
                                             </label>
                                         </Box>
                                     )}
+                                {data.dinnerSoup && data.dinnerEntree && data.dinnerAlternative &&
+                                    data.dinnerSoup.length === 0 &&
+                                    data.dinnerEntree.length === 0 &&
+                                    data.dinnerAlternative.length === 0 && (
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                            Dinner Menu is not available
+                                        </Typography>
+                                    )}
                                 {/* Add Dinner Submit, if lunch and breakfast not submited then here all data submited like breakfast, lunch and dinner */}
                                 {kitchenSummery && (
                                     <Box mt={3} display="flex" justifyContent="center">
@@ -2273,11 +2308,11 @@ const Order = () => {
                                     </Box>
                                 )}
                                 {(
-                                   (
-                                     (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0)) ||
-                                    (data.lunchSoup?.some(item => item.qty > 0) || data.lunchEntree?.some(item => item.qty > 0) || data.lunchAlternative?.some(item => item.qty > 0)) ||
-                                    (data.dinnerSoup?.some(item => item.qty > 0) || data.dinnerEntree?.some(item => item.qty > 0) || data.dinnerAlternative?.some(item => item.qty > 0))
-                                   ) && !kitchenSummery
+                                    (
+                                        (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0)) ||
+                                        (data.lunchSoup?.some(item => item.qty > 0) || data.lunchEntree?.some(item => item.qty > 0) || data.lunchAlternative?.some(item => item.qty > 0)) ||
+                                        (data.dinnerSoup?.some(item => item.qty > 0) || data.dinnerEntree?.some(item => item.qty > 0) || data.dinnerAlternative?.some(item => item.qty > 0))
+                                    ) && !kitchenSummery
                                 ) && (
                                         <Box mt={3} display="flex" justifyContent="center">
                                             <CustomButton
