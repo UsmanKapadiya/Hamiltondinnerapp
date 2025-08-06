@@ -1775,7 +1775,7 @@ const Order = () => {
                                                     cursor: "pointer",
                                                     width: 'auto'
                                                 }}
-                                                disabled={isAfter3PM}
+                                                disabled={isAfter3PM || isPast}
                                                 onClick={() => {
                                                     submitData(data, date)
                                                 }}
