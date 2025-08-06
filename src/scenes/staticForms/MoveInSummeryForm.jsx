@@ -290,8 +290,7 @@ const MoveInSummeryForm = () => {
     const [initialFormValues, setInitialFormValues] = useState(initialValues);
     const [defaultElpasRate, setDefaultElpasRate] = useState(0);
     const [defaultGaregeFobRate, setDefaultGaregeFobRate] = useState(0);
-    console.log(location?.state?.formData?.form_data);
-    console.log(location?.state?.formData?.attachments)
+    
     useEffect(() => {
         const fetchFormData = async () => {
             setLoading(true);
