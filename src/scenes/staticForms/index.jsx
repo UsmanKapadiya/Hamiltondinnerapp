@@ -1,11 +1,11 @@
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import { Box, useTheme, FormControl, InputLabel, Select, MenuItem, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Autocomplete, CircularProgress, useMediaQuery } from "@mui/material";
+import { Box, useTheme, FormControl, InputLabel, Select, MenuItem, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Autocomplete, CircularProgress, useMediaQuery, Tooltip } from "@mui/material";
 import { Header } from "../../components";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
-import { ReceiptOutlined } from "@mui/icons-material";
+import { CloseOutlined, ReceiptOutlined, ZoomInOutlined, ZoomOutOutlined } from "@mui/icons-material";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import StaticFormServices from "../../services/staticFormServices";
@@ -38,6 +38,29 @@ const StaticForms = () => {
     const userDatas = localStorage.getItem("userData");
     return userDatas ? JSON.parse(userDatas) : null;
   });
+  const [zoom, setZoom] = useState(1);
+
+  const handleZoomIn = () => setZoom((z) => Math.min(z + 0.2, 3));
+  const handleZoomOut = () => setZoom((z) => Math.max(z - 0.2, 0.5));
+
+  const iframeContainerStyle = {
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+    position: "relative",
+    backgroundColor: "#fff",
+  };
+
+  const iframeStyle = {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    transform: `scale(${zoom})`,
+    transformOrigin: "top left",
+    border: "none",
+    width: `${100 / zoom}%`,
+    height: `${100 / zoom}%`,
+  };
 
   const handleAddNewClick = useCallback((formType) => {
     let route = "incidentForm-create";
@@ -199,21 +222,20 @@ const StaticForms = () => {
         return (
           params?.row?.formLink && (
             <IconButton
-              key={`view-btn-${params.row.id}`}
               size="small"
               title="View"
               sx={{ color: colors.greenAccent[600] }}
               onClick={() => {
                 setSelectedMailFormId(params.row.id);
                 const url = params.row.formLink;
-                const isPdf = url && url.toLowerCase().endsWith('.pdf');
+                const isPdf = url && url.toLowerCase().endsWith(".pdf");
                 if (isPdf) {
                   setPdfLoading(true);
                   setPdfError(false);
                   setPdfUrl(url);
                   setPdfModalOpen(true);
                 } else {
-                  window.open(url, '_blank');
+                  window.open(url, "_blank");
                 }
               }}
             >
@@ -221,8 +243,42 @@ const StaticForms = () => {
             </IconButton>
           )
         );
-      }
+      },
     },
+    // {
+    //   field: "view",
+    //   headerName: "View",
+    //   sortable: false,
+    //   filterable: false,
+    //   width: 80,
+    //   renderCell: (params) => {
+    //     return (
+    //       params?.row?.formLink && (
+    //         <IconButton
+    //           key={`view-btn-${params.row.id}`}
+    //           size="small"
+    //           title="View"
+    //           sx={{ color: colors.greenAccent[600] }}
+    //           onClick={() => {
+    //             setSelectedMailFormId(params.row.id);
+    //             const url = params.row.formLink;
+    //             const isPdf = url && url.toLowerCase().endsWith('.pdf');
+    //             if (isPdf) {
+    //               setPdfLoading(true);
+    //               setPdfError(false);
+    //               setPdfUrl(url);
+    //               setPdfModalOpen(true);
+    //             } else {
+    //               window.open(url, '_blank');
+    //             }
+    //           }}
+    //         >
+    //           <ReceiptOutlined fontSize="small" />
+    //         </IconButton>
+    //       )
+    //     );
+    //   }
+    // },
     {
       field: "actions",
       headerName: "Action",
@@ -442,7 +498,7 @@ const StaticForms = () => {
           }}
         />
       </Box>
-      <Dialog
+      {/* <Dialog
         open={pdfModalOpen}
         onClose={() => setPdfModalOpen(false)}
         maxWidth="md"
@@ -455,20 +511,11 @@ const StaticForms = () => {
           dividers
           sx={{
             height: '80vh',
-            p: 0,
+            p: 0,           // Remove all padding
+            m: 0,           // Remove all margin
             backgroundColor: '#fff',
           }}
         >
-          {pdfLoading && (
-            <Box
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              height="100%"
-            >
-              <CircularProgress />
-            </Box>
-          )}
           <iframe
             onLoad={() => {
               setPdfLoading(false);
@@ -486,6 +533,8 @@ const StaticForms = () => {
               display: pdfLoading ? 'none' : 'block',
               border: 'none',
               backgroundColor: '#fff',
+              margin: 0,      // Remove iframe margin
+              padding: 0,     // Remove iframe padding
             }}
           />
         </DialogContent>
@@ -542,6 +591,218 @@ const StaticForms = () => {
                 p: "6px 12px",
                 transition: ".3s ease",
                 ":hover": {
+                  bgcolor: colors.redAccent[800],
+                },
+              }}
+            >
+              Close
+            </Button>
+          </DialogActions>
+        )}
+      </Dialog> */}
+      <Dialog
+        open={pdfModalOpen}
+        onClose={() => setPdfModalOpen(false)}
+        maxWidth="lg"
+        fullWidth
+        sx={{ zIndex: 2000, bgcolor: "#fafafa" }}
+        disableScrollLock
+      >
+        {/* Top Toolbar */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            px: 2,
+            pt: 1,
+            pb: 0.5,
+            bgcolor: colors.greenAccent[900],
+            color: "#fff",
+            userSelect: "none",
+          }}
+        >
+          <DialogTitle sx={{ color: "#fff", m: 0, p: 0, fontWeight: "bold" }}>
+            PDF Preview
+          </DialogTitle>
+          <Box>
+            <Tooltip title="Zoom Out">
+              <IconButton
+                size="small"
+                onClick={handleZoomOut}
+                disabled={zoom <= 0.5}
+                sx={{ color: "#fff" }}
+              >
+                <ZoomOutOutlined />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Zoom In">
+              <IconButton
+                size="small"
+                onClick={handleZoomIn}
+                disabled={zoom >= 3}
+                sx={{ color: "#fff" }}
+              >
+                <ZoomInOutlined />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Close">
+              <IconButton
+                size="small"
+                onClick={() => setPdfModalOpen(false)}
+                sx={{ color: "#fff" }}
+              >
+                <CloseOutlined />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Box>
+
+        {/* Content */}
+        <DialogContent
+          dividers
+          sx={{
+            position: "relative",
+            height: "80vh",
+            p: 0,
+            bgcolor: "#fff",
+            overflow: "hidden",
+            boxShadow: 3,
+            borderRadius: 1,
+          }}
+        >
+          {/* Loading spinner */}
+          {pdfLoading && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                zIndex: 10,
+                bgcolor: "rgba(255,255,255,0.8)",
+                borderRadius: 2,
+                p: 3,
+                display: "flex",
+                alignItems: "center",
+                flexDirection: "column",
+              }}
+            >
+              <CircularProgress />
+              <Box mt={1} color="text.secondary">
+                Loading PDF...
+              </Box>
+            </Box>
+          )}
+
+          {/* Error message */}
+          {pdfError && (
+            <Box
+              sx={{
+                height: "100%",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                color: "error.main",
+                fontWeight: "bold",
+                fontSize: "1.2rem",
+                p: 2,
+              }}
+            >
+              Failed to load PDF. Please try again later.
+            </Box>
+          )}
+
+          {/* PDF iframe */}
+          {!pdfError && (
+            <iframe
+              onLoad={() => {
+                setPdfLoading(false);
+                setPdfError(false);
+              }}
+              onError={() => {
+                setPdfLoading(false);
+                setPdfError(true);
+              }}
+              src={`https://docs.google.com/gview?url=${encodeURIComponent(
+                pdfUrl
+              )}&embedded=true`}
+              title="PDF Preview"
+              style={iframeStyle}
+              width="100%"
+              height="100%"
+            />
+          )}
+        </DialogContent>
+
+        {/* Actions */}
+        {!pdfLoading && !pdfError && (
+          <DialogActions
+            sx={{
+              px: 3,
+              py: 1.5,
+              bgcolor: "#f5f5f5",
+              justifyContent: "flex-end",
+              gap: 1,
+            }}
+          >
+            {formist.find((f) => f.id === selectedMailFormId)?.form_type
+              ?.allow_mail === 1 && (
+                <Button
+                  variant="contained"
+                  onClick={() => setMailDialogOpen(true)}
+                  sx={{
+                    bgcolor: colors.greenAccent[700],
+                    color: "#fff",
+                    fontSize: isMdDevices ? "12px" : "14px",
+                    fontWeight: "bold",
+                    px: 3,
+                    py: 1,
+                    textTransform: "none",
+                    "&:hover": {
+                      bgcolor: colors.greenAccent[800],
+                    },
+                  }}
+                >
+                  Mail
+                </Button>
+              )}
+            {formist.find((f) => f.id === selectedMailFormId)?.form_type
+              ?.allow_print === 1 && (
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    // Open raw PDF for printing (better than Google viewer)
+                    window.open(pdfUrl, "_blank");
+                  }}
+                  sx={{
+                    bgcolor: colors.greenAccent[700],
+                    color: "#fff",
+                    fontSize: isMdDevices ? "12px" : "14px",
+                    fontWeight: "bold",
+                    px: 3,
+                    py: 1,
+                    textTransform: "none",
+                    "&:hover": {
+                      bgcolor: colors.greenAccent[800],
+                    },
+                  }}
+                >
+                  Print
+                </Button>
+              )}
+            <Button
+              variant="contained"
+              onClick={() => setPdfModalOpen(false)}
+              sx={{
+                bgcolor: colors.redAccent[700],
+                color: "#fff",
+                fontSize: isMdDevices ? "12px" : "14px",
+                fontWeight: "bold",
+                px: 3,
+                py: 1,
+                textTransform: "none",
+                "&:hover": {
                   bgcolor: colors.redAccent[800],
                 },
               }}
