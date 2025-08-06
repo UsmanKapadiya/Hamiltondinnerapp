@@ -1084,13 +1084,15 @@ const Order = () => {
                                                     bgcolor: colors.blueAccent[100],
                                                     color: colors.blueAccent[800],
                                                 },
+                                                padding: "10px 32px",
                                                 boxShadow: "none",
                                                 borderRadius: "30px",
+                                                border: "none",
+                                                borderRadius: 4,
                                                 fontWeight: 600,
-                                                fontSize: "1rem",
-                                                textTransform: "none",
-                                                width: "30%",
-                                                margin: "16px 0",
+                                                fontSize: 16,
+                                                cursor: "pointer",
+                                                width: 'auto'
                                             }}
                                         >
                                             View Report
@@ -1126,7 +1128,6 @@ const Order = () => {
                                             </CustomButton>
                                         </Box>
                                     )}
-
                             </Box>
                         )}
 
@@ -1741,13 +1742,15 @@ const Order = () => {
                                                     bgcolor: colors.blueAccent[100],
                                                     color: colors.blueAccent[800],
                                                 },
+                                                padding: "10px 32px",
                                                 boxShadow: "none",
                                                 borderRadius: "30px",
+                                                border: "none",
+                                                borderRadius: 4,
                                                 fontWeight: 600,
-                                                fontSize: "1rem",
-                                                textTransform: "none",
-                                                width: "30%",
-                                                margin: "16px 0",
+                                                fontSize: 16,
+                                                cursor: "pointer",
+                                                width: 'auto'
                                             }}
                                         >
                                             View Report
@@ -2294,13 +2297,15 @@ const Order = () => {
                                                     bgcolor: colors.blueAccent[100],
                                                     color: colors.blueAccent[800],
                                                 },
+                                                padding: "10px 32px",
                                                 boxShadow: "none",
                                                 borderRadius: "30px",
+                                                border: "none",
+                                                borderRadius: 4,
                                                 fontWeight: 600,
-                                                fontSize: "1rem",
-                                                textTransform: "none",
-                                                width: "30%",
-                                                margin: "16px 0",
+                                                fontSize: 16,
+                                                cursor: "pointer",
+                                                width: 'auto'
                                             }}
                                         >
                                             View Report
