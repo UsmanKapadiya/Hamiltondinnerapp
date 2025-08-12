@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import StaticFormServices from "../../services/staticFormServices";
 import { toast } from "react-toastify";
+import CustomButton from '../../components/CustomButton';
 
 const StaticForms = () => {
   const theme = useTheme();
@@ -380,8 +381,38 @@ const StaticForms = () => {
                     />
                   </DialogContent>
                   <DialogActions>
-                    <Button onClick={handleCloseMarkDialog} color="secondary">Cancel</Button>
-                    <Button onClick={handleMarkComplete} color="primary" variant="contained">Submit</Button>
+                    <CustomButton
+                      sx={{
+                        padding: "10px 32px",
+                        bgcolor: colors.blueAccent[700],
+                        color: "#fcfcfc",
+                        border: "none",
+                        borderRadius: 4,
+                        fontWeight: 600,
+                        fontSize: 16,
+                        cursor: "pointer",
+                        width: 'auto'
+                      }}
+                      onClick={handleCloseMarkDialog}
+                    >
+                      Cancel
+                    </CustomButton>
+                    <CustomButton
+                      sx={{
+                        padding: "10px 32px",
+                        bgcolor: colors.blueAccent[50],
+                        color: colors.blueAccent[700],
+                        border: "none",
+                        borderRadius: 4,
+                        fontWeight: 600,
+                        fontSize: 16,
+                        cursor: "pointer",
+                        width: 'auto'
+                      }}
+                      onClick={handleMarkComplete}
+                    >
+                      Submit
+                    </CustomButton>
                   </DialogActions>
                 </Dialog>
 
@@ -617,12 +648,12 @@ const StaticForms = () => {
             px: 2,
             pt: 1,
             pb: 0.5,
-            bgcolor: colors.greenAccent[900],
+            bgcolor: colors.primary[500],
             color: "#fff",
             userSelect: "none",
           }}
         >
-          <DialogTitle sx={{ color: "#fff", m: 0, p: 0, fontWeight: "bold" }}>
+          <DialogTitle sx={{ color: "#fff", m: 0, p: 0, fontWeight: "bold", }}>
             PDF Preview
           </DialogTitle>
           <Box>
@@ -741,74 +772,68 @@ const StaticForms = () => {
             sx={{
               px: 3,
               py: 1.5,
-              bgcolor: "#f5f5f5",
+              bgcolor: colors.primary[500],
               justifyContent: "flex-end",
               gap: 1,
             }}
           >
             {formist.find((f) => f.id === selectedMailFormId)?.form_type
               ?.allow_mail === 1 && (
-                <Button
-                  variant="contained"
-                  onClick={() => setMailDialogOpen(true)}
+                <CustomButton
                   sx={{
-                    bgcolor: colors.greenAccent[700],
-                    color: "#fff",
-                    fontSize: isMdDevices ? "12px" : "14px",
-                    fontWeight: "bold",
-                    px: 3,
-                    py: 1,
-                    textTransform: "none",
-                    "&:hover": {
-                      bgcolor: colors.greenAccent[800],
-                    },
+                    padding: "10px 32px",
+                    bgcolor: colors.blueAccent[50],
+                    color: colors.blueAccent[700],
+                    border: "none",
+                    borderRadius: 4,
+                    fontWeight: 600,
+                    fontSize: 16,
+                    cursor: "pointer",
+                    width: 'auto'
                   }}
+                  onClick={() => setMailDialogOpen(true)}
                 >
                   Mail
-                </Button>
+                </CustomButton>
               )}
             {formist.find((f) => f.id === selectedMailFormId)?.form_type
               ?.allow_print === 1 && (
-                <Button
-                  variant="contained"
+                <CustomButton
+                  sx={{
+                    padding: "10px 32px",
+                    bgcolor: colors.blueAccent[50],
+                    color: colors.blueAccent[700],
+                    border: "none",
+                    borderRadius: 4,
+                    fontWeight: 600,
+                    fontSize: 16,
+                    cursor: "pointer",
+                    width: 'auto'
+                  }}
                   onClick={() => {
                     // Open raw PDF for printing (better than Google viewer)
                     window.open(pdfUrl, "_blank");
                   }}
-                  sx={{
-                    bgcolor: colors.greenAccent[700],
-                    color: "#fff",
-                    fontSize: isMdDevices ? "12px" : "14px",
-                    fontWeight: "bold",
-                    px: 3,
-                    py: 1,
-                    textTransform: "none",
-                    "&:hover": {
-                      bgcolor: colors.greenAccent[800],
-                    },
-                  }}
                 >
                   Print
-                </Button>
+                </CustomButton>
               )}
-            <Button
-              variant="contained"
-              onClick={() => setPdfModalOpen(false)}
+            <CustomButton
               sx={{
-                bgcolor: colors.redAccent[700],
-                color: "#fff",
-                fontSize: isMdDevices ? "12px" : "14px",
-                fontWeight: "bold",
-                px: 3,
-                py: 1,
-                textTransform: "none",
-                "&:hover": {
-                  bgcolor: colors.redAccent[800],
-                },
+                padding: "10px 32px",
+                bgcolor: colors.blueAccent[700],
+                color: "#fcfcfc",
+                border: "none",
+                borderRadius: 4,
+                fontWeight: 600,
+                fontSize: 16,
+                cursor: "pointer",
+                width: 'auto'
               }}
+              onClick={() => setPdfModalOpen(false)}
             >
               Close
-            </Button>
+            </CustomButton>
           </DialogActions>
         )}
       </Dialog>
@@ -832,43 +857,39 @@ const StaticForms = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button
-            variant="contained"
+          <CustomButton
+            sx={{
+              padding: "10px 32px",
+              bgcolor: colors.blueAccent[50],
+              color: colors.blueAccent[700],
+              border: "none",
+              borderRadius: 4,
+              fontWeight: 600,
+              fontSize: 16,
+              cursor: "pointer",
+              width: 'auto'
+            }}
             onClick={handleSendMail}
             disabled={mailSending}
-            sx={{
-              bgcolor: colors.greenAccent[700],
-              color: "#fcfcfc",
-              fontSize: isMdDevices ? "12px" : "10px",
-              fontWeight: "bold",
-              p: "6px 12px",
-              transition: ".3s ease",
-              ":hover": {
-                bgcolor: colors.greenAccent[800],
-              },
-            }}
           >
             {mailSending ? "Sending..." : "Send"}
-          </Button>
-
-          <Button
-            variant="contained"
-            onClick={handleCloseMailDialog}
+          </CustomButton>
+          <CustomButton
             sx={{
-              bgcolor: colors.redAccent[700],
+              padding: "10px 32px",
+              bgcolor: colors.blueAccent[700],
               color: "#fcfcfc",
-              fontSize: isMdDevices ? "12px" : "10px",
-              fontWeight: "bold",
-              p: "6px 12px",
-              transition: ".3s ease",
-              ":hover": {
-                bgcolor: colors.redAccent[800],
-              },
+              border: "none",
+              borderRadius: 4,
+              fontWeight: 600,
+              fontSize: 16,
+              cursor: "pointer",
+              width: 'auto'
             }}
+            onClick={handleCloseMailDialog}
           >
             Cancel
-          </Button>
-
+          </CustomButton>
         </DialogActions>
       </Dialog>
     </Box>

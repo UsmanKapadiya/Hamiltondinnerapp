@@ -36,7 +36,7 @@ const RoomEnter = () => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();    
+        e.preventDefault();
         const roomNo = formData?.roomNo?.toString();
         const rooms = userData?.rooms || [];
         const matchedRoom = rooms.find(room => room.name.toLowerCase() === roomNo.toLowerCase());
@@ -150,67 +150,66 @@ const RoomEnter = () => {
                             }
                         }}
                     />
-                    <CustomButton
-                        onClick={() => navigate('/report')}
-                        endIcon={<ArrowForwardIosOutlined />}
-                        sx={{
-                            bgcolor: colors.blueAccent[50],
-                            color: colors.blueAccent[700],
-                            "&:hover": {
-                                bgcolor: colors.blueAccent[100],
-                                color: colors.blueAccent[800],
-                            },
-                            boxShadow: "none",
-                            borderRadius: "30px",
-                            fontWeight: 600,
-                            fontSize: "1rem",
-                            textTransform: "none",
-                            width: "60%",
-                            margin: "16px 0",
-                        }}
+
+                    <Box
+                        display="flex"
+                        flexDirection="column"
+                        alignItems="center"
+                        gap={1}
+                        width="100%"
                     >
-                        View Report
-                    </CustomButton>
-                    <Box>
-                        <a
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                handleLogout();
+                        <CustomButton
+                            onClick={() => navigate('/report')}
+                            endIcon={<ArrowForwardIosOutlined />}
+                            sx={{
+                                bgcolor: colors.blueAccent[50],
+                                color: colors.blueAccent[700],
+                                "&:hover": {
+                                    bgcolor: colors.blueAccent[100],
+                                    color: colors.blueAccent[800],
+                                },
+                                padding: "10px 32px",
+                                boxShadow: "none",
+                                border: "none",
+                                borderRadius: 4,
+                                fontWeight: 600,
+                                fontSize: 16,
+                                cursor: "pointer",
+                                width: "240px",
+                                maxWidth: "100%",
                             }}
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                width: "100%",
-                                background: colors.blueAccent[700],
+                        >
+                            View Report
+                        </CustomButton>
+
+                        <CustomButton
+                            onClick={handleLogout}
+                            startIcon={<LogoutOutlined />}
+                            disabled={loading}
+                            sx={{
+                                bgcolor: colors.blueAccent[700],
                                 color: "#fcfcfc",
                                 fontSize: isMdDevices ? "14px" : "10px",
                                 fontWeight: "bold",
-                                padding: "10px 20px",
-                                marginTop: "18px",
-                                borderRadius: "30px",
+                                padding: "10px 32px",
+                                borderRadius: 4,
                                 textDecoration: "none",
                                 transition: ".3s ease",
                                 opacity: loading ? 0.7 : 1,
                                 pointerEvents: loading ? "none" : "auto",
                                 cursor: loading ? "not-allowed" : "pointer",
-                            }}
-                            onMouseOver={e => {
-                                if (!loading) {
-                                    e.currentTarget.style.background = colors.blueAccent[800];
-                                }
-                            }}
-                            onMouseOut={e => {
-                                if (!loading) {
-                                    e.currentTarget.style.background = colors.blueAccent[700];
-                                }
+                                width: "240px", // Same width as above
+                                maxWidth: "100%",
+                                "&:hover": {
+                                    bgcolor: colors.blueAccent[800],
+                                },
                             }}
                         >
-                            <LogoutOutlined style={{ marginRight: 8 }} />
                             {loading ? "Loading..." : "Log Out"}
-                        </a>
+                        </CustomButton>
                     </Box>
+
+
                 </Box>
             </Box>
         </Box>

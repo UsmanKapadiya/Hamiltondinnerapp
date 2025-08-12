@@ -43,7 +43,7 @@ const Login = () => {
       let response = await AuthServices.login({ roomNo: formData?.roomNo, password: formData?.password });
 
       if (response.ResponseCode === "1") {
-        const { authentication_token, role, user_id, show_dining, show_incident, guideline, guideline_cn, room_id, rooms, form_types, user_list} = response;
+        const { authentication_token, role, user_id, show_dining, show_incident, guideline, guideline_cn, room_id, rooms, form_types, user_list } = response;
         let userData = {
           role,
           user_id,
@@ -172,17 +172,21 @@ const Login = () => {
               disabled={loading}
               startIcon={<LoginOutlined />}
               sx={{
-                width: "100%",
-                bgcolor: colors.blueAccent[700],
-                color: "#fcfcfc",
-                fontSize: isMdDevices ? "14px" : "10px",
-                fontWeight: "bold",
-                p: "10px 20px",
-                mt: "18px",
-                transition: ".3s ease",
-                ":hover": {
-                  bgcolor: colors.blueAccent[800],
+                bgcolor: colors.blueAccent[50],
+                color: colors.blueAccent[700],
+                "&:hover": {
+                  bgcolor: colors.blueAccent[100],
+                  color: colors.blueAccent[800],
                 },
+                padding: "10px 32px",
+                boxShadow: "none",
+                borderRadius: "30px",
+                border: "none",
+                borderRadius: 4,
+                fontWeight: 600,
+                fontSize: 16,
+                cursor: "pointer",
+                width: 'auto'
               }}
             >
               {loading ? "Loading..." : "Login"}

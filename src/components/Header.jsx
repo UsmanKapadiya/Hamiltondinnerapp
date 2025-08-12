@@ -91,11 +91,11 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
       });
     }
   };
-  const handleGuestOnClick = () =>{
+  const handleGuestOnClick = () => {
     console.log("Working handleGuestOnClick")
     handleGuestClick()
   }
-  
+
   return (
     <>
       <Modal open={openModal} onClose={handleCloseModal}>
@@ -138,6 +138,23 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
                 onClick={handleCloseModal}
                 color="secondary"
                 variant="outlined"
+                sx={{
+                  bgcolor: colors.blueAccent[50],
+                  color: colors.blueAccent[700],
+                  "&:hover": {
+                    bgcolor: colors.blueAccent[100],
+                    color: colors.blueAccent[800],
+                  },
+                  padding: "10px 32px",
+                  boxShadow: "none",
+                  border: "none",
+                  borderRadius: 4,
+                  fontWeight: 600,
+                  fontSize: 16,
+                  cursor: "pointer",
+                  // width: "auto",
+                  maxWidth: "100%",
+                }}
               >
                 Cancel
               </CustomButton>
@@ -145,16 +162,16 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
                 onClick={handleModalSubmit}
                 variant="contained"
                 sx={{
+                  padding: "10px 32px",
                   bgcolor: colors.blueAccent[700],
                   color: "#fcfcfc",
-                  fontSize: isMdDevices ? "14px" : "10px",
-                  fontWeight: "bold",
-                  p: "10px 20px",
-                  mt: "18px",
-                  transition: ".3s ease",
-                  ":hover": {
-                    bgcolor: colors.blueAccent[800],
-                  },
+                  border: "none",
+                  borderRadius: 4,
+                  fontWeight: 600,
+                  fontSize: 16,
+                  cursor: "pointer",
+                  maxWidth: "100%",
+
                 }}
               >
                 Submit
@@ -204,8 +221,8 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
               </IconButton>
             </Box>
           )}
-          {isGuest &&(
-              <Box display="flex" gap="5px" ml="7px">
+          {isGuest && (
+            <Box display="flex" gap="5px" ml="7px">
               <IconButton onClick={handleGuestOnClick} sx={{ color: colors.gray[100] }}>
                 <Icon
                   sx={{

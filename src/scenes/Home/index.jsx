@@ -20,7 +20,7 @@ const Home = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-       
+
         toast.success("Logged out!");
         setLoading(true);
         setTimeout(() => {
@@ -28,7 +28,7 @@ const Home = () => {
             localStorage.removeItem("authToken");
             localStorage.removeItem("userData");
             navigate("/");
-            window.location.reload()    
+            window.location.reload()
         }, 1000);
     };
 
@@ -127,7 +127,7 @@ const Home = () => {
                                 </Typography>
                             </Box>
                         )}
-                        {data?.show_incident == 1 && data?.role !== "kitchen"  && (
+                        {data?.show_incident == 1 && data?.role !== "kitchen" && (
                             <Box display="flex" flexDirection="column" alignItems="center">
                                 <IconButton
                                     onClick={() => { navigate("/staticForms") }}
@@ -145,8 +145,8 @@ const Home = () => {
                                     Incident
                                 </Typography>
                             </Box>
-                        )} 
-                        {data?.role === "kitchen" &&  (
+                        )}
+                        {data?.role === "kitchen" && (
                             <Box display="flex" flexDirection="column" alignItems="center">
                                 <IconButton
                                     onClick={() => { navigate("/order", { state: { Kitchen_summery: true } }) }}
@@ -164,25 +164,29 @@ const Home = () => {
                                     Summery
                                 </Typography>
                             </Box>
-                        )} 
+                        )}
                     </Box>
                     <Box>
                         <CustomButton
                             type="submit"
                             disabled={loading}
-                            startIcon={<LogoutOutlined />}
+                            startIcon={<LogoutOutlined />}                        
                             sx={{
-                                width: "100%",
-                                bgcolor: colors.blueAccent[700],
-                                color: "#fcfcfc",
-                                fontSize: isMdDevices ? "14px" : "10px",
-                                fontWeight: "bold",
-                                p: "10px 20px",
-                                mt: "18px",
-                                transition: ".3s ease",
-                                ":hover": {
-                                    bgcolor: colors.blueAccent[800],
+                                bgcolor: colors.blueAccent[50],
+                                color: colors.blueAccent[700],
+                                "&:hover": {
+                                    bgcolor: colors.blueAccent[100],
+                                    color: colors.blueAccent[800],
                                 },
+                                padding: "10px 32px",
+                                boxShadow: "none",
+                                borderRadius: "30px",
+                                border: "none",
+                                borderRadius: 4,
+                                fontWeight: 600,
+                                fontSize: 16,
+                                cursor: "pointer",
+                                width: 'auto'
                             }}
                         >
                             {loading ? "Loading..." : "Log Out"}
