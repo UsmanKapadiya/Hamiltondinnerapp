@@ -25,4 +25,8 @@ export default {
     "guest": "来宾",
     "foodTexture": "⻝物质地",
     "splInst": "特别说明",
+    "breakFasrMenuWarn": "早餐菜单不可用",
+    "lunchMenuWarn": "午餐菜单不可用",
+    "dinnerMenuWarn":"晚餐菜单不可用",
+    "submit": "提交",
 }

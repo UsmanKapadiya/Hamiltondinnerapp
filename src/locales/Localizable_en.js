@@ -25,4 +25,8 @@ export default {
     "guest": "Guest",
     "foodTexture": "Food Texture",
     "splInst": "Special Instructions",
+    "breakFasrMenuWarn": "BreakFast Menu is not available",
+    "lunchMenuWarn": "Lunch Menu is not available",
+    "dinnerMenuWarn":"Dinner Menu is not available",
+    "submit": "submit",
 }
