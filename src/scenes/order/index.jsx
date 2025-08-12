@@ -15,6 +15,7 @@ import CustomButton from "../../components/CustomButton";
 import { ArrowForwardIosOutlined, EditOutlined, EmojiPeopleOutlined } from "@mui/icons-material";
 import en from "../../locales/Localizable_en"
 import cn from "../../locales/Localizable_cn"
+import 'dayjs/locale/zh-cn';
 
 let breakFastEndTime = 10;
 let lunchEndTime = 15;
@@ -581,11 +582,12 @@ const Order = () => {
             >
                 {/* Calendar opens automatically on mount */}
                 <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <LocalizationProvider 
+                        dateAdapter={AdapterDayjs}
+                        adapterLocale={userData?.langCode === "cn" ? "zh-cn" : "en"}>
                         <DatePicker
                             label="Date"
                             value={date}
-                            // onChange={(newValue) => setDate(newValue)}
                             onChange={handleDateChange}
                             renderInput={(params) => (
                                 <TextField
