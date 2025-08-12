@@ -6,11 +6,13 @@ import {
   AddOutlined,
   DeleteOutline,
 } from "@mui/icons-material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import OrderServices from "../services/orderServices";
 import CustomButton from "./CustomButton";
+import en from "../locales/Localizable_en";
+import cn from "../locales/Localizable_cn";
 
 const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, deleteButton, profileScreen, editRoomsDetails, editIcon, handleRoomUpdate, isGuest, isGuestIcon, handleGuestClick, isFormDropdown }) => {
   const theme = useTheme();
@@ -21,11 +23,25 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
   const [openModal, setOpenModal] = useState(false);
   const [foodTexture, setFoodTexture] = useState("");
   const [specialInstruction, setSpecialInstruction] = useState("");
-  const [selectedUser, setSelectedUser] = useState("")
+  const [selectedUser, setSelectedUser] = useState("");
+  const [langObj, setLangObj] = useState(en);
   const [userData] = useState(() => {
     const userDatas = localStorage.getItem("userData");
     return userDatas ? JSON.parse(userDatas) : null;
   });
+  useEffect(() => {
+    const userData = localStorage.getItem("userData");
+    if (userData) {
+      const { language } = JSON.parse(userData);
+      if (language === 1) {
+        setLangObj(cn);
+      } else {
+        setLangObj(en);
+      }
+    } else {
+      setLangObj(en);
+    }
+  }, []);
 
   const handleUserMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -114,11 +130,11 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
           }}
         >
           <Typography variant="h6" mb={2}>
-            Edit Room Details
+            {langObj.editRoomDetails}
           </Typography>
           <Box display="flex" flexDirection="column" gap={2}>
             <TextField
-              label="Food Texture"
+              label={langObj.foodTexture}
               multiline
               minRows={2}
               value={foodTexture}
@@ -126,7 +142,7 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
               fullWidth
             />
             <TextField
-              label="Special Instruction"
+              label={langObj.splInst}
               multiline
               minRows={2}
               value={specialInstruction}
@@ -156,7 +172,7 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
                   maxWidth: "100%",
                 }}
               >
-                Cancel
+                {langObj.Cancel}
               </CustomButton>
               <CustomButton
                 onClick={handleModalSubmit}
@@ -174,7 +190,7 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
 
                 }}
               >
-                Submit
+                {langObj.submit}
               </CustomButton>
             </Box>
           </Box>

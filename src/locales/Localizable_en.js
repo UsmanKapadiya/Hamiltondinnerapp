@@ -29,4 +29,6 @@ export default {
     "lunchMenuWarn": "Lunch Menu is not available",
     "dinnerMenuWarn":"Dinner Menu is not available",
     "submit": "submit",
+    "Cancel":"Cancel",
+    "editRoomDetails":"Edit Room Details"
 }

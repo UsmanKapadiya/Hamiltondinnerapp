@@ -27,6 +27,9 @@ export default {
     "splInst": "特别说明",
     "breakFasrMenuWarn": "早餐菜单不可用",
     "lunchMenuWarn": "午餐菜单不可用",
-    "dinnerMenuWarn":"晚餐菜单不可用",
+    "dinnerMenuWarn": "晚餐菜单不可用",
     "submit": "提交",
+    "Cancel":"取消",
+    "editRoomDetails": "编辑房间详细信息",
+
 }
