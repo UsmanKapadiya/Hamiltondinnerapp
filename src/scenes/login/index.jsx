@@ -43,12 +43,18 @@ const Login = () => {
       let response = await AuthServices.login({ roomNo: formData?.roomNo, password: formData?.password });
 
       if (response.ResponseCode === "1") {
-        const { authentication_token, role, user_id, show_dining, show_incident, guideline, guideline_cn, room_id, rooms, form_types, user_list } = response;
+        const { authentication_token, role, user_id, show_dining, show_incident, language, guideline, guideline_cn, room_id, rooms, form_types, user_list } = response;
+        let langCode = "en";
+        if (language === 1) {
+         langCode = "cn";
+        }
         let userData = {
           role,
           user_id,
           show_dining,
           show_incident,
+          language,
+          langCode: langCode,
           guideline,
           guideline_cn,
           room_id,
