@@ -30,5 +30,6 @@ export default {
     "dinnerMenuWarn":"Dinner Menu is not available",
     "submit": "submit",
     "Cancel":"Cancel",
-    "editRoomDetails":"Edit Room Details"
+    "editRoomDetails":"Edit Room Details",
+    "maximumGuestWarn": "Maximum 10 guests allowed."
 }

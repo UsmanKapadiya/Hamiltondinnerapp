@@ -31,5 +31,5 @@ export default {
     "submit": "提交",
     "Cancel":"取消",
     "editRoomDetails": "编辑房间详细信息",
-
+    "maximumGuestWarn": "最多可容纳 10 位客人。"
 }

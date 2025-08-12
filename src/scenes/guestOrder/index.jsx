@@ -14,6 +14,8 @@ import { toast, ToastContainer } from "react-toastify";
 import { useLocation } from "react-router-dom";
 import CustomButton from "../../components/CustomButton";
 import { EditOutlined, EmojiPeopleOutlined } from "@mui/icons-material";
+import en from "../../locales/Localizable_en";
+import cn from "../../locales/Localizable_cn";
 
 let breakFastEndTime = 10;
 let lunchEndTime = 15;
@@ -54,10 +56,26 @@ const GuestOrder = () => {
     });
     const [guestCount, setGuestCount] = useState(1);
     const [alertOpen, setAlertOpen] = useState(false);
+    const [langObj, setLangObj] = useState(en);
+
+    useEffect(() => {
+        const userData = localStorage.getItem("userData");
+        if (userData) {
+            const { language } = JSON.parse(userData);
+            if (language === 1) {
+                setLangObj(cn);
+            } else {
+                setLangObj(en);
+            }
+        } else {
+            setLangObj(en);
+        }
+    }, []);
+
     const handleIncrement = () => {
         setGuestCount(prev => {
             if (prev >= 10) {
-                toast.warn("Maximum 10 guests allowed.");
+                toast.warn(langObj.maximumGuestWarn);
                 return prev;
             }
             return prev + 1;
@@ -158,8 +176,10 @@ const GuestOrder = () => {
         const breakfastCat = mealData.breakfast?.[0];
         const breakfast = breakfastCat?.items || [];
         const breakFastDailySpecialCatName = breakfastCat?.cat_name || "";
+        const breakFastDailySpecialCatName_cn = breakfastCat?.chinese_name || "";
         const breakFastAlternativeCat = breakfast.find(item => item.type === "sub_cat");
         const breakFastAlternativeCatName = breakFastAlternativeCat?.item_name || "";
+        const breakFastAlternativeCatName_cn = breakFastAlternativeCat?.chinese_name || "";
         const breakFastDailySpecial = breakfast
             .filter(item => item.type === "item")
             .map(item => ({
@@ -186,9 +206,12 @@ const GuestOrder = () => {
         const is_brk_tray_service = mealData?.is_brk_tray_service
 
         const lunchSoupCatName = mealData.lunch?.[0]?.cat_name || "";
+        const lunchSoupCatName_cn = mealData.lunch?.[0]?.chinese_name || "";
         const lunchEntreeCatName = mealData.lunch?.[1]?.cat_name || "";
+        const lunchEntreeCatName_cn = mealData.lunch?.[1]?.chinese_name || "";
         const lunchAlternativeCat = mealData.lunch?.[1]?.items?.find(item => item.type === "sub_cat");
         const lunchAlternativeCatName = lunchAlternativeCat?.item_name || "";
+        const lunchAlternativeCatName_cn = lunchAlternativeCat?.chinese_name || "";
         const lunchSoup = mealData.lunch?.[0]?.items?.map(item => ({
             id: item.item_id,
             name: item.item_name,
@@ -223,10 +246,14 @@ const GuestOrder = () => {
         const is_lunch_tray_service = mealData?.is_lunch_tray_service
 
         // Dinner
+        const dinnerSoupCatName = mealData.dinner?.[0]?.cat_name || "";
+        const dinnerSoupCatName_cn = mealData.dinner?.[0]?.chinese_name || "";
         const dinnerCat = mealData.dinner?.[0];
         const dinnerEntreeCatName = dinnerCat?.cat_name || "";
+        const dinnerEntreeCatName_cn = dinnerCat?.chinese_name || "";
         const dinnerAlternativeCat = dinnerCat?.items?.find(item => item.type === "sub_cat");
         const dinnerAlternativeCatName = dinnerAlternativeCat?.item_name || "";
+        const dinnerAlternativeCatName_cn = dinnerAlternativeCat?.chinese_name || "";
         const dinnerSoup = []; // If you have soup in dinner, extract it here
         const dinnerEntree = dinnerCat?.items
             ?.filter(item => item.type === "item")
@@ -255,19 +282,28 @@ const GuestOrder = () => {
 
         return {
             breakFastDailySpecialCatName,
+            breakFastDailySpecialCatName_cn,
             breakFastAlternativeCatName,
+            breakFastAlternativeCatName_cn,
             breakFastDailySpecial,
             breakFastAlternative,
             lunchSoup,
             lunchSoupCatName,
+            lunchSoupCatName_cn,
             lunchEntree,
             lunchEntreeCatName,
+            lunchEntreeCatName_cn,
             lunchAlternative,
             lunchAlternativeCatName,
+            lunchAlternativeCatName_cn,
+            dinnerSoupCatName,
+            dinnerSoupCatName_cn,
             dinnerEntree,
             dinnerEntreeCatName,
+            dinnerEntreeCatName_cn,
             dinnerAlternative,
             dinnerAlternativeCatName,
+            dinnerAlternativeCatName_cn,
             dinnerSoup,
             is_brk_tray_service,
             is_lunch_tray_service,
@@ -480,8 +516,10 @@ const GuestOrder = () => {
                     {/* Calendar opens automatically on mount */}
 
                     <Box sx={{ textAlign: "center" }}>
-                        <Typography variant="h6" sx={{ mt: 3, mb: 2, fontWeight: 600 }}>
-                            {dayjs(selectedDate).format("MMMM D, YYYY")}
+                        <Typography>
+                            {userData?.language === 1
+                                ? `${dayjs(selectedDate).locale("zh-cn").format("MMMM")} ${dayjs(selectedDate).format("D, YYYY")}`
+                                : dayjs(selectedDate).format("MMMM D, YYYY")}
                         </Typography>
                     </Box>
                     <Box
@@ -498,7 +536,7 @@ const GuestOrder = () => {
                                     fontWeight: 600,
                                 }}
                             >
-                                No of Guest
+                                {langObj.noOfGuests}
                             </Typography>
                             <Box display="flex" alignItems="center">
                                 <Button variant="outlined" sx={{ minWidth: 36, mx: 1 }} onClick={handleDecrement}>-</Button>
@@ -519,9 +557,9 @@ const GuestOrder = () => {
                                 textColor="primary"
                                 sx={{ mb: 2 }}
                             >
-                                <Tab label="Breakfast" />
-                                <Tab label="Lunch" />
-                                <Tab label="Dinner" />
+                                <Tab label={langObj.brk} />
+                                <Tab label={langObj.lunch} />
+                                <Tab label={langObj.dnr} />
                             </Tabs>
                             {tabIndex === 0 && (
                                 <Box>
@@ -542,12 +580,17 @@ const GuestOrder = () => {
                                                     textAlign: "center"
                                                 }}
                                             >
-                                                {data.breakFastDailySpecialCatName}
+                                                {userData?.langCode === "cn" && data.breakFastDailySpecialCatName_cn && data.breakFastDailySpecialCatName_cn.trim() !== ""
+                                                    ? data.breakFastDailySpecialCatName_cn
+                                                    : data.breakFastDailySpecialCatName}
                                             </Typography>
                                             {data.breakFastDailySpecial.map((item, idx) => (
                                                 <Box key={item.id} mb={1}>
                                                     <Box display="flex" alignItems="center" justifyContent="space-between">
-                                                        <Typography>{item.name}</Typography>
+                                                        <Typography>{userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
+                                                            ? item.chinese_name
+                                                            : item.name}
+                                                        </Typography>
                                                         <Box display="flex" alignItems="center">
                                                             <button
                                                                 onClick={() =>
@@ -702,12 +745,17 @@ const GuestOrder = () => {
                                     {data.breakFastAlternative && data.breakFastAlternative.length > 0 && (
                                         <>
                                             <Typography variant="h6" sx={{ mt: 3, mb: 2, fontWeight: 600 }}>
-                                                {data.breakFastAlternativeCatName}
+                                                {userData?.langCode === "cn" && data.breakFastAlternativeCatName_cn && data.breakFastAlternativeCatName_cn.trim() !== ""
+                                                    ? data.breakFastAlternativeCatName_cn
+                                                    : data.breakFastAlternativeCatName}
                                             </Typography>
                                             {data.breakFastAlternative.map((item) => (
                                                 <Box key={item.id} mb={1}>
                                                     <Box display="flex" alignItems="center" justifyContent="space-between">
-                                                        <Typography>{item.name}</Typography>
+                                                        <Typography>{userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
+                                                            ? item.chinese_name
+                                                            : item.name}
+                                                        </Typography>
                                                         <Box display="flex" alignItems="center">
                                                             <button
                                                                 onClick={() =>
@@ -861,10 +909,6 @@ const GuestOrder = () => {
                                         (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0))
                                     ) && (
                                             <Box mt={3}>
-                                                {/* <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                                Additional Services
-                                            </Typography> */}
-
                                                 <label>
                                                     <input
                                                         type="checkbox"
@@ -876,7 +920,7 @@ const GuestOrder = () => {
                                                             }));
                                                         }}
                                                     />
-                                                    Tray Service
+                                                    {langObj.trayService}
                                                 </label>
                                             </Box>
                                         )}
@@ -885,7 +929,9 @@ const GuestOrder = () => {
                                         <>
                                             <hr />
                                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                                {userData?.guideline}
+                                                {userData?.langCode === "cn" && userData?.guideline_cn && userData?.guideline_cn.trim() !== ""
+                                                    ? userData?.guideline_cn
+                                                    : userData?.guideline}
                                             </Typography>
                                         </>
                                     )}
@@ -893,7 +939,7 @@ const GuestOrder = () => {
                                         data.breakFastDailySpecial.length === 0 &&
                                         data.breakFastAlternative.length === 0 && (
                                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                                BreakFast Menu is not available
+                                                {langObj.breakFasrMenuWarn}
                                             </Typography>
                                         )}
                                     {/* Add Submit Button for BreakFast DataSubmit */}
@@ -920,7 +966,7 @@ const GuestOrder = () => {
                                                     }}
                                                     disabled={isAfter10AM || isPast}
                                                 >
-                                                    Submit Order
+                                                    {langObj.submit}
                                                 </CustomButton>
                                             </Box>
                                         )}
@@ -944,12 +990,17 @@ const GuestOrder = () => {
                                                     display: "block",
                                                     textAlign: "center"
                                                 }}>
-                                                {data.lunchSoupCatName}
+                                                {userData?.langCode === "cn" && data.lunchSoupCatName_cn && data.lunchSoupCatName_cn.trim() !== ""
+                                                    ? data.lunchSoupCatName_cn
+                                                    : data.lunchSoupCatName}
                                             </Typography>
                                             {data.lunchSoup.map((item) => (
                                                 <Box key={item.id} mb={1}>
                                                     <Box display="flex" alignItems="center" justifyContent="space-between">
-                                                        <Typography>{item.name}</Typography>
+                                                        <Typography>{userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
+                                                            ? item.chinese_name
+                                                            : item.name}
+                                                        </Typography>
                                                         <Box display="flex" alignItems="center">
                                                             <button
                                                                 onClick={() =>
@@ -1087,12 +1138,17 @@ const GuestOrder = () => {
                                                     display: "block",
                                                     textAlign: "center"
                                                 }}>
-                                                {data.lunchEntreeCatName}
+                                                {userData?.langCode === "cn" && data.lunchEntreeCatName_cn && data.lunchEntreeCatName_cn.trim() !== ""
+                                                    ? data.lunchEntreeCatName_cn
+                                                    : data.lunchEntreeCatName}
                                             </Typography>
                                             {data.lunchEntree.map((item) => (
                                                 <Box key={item.id} mb={1}>
                                                     <Box display="flex" alignItems="center" justifyContent="space-between">
-                                                        <Typography>{item.name}</Typography>
+                                                        <Typography>{userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
+                                                            ? item.chinese_name
+                                                            : item.name}
+                                                        </Typography>
                                                         <Box display="flex" alignItems="center">
                                                             <button
                                                                 onClick={() =>
@@ -1264,12 +1320,17 @@ const GuestOrder = () => {
                                     {data.lunchAlternative && data.lunchAlternative.length > 0 && (
                                         <>
                                             <Typography variant="h6" sx={{ mt: 3, mb: 2, fontWeight: 600 }}>
-                                                {data.lunchAlternativeCatName}
+                                                {userData?.langCode === "cn" && data.lunchAlternativeCatName_cn && data.lunchAlternativeCatName_cn.trim() !== ""
+                                                    ? data.lunchAlternativeCatName_cn
+                                                    : data.lunchAlternativeCatName}
                                             </Typography>
                                             {data.lunchAlternative.map((item) => (
                                                 <Box key={item.id} mb={1}>
                                                     <Box display="flex" alignItems="center" justifyContent="space-between">
-                                                        <Typography>{item.name}</Typography>
+                                                        <Typography>{userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
+                                                            ? item.chinese_name
+                                                            : item.name}
+                                                        </Typography>
                                                         <Box display="flex" alignItems="center">
                                                             <button
                                                                 onClick={() =>
@@ -1458,7 +1519,7 @@ const GuestOrder = () => {
                                                             }));
                                                         }}
                                                     />
-                                                    Tray Service
+                                                    {langObj.trayService}
                                                 </label>
                                             </Box>
                                         )}
@@ -1467,7 +1528,9 @@ const GuestOrder = () => {
                                         <>
                                             <hr />
                                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                                {userData?.guideline}
+                                                {userData?.langCode === "cn" && userData?.guideline_cn && userData?.guideline_cn.trim() !== ""
+                                                    ? userData?.guideline_cn
+                                                    : userData?.guideline}
                                             </Typography>
                                         </>
                                     )}
@@ -1476,7 +1539,7 @@ const GuestOrder = () => {
                                         data.lunchEntree.length === 0 &&
                                         data.lunchAlternative.length === 0 && (
                                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                                Lunch Menu is not available
+                                                {langObj.lunchMenuWarn}
                                             </Typography>
                                         )}
                                     {/* Add lunch submit button,  if breakfast not submited then here breakfast and lunch submited */}
@@ -1503,7 +1566,7 @@ const GuestOrder = () => {
                                                         submitData(data, date)
                                                     }}
                                                 >
-                                                    Submit Order
+                                                    {langObj.submit}
                                                 </CustomButton>
                                             </Box>
                                         )}
@@ -1526,11 +1589,17 @@ const GuestOrder = () => {
                                                     display: "block",
                                                     textAlign: "center"
                                                 }}>
-                                                {data.dinnerSoupCatName || "Soup"}
+                                                {/* {data.dinnerSoupCatName || "Soup"} */}
+                                                {userData?.langCode === "cn" && data.dinnerSoupCatName_cn && data.dinnerSoupCatName_cn.trim() !== ""
+                                                    ? data.dinnerSoupCatName_cn
+                                                    : data.dinnerSoupCatName || "Soup"}
                                             </Typography>
                                             {data.dinnerSoup.map((item) => (
                                                 <Box key={item.id} display="flex" alignItems="center" justifyContent="space-between" mb={1}>
-                                                    <Typography>{item.name}</Typography>
+                                                    <Typography>{userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
+                                                        ? item.chinese_name
+                                                        : item.name}
+                                                    </Typography>
                                                     <Box display="flex" alignItems="center">
                                                         <button
                                                             onClick={() =>
@@ -1587,12 +1656,17 @@ const GuestOrder = () => {
                                                 display: "block",
                                                 textAlign: "center"
                                             }}>
-                                                {data.dinnerEntreeCatName}
+                                                {userData?.langCode === "cn" && data.dinnerEntreeCatName_cn && data.dinnerEntreeCatName_cn.trim() !== ""
+                                                    ? data.dinnerEntreeCatName_cn
+                                                    : data.dinnerEntreeCatName}
                                             </Typography>
                                             {data.dinnerEntree.map((item) => (
                                                 <Box key={item.id} mb={1}>
                                                     <Box display="flex" alignItems="center" justifyContent="space-between">
-                                                        <Typography>{item.name}</Typography>
+                                                        <Typography>{userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
+                                                            ? item.chinese_name
+                                                            : item.name}
+                                                        </Typography>
                                                         <Box display="flex" alignItems="center">
                                                             <button
                                                                 onClick={() =>
@@ -1758,12 +1832,17 @@ const GuestOrder = () => {
                                     {data.dinnerAlternative && data.dinnerAlternative.length > 0 && (
                                         <>
                                             <Typography variant="h6" sx={{ mt: 3, mb: 2, fontWeight: 600 }}>
-                                                {data.dinnerAlternativeCatName}
+                                                {userData?.langCode === "cn" && data.dinnerAlternativeCatName_cn && data.dinnerAlternativeCatName_cn.trim() !== ""
+                                                    ? data.dinnerAlternativeCatName_cn
+                                                    : data.dinnerAlternativeCatName}
                                             </Typography>
                                             {data.dinnerAlternative.map((item) => (
                                                 <Box key={item.id} mb={1}>
                                                     <Box display="flex" alignItems="center" justifyContent="space-between">
-                                                        <Typography>{item.name}</Typography>
+                                                        <Typography>{userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
+                                                            ? item.chinese_name
+                                                            : item.name}
+                                                        </Typography>
                                                         <Box display="flex" alignItems="center">
                                                             <button
                                                                 onClick={() =>
@@ -1945,7 +2024,7 @@ const GuestOrder = () => {
                                                             }));
                                                         }}
                                                     />
-                                                    Tray Service
+                                                    {langObj.trayService}
                                                 </label>
                                             </Box>
                                         )}
@@ -1954,7 +2033,7 @@ const GuestOrder = () => {
                                         data.dinnerEntree.length === 0 &&
                                         data.dinnerAlternative.length === 0 && (
                                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                                Dinner Menu is not available
+                                                {langObj.dinnerMenuWarn}
                                             </Typography>
                                         )}
                                     {/* Add Dinner Submit, if lunch and breakfast not submited then here all data submited like breakfast, lunch and dinner */}
@@ -1981,7 +2060,7 @@ const GuestOrder = () => {
                                                         submitData(data, date)
                                                     }}
                                                 >
-                                                    Submit Order
+                                                    {langObj.submit}
                                                 </CustomButton>
                                             </Box>
                                         )}
