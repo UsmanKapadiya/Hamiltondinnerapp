@@ -190,7 +190,7 @@ const Order = () => {
         const lunchAlternativeCat = lunchCat?.items?.find(item => item.type === "sub_cat");
         const lunchAlternativeCatName = lunchAlternativeCat?.item_name || "";
         const lunchAlternativeCatName_cn = lunchAlternativeCat?.chinese_name || "";
-        const lunchSoup = [] 
+        const lunchSoup = []
         // Before 0 index on lunch Soup Category show, now lunch Soup Category is not get
         // = mealData.lunch?.[0]?.items?.map(item => ({
         //     id: item.item_id,
@@ -1128,6 +1128,19 @@ const Order = () => {
                                                 />
                                                 {langObj.trayService}
                                             </label>
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                // checked={data.is_dinner_tray_service === 1}
+                                                // onChange={e => {
+                                                //     setData(prev => ({
+                                                //         ...prev,
+                                                //         is_dinner_tray_service: e.target.checked ? 1 : 0
+                                                //     }));
+                                                // }}
+                                                />
+                                                {langObj.Takeout}
+                                            </label>
                                         </Box>
                                     )}
                                 {showBreakFastGuideline && (
@@ -1390,7 +1403,7 @@ const Order = () => {
                                             }}>
                                             {userData?.langCode === "cn" && data.lunchEntreeCatName_cn && data.lunchEntreeCatName_cn.trim() !== ""
                                                 ? data.lunchEntreeCatName_cn
-                                                : data.lunchEntreeCatName}
+                                                : data.lunchEntreeCatName} ({langObj.servedWithSoup})
                                         </Typography>
                                         {data.lunchEntree.map((item) => (
                                             <Box key={item.id} mb={1}>
@@ -1834,6 +1847,19 @@ const Order = () => {
                                                 />
                                                 {langObj.trayService}
                                             </label>
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                // checked={data.is_dinner_tray_service === 1}
+                                                // onChange={e => {
+                                                //     setData(prev => ({
+                                                //         ...prev,
+                                                //         is_dinner_tray_service: e.target.checked ? 1 : 0
+                                                //     }));
+                                                // }}
+                                                />
+                                                {langObj.Takeout}
+                                            </label>
                                         </Box>
                                     )}
                                 {showLunchGuideline && (
@@ -2017,7 +2043,7 @@ const Order = () => {
                                         }}>
                                             {userData?.langCode === "cn" && data.dinnerEntreeCatName_cn && data.dinnerEntreeCatName_cn.trim() !== ""
                                                 ? data.dinnerEntreeCatName_cn
-                                                : data.dinnerEntreeCatName}
+                                                : data.dinnerEntreeCatName} ({langObj.servedWithDesset})
                                         </Typography>
                                         {data.dinnerEntree.map((item) => (
                                             <Box key={item.id} mb={1}>
@@ -2214,7 +2240,7 @@ const Order = () => {
                                         {data.dinnerAlternative.map((item) => (
                                             <Box key={item.id} mb={1}>
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
-                                                       <Box display="flex" alignItems="center">
+                                                    <Box display="flex" alignItems="center">
                                                         {item.image && (
                                                             <img
                                                                 src={item.image}
@@ -2445,6 +2471,19 @@ const Order = () => {
                                                     }}
                                                 />
                                                 {langObj.trayService}
+                                            </label>
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                // checked={data.is_dinner_tray_service === 1}
+                                                // onChange={e => {
+                                                //     setData(prev => ({
+                                                //         ...prev,
+                                                //         is_dinner_tray_service: e.target.checked ? 1 : 0
+                                                //     }));
+                                                // }}
+                                                />
+                                                {langObj.Takeout}
                                             </label>
                                         </Box>
                                     )}

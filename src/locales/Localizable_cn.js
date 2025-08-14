@@ -21,6 +21,7 @@ export default {
     "December": "⼗⼆⽉",
     "trayService": "托盘服务",
     "escortService": "陪同服务",
+    "Takeout": "取出",
     "noOfGuests": "宾客⼈数",
     "guest": "来宾",
     "foodTexture": "⻝物质地",
