@@ -21,7 +21,7 @@ export default {
     "December": "December",
     "trayService": "Tray Service",
     "escortService": "Escort Service",
-    "Takeout": "取出",
+    "Takeout": "Takeout",
     "noOfGuests": "No of Guests",
     "guest": "Guest",
     "foodTexture": "Food Texture",
