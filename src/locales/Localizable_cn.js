@@ -29,7 +29,9 @@ export default {
     "lunchMenuWarn": "午餐菜单不可用",
     "dinnerMenuWarn": "晚餐菜单不可用",
     "submit": "提交",
-    "Cancel":"取消",
+    "Cancel": "取消",
     "editRoomDetails": "编辑房间详细信息",
-    "maximumGuestWarn": "最多可容纳 10 位客人。"
+    "maximumGuestWarn": "最多可容纳 10 位客人。",
+    "servedWithSoup": "配汤",
+    "servedWithDesset": "配甜点"
 }

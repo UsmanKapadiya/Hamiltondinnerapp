@@ -1179,7 +1179,7 @@ const GuestOrder = () => {
                                                 }}>
                                                 {userData?.langCode === "cn" && data.lunchEntreeCatName_cn && data.lunchEntreeCatName_cn.trim() !== ""
                                                     ? data.lunchEntreeCatName_cn
-                                                    : data.lunchEntreeCatName}
+                                                    : data.lunchEntreeCatName} ({langObj.servedWithSoup})
                                             </Typography>
                                             {data.lunchEntree.map((item) => (
                                                 <Box key={item.id} mb={1}>
@@ -1727,7 +1727,7 @@ const GuestOrder = () => {
                                             }}>
                                                 {userData?.langCode === "cn" && data.dinnerEntreeCatName_cn && data.dinnerEntreeCatName_cn.trim() !== ""
                                                     ? data.dinnerEntreeCatName_cn
-                                                    : data.dinnerEntreeCatName}
+                                                    : data.dinnerEntreeCatName} ({langObj.servedWithDesset})
                                             </Typography>
                                             {data.dinnerEntree.map((item) => (
                                                 <Box key={item.id} mb={1}>
