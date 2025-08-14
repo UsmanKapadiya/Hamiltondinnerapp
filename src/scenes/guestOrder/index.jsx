@@ -208,22 +208,25 @@ const GuestOrder = () => {
 
         const lunchSoupCatName = mealData.lunch?.[0]?.cat_name || "";
         const lunchSoupCatName_cn = mealData.lunch?.[0]?.chinese_name || "";
-        const lunchEntreeCatName = mealData.lunch?.[1]?.cat_name || "";
-        const lunchEntreeCatName_cn = mealData.lunch?.[1]?.chinese_name || "";
-        const lunchAlternativeCat = mealData.lunch?.[1]?.items?.find(item => item.type === "sub_cat");
+        const lunchCat = mealData.lunch?.[0];
+        const lunchEntreeCatName = lunchCat?.cat_name || "";
+        const lunchEntreeCatName_cn = lunchCat?.chinese_name || "";
+        const lunchAlternativeCat = lunchCat?.items?.find(item => item.type === "sub_cat");
         const lunchAlternativeCatName = lunchAlternativeCat?.item_name || "";
         const lunchAlternativeCatName_cn = lunchAlternativeCat?.chinese_name || "";
-        const lunchSoup = mealData.lunch?.[0]?.items?.map(item => ({
-            id: item.item_id,
-            name: item.item_name,
-            chinese_name: item.chinese_name,
-            qty: item.qty,
-            options: selectFirstOption(item.options),
-            preference: item.preference,
-            order_id: item?.order_id,
-            image: item?.item_image
-        })) || [];
-        const lunchEntree = mealData.lunch?.[1]?.items
+        const lunchSoup = []
+        // Before 0 index on lunch Soup Category show, now lunch Soup Category is not get
+        // mealData.lunch?.[0]?.items?.map(item => ({
+        //     id: item.item_id,
+        //     name: item.item_name,
+        //     chinese_name: item.chinese_name,
+        //     qty: item.qty,
+        //     options: selectFirstOption(item.options),
+        //     preference: item.preference,
+        //     order_id: item?.order_id,
+        //     image: item?.item_image
+        // })) || [];
+        const lunchEntree = lunchCat?.items
             ?.filter(item => item.type === "item")
             .map(item => ({
                 id: item.item_id,
@@ -235,7 +238,7 @@ const GuestOrder = () => {
                 order_id: item?.order_id,
                 image: item?.item_image
             })) || [];
-        const lunchAlternative = mealData.lunch?.[1]?.items
+        const lunchAlternative = lunchCat?.items
             ?.filter(item => item.type === "sub_cat_item")
             .map(item => ({
                 id: item.item_id,
