@@ -164,7 +164,8 @@ const Order = () => {
                 qty: item.qty,
                 options: selectFirstOption(item.options),
                 preference: item.preference,
-                order_id: item?.order_id
+                order_id: item?.order_id,
+                image: item?.item_image
             }));
         const breakFastAlternative = breakfast
             .filter(item => item.type === "sub_cat_item")
@@ -175,7 +176,8 @@ const Order = () => {
                 qty: item.qty,
                 options: selectFirstOption(item.options),
                 preference: item.preference,
-                order_id: item?.order_id
+                order_id: item?.order_id,
+                image: item?.item_image
             }));
         const is_brk_escort_service = mealData?.is_brk_escort_service
         const is_brk_tray_service = mealData?.is_brk_tray_service
@@ -194,7 +196,8 @@ const Order = () => {
             qty: item.qty,
             options: selectFirstOption(item.options),
             preference: item.preference,
-            order_id: item?.order_id
+            order_id: item?.order_id,
+            image: item?.item_image
         })) || [];
         const lunchEntree = mealData.lunch?.[1]?.items
             ?.filter(item => item.type === "item")
@@ -205,7 +208,8 @@ const Order = () => {
                 qty: item.qty,
                 options: selectFirstOption(item.options),
                 preference: item.preference,
-                order_id: item?.order_id
+                order_id: item?.order_id,
+                image: item?.item_image
             })) || [];
         const lunchAlternative = mealData.lunch?.[1]?.items
             ?.filter(item => item.type === "sub_cat_item")
@@ -216,7 +220,8 @@ const Order = () => {
                 qty: item.qty,
                 options: selectFirstOption(item.options),
                 preference: item.preference,
-                order_id: item?.order_id
+                order_id: item?.order_id,
+                image: item?.item_image
             })) || [];
         const is_lunch_escort_service = mealData?.is_lunch_escort_service
         const is_lunch_tray_service = mealData?.is_lunch_tray_service
@@ -241,7 +246,8 @@ const Order = () => {
                 qty: item.qty,
                 options: selectFirstOption(item.options),
                 preference: item.preference,
-                order_id: item?.order_id
+                order_id: item?.order_id,
+                image: item?.item_image
             })) || [];
         const dinnerAlternative = dinnerCat?.items
             ?.filter(item => item.type === "sub_cat_item")
@@ -252,7 +258,8 @@ const Order = () => {
                 qty: item.qty,
                 options: selectFirstOption(item.options),
                 preference: item.preference,
-                order_id: item?.order_id
+                order_id: item?.order_id,
+                image: item?.item_image
             })) || [];
         const is_dinner_escort_service = mealData?.is_dinner_escort_service
         const is_dinner_tray_service = mealData?.is_dinner_tray_service
@@ -582,7 +589,7 @@ const Order = () => {
             >
                 {/* Calendar opens automatically on mount */}
                 <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                    <LocalizationProvider 
+                    <LocalizationProvider
                         dateAdapter={AdapterDayjs}
                         adapterLocale={userData?.langCode === "cn" ? "zh-cn" : "en"}>
                         <DatePicker
@@ -642,11 +649,20 @@ const Order = () => {
                                         {data.breakFastDailySpecial.map((item, idx) => (
                                             <Box key={item.id} mb={1}>
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
-                                                    <Typography>
-                                                        {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
-                                                            ? item.chinese_name
-                                                            : item.name}
-                                                    </Typography>
+                                                    <Box display="flex" alignItems="center">
+                                                        {item.image && (
+                                                            <img
+                                                                src={item.image}
+                                                                alt={userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== "" ? item.chinese_name : item.name}
+                                                                style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, marginRight: 12 }}
+                                                            />
+                                                        )}
+                                                        <Typography>
+                                                            {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
+                                                                ? item.chinese_name
+                                                                : item.name}
+                                                        </Typography>
+                                                    </Box>
                                                     <Box display="flex" alignItems="center">
                                                         {!kitchenSummery && (
                                                             <button
@@ -849,10 +865,20 @@ const Order = () => {
                                         {data.breakFastAlternative.map((item) => (
                                             <Box key={item.id} mb={1}>
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
-                                                    <Typography>
-                                                        {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
-                                                            ? item.chinese_name
-                                                            : item.name}                                                    </Typography>
+                                                    <Box display="flex" alignItems="center">
+                                                        {item.image && (
+                                                            <img
+                                                                src={item.image}
+                                                                alt={userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== "" ? item.chinese_name : item.name}
+                                                                style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, marginRight: 12 }}
+                                                            />
+                                                        )}
+                                                        <Typography>
+                                                            {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
+                                                                ? item.chinese_name
+                                                                : item.name}
+                                                        </Typography>
+                                                    </Box>
                                                     <Box display="flex" alignItems="center">
                                                         {!kitchenSummery && (
                                                             <button
@@ -1201,11 +1227,20 @@ const Order = () => {
                                         {data.lunchSoup.map((item) => (
                                             <Box key={item.id} mb={1}>
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
-                                                    <Typography>
-                                                        {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
-                                                            ? item.chinese_name
-                                                            : item.name}
-                                                    </Typography>
+                                                    <Box display="flex" alignItems="center">
+                                                        {item.image && (
+                                                            <img
+                                                                src={item.image}
+                                                                alt={userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== "" ? item.chinese_name : item.name}
+                                                                style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, marginRight: 12 }}
+                                                            />
+                                                        )}
+                                                        <Typography>
+                                                            {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
+                                                                ? item.chinese_name
+                                                                : item.name}
+                                                        </Typography>
+                                                    </Box>
                                                     <Box display="flex" alignItems="center">
                                                         {!kitchenSummery && (
                                                             <button
@@ -1357,11 +1392,20 @@ const Order = () => {
                                         {data.lunchEntree.map((item) => (
                                             <Box key={item.id} mb={1}>
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
-                                                    <Typography>
-                                                        {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
-                                                            ? item.chinese_name
-                                                            : item.name}
-                                                    </Typography>
+                                                    <Box display="flex" alignItems="center">
+                                                        {item.image && (
+                                                            <img
+                                                                src={item.image}
+                                                                alt={userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== "" ? item.chinese_name : item.name}
+                                                                style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, marginRight: 12 }}
+                                                            />
+                                                        )}
+                                                        <Typography>
+                                                            {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
+                                                                ? item.chinese_name
+                                                                : item.name}
+                                                        </Typography>
+                                                    </Box>
                                                     <Box display="flex" alignItems="center">
                                                         {!kitchenSummery && (
                                                             <button
@@ -1554,11 +1598,20 @@ const Order = () => {
                                         {data.lunchAlternative.map((item) => (
                                             <Box key={item.id} mb={1}>
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
-                                                    <Typography>
-                                                        {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
-                                                            ? item.chinese_name
-                                                            : item.name}
-                                                    </Typography>
+                                                    <Box display="flex" alignItems="center">
+                                                        {item.image && (
+                                                            <img
+                                                                src={item.image}
+                                                                alt={userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== "" ? item.chinese_name : item.name}
+                                                                style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, marginRight: 12 }}
+                                                            />
+                                                        )}
+                                                        <Typography>
+                                                            {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
+                                                                ? item.chinese_name
+                                                                : item.name}
+                                                        </Typography>
+                                                    </Box>
                                                     <Box display="flex" alignItems="center">
                                                         {!kitchenSummery && (
                                                             <button
@@ -1881,11 +1934,20 @@ const Order = () => {
                                         </Typography>
                                         {data.dinnerSoup.map((item) => (
                                             <Box key={item.id} display="flex" alignItems="center" justifyContent="space-between" mb={1}>
-                                                <Typography>
-                                                    {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
-                                                        ? item.chinese_name
-                                                        : item.name}
-                                                </Typography>
+                                                <Box display="flex" alignItems="center">
+                                                    {item.image && (
+                                                        <img
+                                                            src={item.image}
+                                                            alt={userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== "" ? item.chinese_name : item.name}
+                                                            style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, marginRight: 12 }}
+                                                        />
+                                                    )}
+                                                    <Typography>
+                                                        {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
+                                                            ? item.chinese_name
+                                                            : item.name}
+                                                    </Typography>
+                                                </Box>
                                                 <Box display="flex" alignItems="center">
                                                     {!kitchenSummery && (
                                                         <button
@@ -1957,11 +2019,20 @@ const Order = () => {
                                         {data.dinnerEntree.map((item) => (
                                             <Box key={item.id} mb={1}>
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
-                                                    <Typography>
-                                                        {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
-                                                            ? item.chinese_name
-                                                            : item.name}
-                                                    </Typography>
+                                                    <Box display="flex" alignItems="center">
+                                                        {item.image && (
+                                                            <img
+                                                                src={item.image}
+                                                                alt={userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== "" ? item.chinese_name : item.name}
+                                                                style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, marginRight: 12 }}
+                                                            />
+                                                        )}
+                                                        <Typography>
+                                                            {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
+                                                                ? item.chinese_name
+                                                                : item.name}
+                                                        </Typography>
+                                                    </Box>
                                                     <Box display="flex" alignItems="center">
                                                         {!kitchenSummery && (
                                                             <button
@@ -2140,11 +2211,20 @@ const Order = () => {
                                         {data.dinnerAlternative.map((item) => (
                                             <Box key={item.id} mb={1}>
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
-                                                    <Typography>
-                                                        {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
-                                                            ? item.chinese_name
-                                                            : item.name}
-                                                    </Typography>
+                                                       <Box display="flex" alignItems="center">
+                                                        {item.image && (
+                                                            <img
+                                                                src={item.image}
+                                                                alt={userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== "" ? item.chinese_name : item.name}
+                                                                style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, marginRight: 12 }}
+                                                            />
+                                                        )}
+                                                        <Typography>
+                                                            {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
+                                                                ? item.chinese_name
+                                                                : item.name}
+                                                        </Typography>
+                                                    </Box>
                                                     <Box display="flex" alignItems="center">
                                                         {!kitchenSummery && (
                                                             <button
