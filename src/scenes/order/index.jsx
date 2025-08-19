@@ -544,8 +544,8 @@ const Order = () => {
 
     const showLunchGuideline =
         userData?.guideline &&
-        data.lunchSoup && data.lunchSoup.length > 0 &&
-        data.lunchEntree && data.lunchEntree.length > 0 &&
+        data.lunchSoup && data.lunchSoup.length > 0 ||
+        data.lunchEntree && data.lunchEntree.length > 0 ||
         data.lunchAlternative && data.lunchAlternative.length > 0;
 
 
