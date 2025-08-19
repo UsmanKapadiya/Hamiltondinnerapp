@@ -937,8 +937,8 @@ const GuestOrder = () => {
                                     {(
                                         (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0))
                                     ) && (
-                                            <Box mt={3}>
-                                                <label>
+                                            <Box mt={3} display="flex" gap={3}>
+                                                <label style={{ display: "flex", alignItems: "center" }}>
                                                     <input
                                                         type="checkbox"
                                                         checked={data.is_brk_tray_service === 1}
@@ -949,7 +949,7 @@ const GuestOrder = () => {
                                                             }));
                                                         }}
                                                     />
-                                                    {langObj.trayService}
+                                                    <span style={{ marginLeft: 5 }}>{langObj.trayService}</span>
                                                 </label>
                                             </Box>
                                         )}
@@ -1563,11 +1563,8 @@ const GuestOrder = () => {
                                             data.lunchEntree?.some(item => item.qty > 0) ||
                                             data.lunchAlternative?.some(item => item.qty > 0))
                                     ) && (
-                                            <Box mt={3}>
-                                                {/* <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                                Additional Services
-                                            </Typography> */}
-                                                <label>
+                                            <Box mt={3} display="flex" gap={3}>
+                                                <label style={{ display: "flex", alignItems: "center" }}>
                                                     <input
                                                         type="checkbox"
                                                         checked={data.is_lunch_tray_service === 1}
@@ -1578,7 +1575,7 @@ const GuestOrder = () => {
                                                             }));
                                                         }}
                                                     />
-                                                    {langObj.trayService}
+                                                    <span style={{ marginLeft: 5 }}>{langObj.trayService}</span>
                                                 </label>
                                             </Box>
                                         )}
@@ -2098,11 +2095,8 @@ const GuestOrder = () => {
                                             data.dinnerEntree?.some(item => item.qty > 0) ||
                                             data.dinnerAlternative?.some(item => item.qty > 0))
                                     ) && (
-                                            <Box mt={3}>
-                                                {/* <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                                Additional Services
-                                            </Typography> */}
-                                                <label>
+                                            <Box mt={3} display="flex" gap={3}>
+                                                <label style={{ display: "flex", alignItems: "center" }}>
                                                     <input
                                                         type="checkbox"
                                                         checked={data.is_dinner_tray_service === 1}
@@ -2113,7 +2107,7 @@ const GuestOrder = () => {
                                                             }));
                                                         }}
                                                     />
-                                                    {langObj.trayService}
+                                                    <span style={{ marginLeft: 5 }}>{langObj.trayService}</span>
                                                 </label>
                                             </Box>
                                         )}

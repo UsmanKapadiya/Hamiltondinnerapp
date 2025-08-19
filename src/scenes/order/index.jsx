@@ -1101,21 +1101,8 @@ const Order = () => {
                                         data.breakFastAlternative?.some(item => item.qty > 0)) &&
                                     !kitchenSummery
                                 ) && (
-                                        <Box mt={3}>
-                                            <label>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={data.is_brk_escort_service === 1}
-                                                    onChange={e => {
-                                                        setData(prev => ({
-                                                            ...prev,
-                                                            is_brk_escort_service: e.target.checked ? 1 : 0
-                                                        }));
-                                                    }}
-                                                />
-                                                {langObj.escortService}
-                                            </label>
-                                            <label>
+                                        <Box mt={3} display="flex" gap={2}>
+                                            <label style={{ display: "flex", alignItems: "center" }}>
                                                 <input
                                                     type="checkbox"
                                                     checked={data.is_brk_tray_service === 1}
@@ -1126,9 +1113,22 @@ const Order = () => {
                                                         }));
                                                     }}
                                                 />
-                                                {langObj.trayService}
+                                                <span style={{ marginLeft: 5 }}>{langObj.trayService}</span>
                                             </label>
-                                            <label>
+                                            <label style={{ display: "flex", alignItems: "center" }}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={data.is_brk_escort_service === 1}
+                                                    onChange={e => {
+                                                        setData(prev => ({
+                                                            ...prev,
+                                                            is_brk_escort_service: e.target.checked ? 1 : 0
+                                                        }));
+                                                    }}
+                                                />
+                                                <span style={{ marginLeft: 5 }}>{langObj.escortService}</span>
+                                            </label>
+                                            <label style={{ display: "flex", alignItems: "center" }}>
                                                 <input
                                                     type="checkbox"
                                                 // checked={data.is_dinner_tray_service === 1}
@@ -1139,7 +1139,7 @@ const Order = () => {
                                                 //     }));
                                                 // }}
                                                 />
-                                                {langObj.Takeout}
+                                                <span style={{ marginLeft: 5 }}>{langObj.Takeout}</span>
                                             </label>
                                         </Box>
                                     )}
@@ -1817,24 +1817,8 @@ const Order = () => {
                                     &&
                                     !kitchenSummery
                                 ) && (
-                                        <Box mt={3}>
-                                            {/* <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                                Additional Services
-                                            </Typography> */}
-                                            <label>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={data.is_lunch_escort_service === 1}
-                                                    onChange={e => {
-                                                        setData(prev => ({
-                                                            ...prev,
-                                                            is_lunch_escort_service: e.target.checked ? 1 : 0
-                                                        }));
-                                                    }}
-                                                />
-                                                {langObj.escortService}
-                                            </label>
-                                            <label>
+                                        <Box mt={3} display="flex" gap={3}>
+                                            <label style={{ display: "flex", alignItems: "center" }}>
                                                 <input
                                                     type="checkbox"
                                                     checked={data.is_lunch_tray_service === 1}
@@ -1845,9 +1829,22 @@ const Order = () => {
                                                         }));
                                                     }}
                                                 />
-                                                {langObj.trayService}
+                                                <span style={{ marginLeft: 5 }}>{langObj.trayService}</span>
                                             </label>
-                                            <label>
+                                            <label style={{ display: "flex", alignItems: "center" }}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={data.is_lunch_escort_service === 1}
+                                                    onChange={e => {
+                                                        setData(prev => ({
+                                                            ...prev,
+                                                            is_lunch_escort_service: e.target.checked ? 1 : 0
+                                                        }));
+                                                    }}
+                                                />
+                                                <span style={{ marginLeft: 5 }}>{langObj.escortService}</span>
+                                            </label>
+                                            <label style={{ display: "flex", alignItems: "center" }}>
                                                 <input
                                                     type="checkbox"
                                                 // checked={data.is_dinner_tray_service === 1}
@@ -1858,7 +1855,7 @@ const Order = () => {
                                                 //     }));
                                                 // }}
                                                 />
-                                                {langObj.Takeout}
+                                                <span style={{ marginLeft: 5 }}>{langObj.Takeout}</span>
                                             </label>
                                         </Box>
                                     )}
@@ -2442,24 +2439,8 @@ const Order = () => {
                                         data.dinnerAlternative?.some(item => item.qty > 0)) &&
                                     !kitchenSummery
                                 ) && (
-                                        <Box mt={3}>
-                                            {/* <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                                Additional Services
-                                            </Typography> */}
-                                            <label>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={data.is_dinner_escort_service === 1}
-                                                    onChange={e => {
-                                                        setData(prev => ({
-                                                            ...prev,
-                                                            is_dinner_escort_service: e.target.checked ? 1 : 0
-                                                        }));
-                                                    }}
-                                                />
-                                                {langObj.escortService}
-                                            </label>
-                                            <label>
+                                        <Box mt={3} display="flex" gap={3}>
+                                            <label style={{ display: "flex", alignItems: "center" }}>
                                                 <input
                                                     type="checkbox"
                                                     checked={data.is_dinner_tray_service === 1}
@@ -2470,9 +2451,22 @@ const Order = () => {
                                                         }));
                                                     }}
                                                 />
-                                                {langObj.trayService}
+                                                <span style={{ marginLeft: 5 }}>{langObj.trayService}</span>
                                             </label>
-                                            <label>
+                                            <label style={{ display: "flex", alignItems: "center" }}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={data.is_dinner_escort_service === 1}
+                                                    onChange={e => {
+                                                        setData(prev => ({
+                                                            ...prev,
+                                                            is_dinner_escort_service: e.target.checked ? 1 : 0
+                                                        }));
+                                                    }}
+                                                />
+                                                <span style={{ marginLeft: 5 }}>{langObj.escortService}</span>
+                                            </label>
+                                            <label style={{ display: "flex", alignItems: "center" }}>
                                                 <input
                                                     type="checkbox"
                                                 // checked={data.is_dinner_tray_service === 1}
@@ -2483,7 +2477,7 @@ const Order = () => {
                                                 //     }));
                                                 // }}
                                                 />
-                                                {langObj.Takeout}
+                                                <span style={{ marginLeft: 5 }}>{langObj.Takeout}</span>
                                             </label>
                                         </Box>
                                     )}
