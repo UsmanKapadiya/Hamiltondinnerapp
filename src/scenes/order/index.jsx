@@ -376,7 +376,15 @@ const Order = () => {
                 }
             });
 
-            if (items.length === 0) return null;
+            const additionalServicesChanged =
+                data.is_dinner_tray_service !== origDay?.is_dinner_tray_service ||
+                data.is_dinner_escort_service !== origDay?.is_dinner_escort_service ||
+                data.is_brk_tray_service !== origDay?.is_brk_tray_service ||
+                data.is_brk_escort_service !== origDay?.is_brk_escort_service ||
+                data.is_lunch_tray_service !== origDay?.is_lunch_tray_service ||
+                data.is_lunch_escort_service !== origDay?.is_lunch_escort_service;
+
+            if (items.length === 0 && !additionalServicesChanged) return null;
 
             return {
                 date: data.date,
@@ -385,7 +393,11 @@ const Order = () => {
                 is_brk_tray_service: data.is_brk_tray_service,
                 is_lunch_tray_service: data.is_lunch_tray_service,
                 is_dinner_tray_service: data.is_dinner_tray_service,
+                is_brk_escort_service: data.is_brk_escort_service,
+                is_lunch_escort_service: data.is_lunch_escort_service,
+                is_dinner_escort_service: data.is_dinner_escort_service,
                 items
+                // ...(items.length > 0 ? { items } : {}) // Only include items if changed
             };
         }).filter(Boolean);
 
