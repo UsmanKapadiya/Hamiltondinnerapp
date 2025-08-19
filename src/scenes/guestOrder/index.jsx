@@ -1724,7 +1724,7 @@ const GuestOrder = () => {
                                             }}>
                                                 {userData?.langCode === "cn" && data.dinnerEntreeCatName_cn && data.dinnerEntreeCatName_cn.trim() !== ""
                                                     ? data.dinnerEntreeCatName_cn
-                                                    : data.dinnerEntreeCatName} ({langObj.servedWithDesset})
+                                                    : data.dinnerEntreeCatName} ({langObj.servedWithDessert})
                                             </Typography>
                                             {data.dinnerEntree.map((item) => (
                                                 <Box key={item.id} mb={1}>
