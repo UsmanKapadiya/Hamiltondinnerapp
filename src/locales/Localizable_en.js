@@ -29,7 +29,7 @@ export default {
     "breakFasrMenuWarn": "BreakFast Menu is not available",
     "lunchMenuWarn": "Lunch Menu is not available",
     "dinnerMenuWarn":"Dinner Menu is not available",
-    "submit": "submit",
+    "submit": "Submit",
     "Cancel":"Cancel",
     "editRoomDetails":"Edit Room Details",
     "maximumGuestWarn": "Maximum 10 guests allowed.",
