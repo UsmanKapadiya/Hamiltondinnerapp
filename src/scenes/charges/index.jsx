@@ -18,7 +18,7 @@ const ChargesReport = () => {
     const [date, setDate] = useState(dayjs());
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState({});
-    const [openCalendar, setOpenCalendar] = useState(true); 
+    const [openCalendar, setOpenCalendar] = useState(true);
 
     // For custom popup
     const [popup, setPopup] = useState({ open: false, anchorEl: null, text: "" });
@@ -94,7 +94,7 @@ const ChargesReport = () => {
                             )}
                         />
                     </LocalizationProvider>
-            
+
                 </Box>
                 {loading ? (
                     <CustomLoadingOverlay />
@@ -181,12 +181,12 @@ const ChargesReport = () => {
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    (() => {
-                                        const baseList =
-                                            (data?.report_breakfast_list && data.report_breakfast_list.length > 0 && data.report_breakfast_list) ||
-                                            (data?.report_lunch_list && data.report_lunch_list.length > 0 && data.report_lunch_list) ||
-                                            (data?.report_dinner_list && data.report_dinner_list.length > 0 && data.report_dinner_list) ||
-                                            [];
+                                    (() => {                            
+                                        const baseList = [
+                                            ...(data?.report_breakfast_list?.length > 0 ? data.report_breakfast_list : []),
+                                            ...(data?.report_lunch_list?.length > 0 ? data.report_lunch_list : []),
+                                            ...(data?.report_dinner_list?.length > 0 ? data.report_dinner_list : []),
+                                        ];
                                         return baseList.map((row, idx) => {
                                             const breakfastRow = data?.report_breakfast_list?.find(b => b.room_no === row.room_no) || { data: [] };
                                             const lunchRow = data?.report_lunch_list?.find(l => l.room_no === row.room_no) || { data: [] };
@@ -219,7 +219,7 @@ const ChargesReport = () => {
                                                             return (
                                                                 <TableCell key={`${prefix}-${i}`} align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
                                                                     {qty === undefined || qty === null ? (
-                                                                        '-' 
+                                                                        '-'
                                                                     ) : showPopup ? (
                                                                         <span
                                                                             style={{
@@ -254,52 +254,52 @@ const ChargesReport = () => {
                         </Table>
                     </TableContainer>
                 )}
-            {/* Custom Popup for Option */}
-            <Popover
-                open={popup.open}
-                anchorEl={popup.anchorEl}
-                onClose={() => setPopup({ ...popup, open: false })}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                transformOrigin={{ vertical: 'top', horizontal: 'center' }}
-                disableEnforceFocus
-                disableRestoreFocus
-                disableScrollLock
-                PaperProps={{
-                    sx: {
-                        p: 2,
-                        minWidth: 180,
-                        maxWidth: 300,
-                        pointerEvents: 'auto',
-                        bgcolor: '#e3f2fd', 
-                        borderRadius: 2,
-                        boxShadow: 3
-                    }
-                }}
-            >
-                <Typography variant="body2" sx={{ fontWeight: 500, color: '#1976d2', mb: 1 }}>{popup.text}</Typography>
-                <Box display="flex" justifyContent="flex-end">
-                    <CustomButton
-                        onClick={() => setPopup({ ...popup, open: false })}
-                        sx={{
-                            background: '#1976d2',
-                            color: '#fff',
+                {/* Custom Popup for Option */}
+                <Popover
+                    open={popup.open}
+                    anchorEl={popup.anchorEl}
+                    onClose={() => setPopup({ ...popup, open: false })}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                    transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+                    disableEnforceFocus
+                    disableRestoreFocus
+                    disableScrollLock
+                    PaperProps={{
+                        sx: {
+                            p: 2,
+                            minWidth: 180,
+                            maxWidth: 300,
+                            pointerEvents: 'auto',
+                            bgcolor: '#e3f2fd',
                             borderRadius: 2,
-                            padding: '4px 16px',
-                            fontWeight: 600,
-                            fontSize: 14,
-                            width: 'auto',
-                            margin: 0,
-                            '&:hover': {
-                                background: '#1565c0',
+                            boxShadow: 3
+                        }
+                    }}
+                >
+                    <Typography variant="body2" sx={{ fontWeight: 500, color: '#1976d2', mb: 1 }}>{popup.text}</Typography>
+                    <Box display="flex" justifyContent="flex-end">
+                        <CustomButton
+                            onClick={() => setPopup({ ...popup, open: false })}
+                            sx={{
+                                background: '#1976d2',
                                 color: '#fff',
-                            }
-                        }}
-                    >
-                        OK
-                    </CustomButton>
-                </Box>
-            </Popover>
-        </Box>
+                                borderRadius: 2,
+                                padding: '4px 16px',
+                                fontWeight: 600,
+                                fontSize: 14,
+                                width: 'auto',
+                                margin: 0,
+                                '&:hover': {
+                                    background: '#1565c0',
+                                    color: '#fff',
+                                }
+                            }}
+                        >
+                            OK
+                        </CustomButton>
+                    </Box>
+                </Popover>
+            </Box>
         </Box>
     );
 };
