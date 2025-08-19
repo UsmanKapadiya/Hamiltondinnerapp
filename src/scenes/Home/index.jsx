@@ -123,7 +123,7 @@ const Home = () => {
                                     <RestaurantMenuOutlined sx={{ fontSize: 40 }} />
                                 </IconButton>
                                 <Typography variant="caption" sx={{ mt: 1 }}>
-                                    Dinning
+                                    Dining
                                 </Typography>
                             </Box>
                         )}
