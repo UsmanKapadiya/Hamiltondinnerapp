@@ -161,7 +161,7 @@ const Home = () => {
                                     <SummarizeRounded sx={{ fontSize: 40 }} />
                                 </IconButton>
                                 <Typography variant="caption" sx={{ mt: 1 }}>
-                                    Summery
+                                    Summary
                                 </Typography>
                             </Box>
                         )}

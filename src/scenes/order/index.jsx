@@ -552,7 +552,7 @@ const Order = () => {
     return (
         <Box m="20px">
             <Header
-                title={kitchenSummery ? "Kitchen Summery " : roomNo ? roomNo : userData?.room_id}
+                title={kitchenSummery ? "Kitchen Summary " : roomNo ? roomNo : userData?.room_id}
                 icon={""}
                 editRoomsDetails={userData?.role !== "kitchen" ? true : false}
                 editIcon={<EditOutlined />}
