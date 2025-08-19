@@ -34,5 +34,6 @@ export default {
     "editRoomDetails": "编辑房间详细信息",
     "maximumGuestWarn": "最多可容纳 10 位客人。",
     "servedWithSoup": "配汤",
-    "servedWithDessert": "搭配甜点"
+    "servedWithDessert": "搭配甜点",
+    "guest": "客人"
 }

@@ -34,5 +34,6 @@ export default {
     "editRoomDetails":"Edit Room Details",
     "maximumGuestWarn": "Maximum 10 guests allowed.",
     "servedWithSoup": "served with Soup",
-    "servedWithDessert": "served with Dessert"
+    "servedWithDessert": "served with Dessert",
+    "guest": "Guest"
 }

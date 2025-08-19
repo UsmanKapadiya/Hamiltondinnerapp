@@ -488,7 +488,7 @@ const GuestOrder = () => {
             </Dialog>
             <Box m="20px">
                 <Header
-                    title={roomNo ? roomNo : userData?.room_id}
+                    title={roomNo ? `${roomNo} ${langObj.guest}`  : `${userData?.room_id}  ${langObj.guest}`}
                     icon={""}
                     editRoomsDetails={false}
                     isGuest={false}
