@@ -451,13 +451,13 @@ const GuestOrder = () => {
             // //console.log("Meal Data =>", mealData);
             let response = await OrderServices.updateGusetOrder(payload);
             if (response.ResponseText === "success") {
-                // if (response?.item_id && response?.order_id) {
-                //     setData(prevData =>
-                //         updateOrderIdsInData(prevData, response.item_id, response.order_id)
-                //     );
-                // }
-                setData({})
-                fetchMenuDetails(date.format("YYYY-MM-DD"));
+                if (response?.item_id && response?.order_id) {
+                    setData(prevData =>
+                        updateOrderIdsInData(prevData, response.item_id, response.order_id)
+                    );
+                    fetchMenuDetails(date.format("YYYY-MM-DD"));
+
+                }
                 toast.success("Guest Order submitted successfully!");
                 // setData(transformMealData(mealData)); // <-- Now mealData is defined
             } else {
