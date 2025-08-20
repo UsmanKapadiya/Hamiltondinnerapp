@@ -181,12 +181,16 @@ const ChargesReport = () => {
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    (() => {                            
-                                        const baseList = [
-                                            ...(data?.report_breakfast_list?.length > 0 ? data.report_breakfast_list : []),
-                                            ...(data?.report_lunch_list?.length > 0 ? data.report_lunch_list : []),
-                                            ...(data?.report_dinner_list?.length > 0 ? data.report_dinner_list : []),
+                                    (() => {
+                                        const roomNos = [
+                                            ...(data?.report_breakfast_list?.map(r => r.room_no) || []),
+                                            ...(data?.report_lunch_list?.map(r => r.room_no) || []),
+                                            ...(data?.report_dinner_list?.map(r => r.room_no) || []),
                                         ];
+                                        const uniqueRoomNos = [...new Set(roomNos)];
+                                        const baseList = uniqueRoomNos.map(room_no => ({
+                                            room_no
+                                        }));
                                         return baseList.map((row, idx) => {
                                             const breakfastRow = data?.report_breakfast_list?.find(b => b.room_no === row.room_no) || { data: [] };
                                             const lunchRow = data?.report_lunch_list?.find(l => l.room_no === row.room_no) || { data: [] };
