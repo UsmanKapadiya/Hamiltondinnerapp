@@ -1,6 +1,7 @@
 import {
     Box, useTheme, Typography, Tabs, Tab,
-    Button, Dialog, DialogTitle, DialogContent, DialogActions
+    Button, Dialog, DialogTitle, DialogContent, DialogActions,
+    TextField
 } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { Header } from "../../components";
@@ -13,9 +14,9 @@ import OrderServices from "../../services/orderServices";
 import { toast, ToastContainer } from "react-toastify";
 import { useLocation } from "react-router-dom";
 import CustomButton from "../../components/CustomButton";
-import { EditOutlined, EmojiPeopleOutlined } from "@mui/icons-material";
 import en from "../../locales/Localizable_en";
 import cn from "../../locales/Localizable_cn";
+import 'dayjs/locale/zh-cn';
 
 let breakFastEndTime = 10;
 let lunchEndTime = 15;
@@ -127,36 +128,37 @@ const GuestOrder = () => {
 
     useEffect(() => {
         console.log(date)
-        const fetchMenuDetails = async () => {
-            try {
-                setLoading(true);
-                let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
-                const payload = {
-                    date: date.format("YYYY-MM-DD"),
-                    room_id: selectedObj ? selectedObj?.id : userData?.room_id
-                }
-                const response = await OrderServices.guestOrderListData(payload);
-                //console.log(response)
-                let data = {
-                    breakfast: response.breakfast,
-                    lunch: response?.lunch,
-                    dinner: response?.dinner,
-                    is_dinner_tray_service: response?.is_dinner_tray_service,
-                    is_brk_tray_service: response?.is_brk_tray_service,
-                    is_lunch_tray_service: response?.is_lunch_tray_service
-                };
 
-                setGuestCount(response?.occupancy)
-                setMealData(transformMealData(data));
-                setData(transformMealData(data));
-            } catch (error) {
-                console.error("Error fetching menu list:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchMenuDetails();
     }, [date]);
+    const fetchMenuDetails = async () => {
+        try {
+            setLoading(true);
+            let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
+            const payload = {
+                date: date.format("YYYY-MM-DD"),
+                room_id: selectedObj ? selectedObj?.id : userData?.room_id
+            }
+            const response = await OrderServices.guestOrderListData(payload);
+            //console.log(response)
+            let data = {
+                breakfast: response.breakfast,
+                lunch: response?.lunch,
+                dinner: response?.dinner,
+                is_dinner_tray_service: response?.is_dinner_tray_service,
+                is_brk_tray_service: response?.is_brk_tray_service,
+                is_lunch_tray_service: response?.is_lunch_tray_service
+            };
+
+            setGuestCount(response?.occupancy)
+            setMealData(transformMealData(data));
+            setData(transformMealData(data));
+        } catch (error) {
+            console.error("Error fetching menu list:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     function selectFirstOption(options) {
         if (!options || options.length === 0) return [];
@@ -168,6 +170,21 @@ const GuestOrder = () => {
             ...opt,
             is_selected: idx === 0 ? 1 : 0
         }));
+    }
+
+    const handleDateChange = (newDate) => {
+        setDate(newDate);
+        setData(data => ({
+            ...data,
+            breakFastDailySpecial: (data.breakFastDailySpecial || []).map(item => ({ ...item, qty: 0 })),
+            breakFastAlternative: (data.breakFastAlternative || []).map(item => ({ ...item, qty: 0 })),
+            lunchSoup: (data.lunchSoup || []).map(item => ({ ...item, qty: 0 })),
+            lunchEntree: (data.lunchEntree || []).map(item => ({ ...item, qty: 0 })),
+            lunchAlternative: (data.lunchAlternative || []).map(item => ({ ...item, qty: 0 })),
+            dinnerEntree: (data.dinnerEntree || []).map(item => ({ ...item, qty: 0 })),
+            dinnerAlternative: (data.dinnerAlternative || []).map(item => ({ ...item, qty: 0 })),
+        }));
+        setGuestCount(prev => (prev > 1 ? prev - 1 : 1));
     }
 
     function transformMealData(mealData) {
@@ -434,11 +451,13 @@ const GuestOrder = () => {
             // //console.log("Meal Data =>", mealData);
             let response = await OrderServices.updateGusetOrder(payload);
             if (response.ResponseText === "success") {
-                if (response?.item_id && response?.order_id) {
-                    setData(prevData =>
-                        updateOrderIdsInData(prevData, response.item_id, response.order_id)
-                    );
-                }
+                // if (response?.item_id && response?.order_id) {
+                //     setData(prevData =>
+                //         updateOrderIdsInData(prevData, response.item_id, response.order_id)
+                //     );
+                // }
+                setData({})
+                fetchMenuDetails(date.format("YYYY-MM-DD"));
                 toast.success("Guest Order submitted successfully!");
                 // setData(transformMealData(mealData)); // <-- Now mealData is defined
             } else {
@@ -488,7 +507,7 @@ const GuestOrder = () => {
             </Dialog>
             <Box m="20px">
                 <Header
-                    title={roomNo ? `${roomNo} ${langObj.guest}`  : `${userData?.room_id}  ${langObj.guest}`}
+                    title={roomNo ? `${roomNo} ${langObj.guest}` : `${userData?.room_id}  ${langObj.guest}`}
                     icon={""}
                     editRoomsDetails={false}
                     isGuest={false}
@@ -523,6 +542,25 @@ const GuestOrder = () => {
                     }}
                 >
                     {/* Calendar opens automatically on mount */}
+                    <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+                        <LocalizationProvider
+                            dateAdapter={AdapterDayjs}
+                            adapterLocale={userData?.langCode === "cn" ? "zh-cn" : "en"}>
+                            <DatePicker
+                                label="Date"
+                                value={date}
+                                onChange={handleDateChange}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        fullWidth
+                                        variant="filled"
+                                        sx={{ gridColumn: "span 1" }}
+                                    />
+                                )}
+                            />
+                        </LocalizationProvider>
+                    </Box>
 
                     <Box sx={{ textAlign: "center" }}>
                         <Typography>
