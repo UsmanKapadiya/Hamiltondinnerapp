@@ -565,8 +565,8 @@ const GuestOrder = () => {
                     <Box sx={{ textAlign: "center" }}>
                         <Typography>
                             {userData?.language === 1
-                                ? `${dayjs(selectedDate).locale("zh-cn").format("MMMM")} ${dayjs(selectedDate).format("D, YYYY")}`
-                                : dayjs(selectedDate).format("MMMM D, YYYY")}
+                                ? `${dayjs(date).locale("zh-cn").format("MMMM")} ${dayjs(date).format("D, YYYY")}`
+                                : dayjs(date).format("MMMM D, YYYY")}
                         </Typography>
                     </Box>
                     <Box
