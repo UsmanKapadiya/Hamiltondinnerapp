@@ -148,151 +148,154 @@ const Order = () => {
 
     function transformMealData(mealData) {
         // Breakfast
-        const breakfastCat = mealData.breakfast?.[0];
-        const breakfast = breakfastCat?.items || [];
-        const breakFastDailySpecialCatName = breakfastCat?.cat_name || "";
-        const breakFastDailySpecialCatName_cn = breakfastCat?.chinese_name || "";
-        const breakFastAlternativeCat = breakfast.find(item => item.type === "sub_cat");
-        const breakFastAlternativeCatName = breakFastAlternativeCat?.item_name || "";
-        const breakFastAlternativeCatName_cn = breakFastAlternativeCat?.chinese_name || "";
-        const breakFastDailySpecial = breakfast
-            .filter(item => item.type === "item")
-            .map(item => ({
-                id: item.item_id,
-                name: item.item_name,
-                chinese_name: item.chinese_name,
-                qty: item.qty,
-                options: selectFirstOption(item.options),
-                preference: item.preference,
-                order_id: item?.order_id,
-                image: item?.item_image
-            }));
-        const breakFastAlternative = breakfast
-            .filter(item => item.type === "sub_cat_item")
-            .map(item => ({
-                id: item.item_id,
-                name: item.item_name,
-                chinese_name: item.chinese_name,
-                qty: item.qty,
-                options: selectFirstOption(item.options),
-                preference: item.preference,
-                order_id: item?.order_id,
-                image: item?.item_image
-            }));
+        const breakfastCategories = (mealData.breakfast || []).map(cat => {
+            // Entree items
+            const entreeItems = (cat.items || [])
+                .filter(item => item.type === "item")
+                .map(item => ({
+                    id: item.item_id,
+                    name: item.item_name,
+                    chinese_name: item.chinese_name,
+                    qty: item.qty,
+                    options: selectFirstOption(item.options),
+                    preference: item.preference,
+                    order_id: item?.order_id,
+                    image: item?.item_image
+                }));
+
+            // Subcategory (e.g., alternatives)
+            const alternativeCat = (cat.items || []).find(item => item.type === "sub_cat");
+            const alternativeCatName = alternativeCat?.item_name || "";
+            const alternativeCatName_cn = alternativeCat?.chinese_name || "";
+
+            // Subcategory items
+            const alternativeItems = (cat.items || [])
+                .filter(item => item.type === "sub_cat_item")
+                .map(item => ({
+                    id: item.item_id,
+                    name: item.item_name,
+                    chinese_name: item.chinese_name,
+                    qty: item.qty,
+                    options: selectFirstOption(item.options),
+                    preference: item.preference,
+                    order_id: item?.order_id,
+                    image: item?.item_image
+                }));
+
+            return {
+                cat_id: cat.cat_id,
+                cat_name: cat.cat_name,
+                cat_name_cn: cat.chinese_name,
+                entreeItems,
+                alternativeCatName,
+                alternativeCatName_cn,
+                alternativeItems
+            };
+        });
         const is_brk_escort_service = mealData?.is_brk_escort_service
         const is_brk_tray_service = mealData?.is_brk_tray_service
 
-        const lunchSoupCatName = mealData.lunch?.[0]?.cat_name || "";
-        const lunchSoupCatName_cn = mealData.lunch?.[0]?.chinese_name || "";
-        const lunchCat = mealData.lunch?.[0];
-        const lunchEntreeCatName = lunchCat?.cat_name || "";
-        const lunchEntreeCatName_cn = lunchCat?.chinese_name || "";
-        const lunchAlternativeCat = lunchCat?.items?.find(item => item.type === "sub_cat");
-        const lunchAlternativeCatName = lunchAlternativeCat?.item_name || "";
-        const lunchAlternativeCatName_cn = lunchAlternativeCat?.chinese_name || "";
-        const lunchSoup = []
-        // Before 0 index on lunch Soup Category show, now lunch Soup Category is not get
-        // = mealData.lunch?.[0]?.items?.map(item => ({
-        //     id: item.item_id,
-        //     name: item.item_name,
-        //     chinese_name: item.chinese_name,
-        //     qty: item.qty,
-        //     options: selectFirstOption(item.options),
-        //     preference: item.preference,
-        //     order_id: item?.order_id,
-        //     image: item?.item_image
-        // })) || [];
-        const lunchEntree = lunchCat?.items
-            ?.filter(item => item.type === "item")
-            .map(item => ({
-                id: item.item_id,
-                name: item.item_name,
-                chinese_name: item.chinese_name,
-                qty: item.qty,
-                options: selectFirstOption(item.options),
-                preference: item.preference,
-                order_id: item?.order_id,
-                image: item?.item_image
-            })) || [];
-        const lunchAlternative = lunchCat?.items
-            ?.filter(item => item.type === "sub_cat_item")
-            .map(item => ({
-                id: item.item_id,
-                name: item.item_name,
-                chinese_name: item.chinese_name,
-                qty: item.qty,
-                options: selectFirstOption(item.options),
-                preference: item.preference,
-                order_id: item?.order_id,
-                image: item?.item_image
-            })) || [];
+        // Lunch
+        const lunchCategories = (mealData.lunch || []).map(cat => {
+            // Entree items
+            const entreeItems = (cat.items || [])
+                .filter(item => item.type === "item")
+                .map(item => ({
+                    id: item.item_id,
+                    name: item.item_name,
+                    chinese_name: item.chinese_name,
+                    qty: item.qty,
+                    options: selectFirstOption(item.options),
+                    preference: item.preference,
+                    order_id: item?.order_id,
+                    image: item?.item_image
+                }));
+
+            // Subcategory (e.g., alternatives)
+            const alternativeCat = (cat.items || []).find(item => item.type === "sub_cat");
+            const alternativeCatName = alternativeCat?.item_name || "";
+            const alternativeCatName_cn = alternativeCat?.chinese_name || "";
+
+            // Subcategory items
+            const alternativeItems = (cat.items || [])
+                .filter(item => item.type === "sub_cat_item")
+                .map(item => ({
+                    id: item.item_id,
+                    name: item.item_name,
+                    chinese_name: item.chinese_name,
+                    qty: item.qty,
+                    options: selectFirstOption(item.options),
+                    preference: item.preference,
+                    order_id: item?.order_id,
+                    image: item?.item_image
+                }));
+
+            return {
+                cat_id: cat.cat_id,
+                cat_name: cat.cat_name,
+                cat_name_cn: cat.chinese_name,
+                entreeItems,
+                alternativeCatName,
+                alternativeCatName_cn,
+                alternativeItems
+            };
+        });
         const is_lunch_escort_service = mealData?.is_lunch_escort_service
         const is_lunch_tray_service = mealData?.is_lunch_tray_service
 
-
         // Dinner
-        const dinnerSoupCatName = mealData.dinner?.[0]?.cat_name || "";
-        const dinnerSoupCatName_cn = mealData.dinner?.[0]?.chinese_name || "";
-        const dinnerCat = mealData.dinner?.[0];
-        const dinnerEntreeCatName = dinnerCat?.cat_name || "";
-        const dinnerEntreeCatName_cn = dinnerCat?.chinese_name || "";
-        const dinnerAlternativeCat = dinnerCat?.items?.find(item => item.type === "sub_cat");
-        const dinnerAlternativeCatName = dinnerAlternativeCat?.item_name || "";
-        const dinnerAlternativeCatName_cn = dinnerAlternativeCat?.chinese_name || "";
-        const dinnerSoup = []; // If you have soup in dinner, extract it here
-        const dinnerEntree = dinnerCat?.items
-            ?.filter(item => item.type === "item")
-            .map(item => ({
-                id: item.item_id,
-                name: item.item_name,
-                chinese_name: item.chinese_name,
-                qty: item.qty,
-                options: selectFirstOption(item.options),
-                preference: item.preference,
-                order_id: item?.order_id,
-                image: item?.item_image
-            })) || [];
-        const dinnerAlternative = dinnerCat?.items
-            ?.filter(item => item.type === "sub_cat_item")
-            .map(item => ({
-                id: item.item_id,
-                name: item.item_name,
-                chinese_name: item.chinese_name,
-                qty: item.qty,
-                options: selectFirstOption(item.options),
-                preference: item.preference,
-                order_id: item?.order_id,
-                image: item?.item_image
-            })) || [];
+        const dinnerCategories = (mealData.dinner || []).map(cat => {
+            // Entree items
+            const entreeItems = (cat.items || [])
+                .filter(item => item.type === "item")
+                .map(item => ({
+                    id: item.item_id,
+                    name: item.item_name,
+                    chinese_name: item.chinese_name,
+                    qty: item.qty,
+                    options: selectFirstOption(item.options),
+                    preference: item.preference,
+                    order_id: item?.order_id,
+                    image: item?.item_image
+                }));
+
+            // Subcategory (e.g., alternatives)
+            const alternativeCat = (cat.items || []).find(item => item.type === "sub_cat");
+            const alternativeCatName = alternativeCat?.item_name || "";
+            const alternativeCatName_cn = alternativeCat?.chinese_name || "";
+
+            // Subcategory items
+            const alternativeItems = (cat.items || [])
+                .filter(item => item.type === "sub_cat_item")
+                .map(item => ({
+                    id: item.item_id,
+                    name: item.item_name,
+                    chinese_name: item.chinese_name,
+                    qty: item.qty,
+                    options: selectFirstOption(item.options),
+                    preference: item.preference,
+                    order_id: item?.order_id,
+                    image: item?.item_image
+                }));
+
+            return {
+                cat_id: cat.cat_id,
+                cat_name: cat.cat_name,
+                cat_name_cn: cat.chinese_name,
+                entreeItems,
+                alternativeCatName,
+                alternativeCatName_cn,
+                alternativeItems
+            };
+        });
         const is_dinner_escort_service = mealData?.is_dinner_escort_service
         const is_dinner_tray_service = mealData?.is_dinner_tray_service
 
         return {
             date: mealData.date,
-            breakFastDailySpecialCatName,
-            breakFastDailySpecialCatName_cn,
-            breakFastAlternativeCatName,
-            breakFastAlternativeCatName_cn,
-            breakFastDailySpecial,
-            breakFastAlternative,
-            lunchSoup,
-            lunchSoupCatName,
-            lunchSoupCatName_cn,
-            lunchEntree,
-            lunchEntreeCatName,
-            lunchEntreeCatName_cn,
-            lunchAlternative,
-            lunchAlternativeCatName,
-            lunchAlternativeCatName_cn,
-            dinnerSoupCatName,
-            dinnerSoupCatName_cn,
-            dinnerEntree,
-            dinnerEntreeCatName,
-            dinnerEntreeCatName_cn,
-            dinnerAlternative,
-            dinnerAlternativeCatName,
-            dinnerAlternativeCatName_cn,
-            dinnerSoup,
+            breakfastCategories,
+            lunchCategories,
+            dinnerCategories,
             is_brk_escort_service,
             is_brk_tray_service,
             is_lunch_escort_service,
@@ -318,14 +321,18 @@ const Order = () => {
         }));
 
         const getItems = d => [
-            ...flatten(d.breakFastDailySpecial),
-            ...flatten(d.breakFastAlternative),
-            ...flatten(d.lunchSoup),
-            ...flatten(d.lunchEntree),
-            ...flatten(d.lunchAlternative),
-            ...flatten(d.dinnerSoup),
-            ...flatten(d.dinnerEntree),
-            ...flatten(d.dinnerAlternative)
+            ...(d.breakfastCategories || []).flatMap(cat => [
+                ...flatten(cat.entreeItems),
+                ...flatten(cat.alternativeItems)
+            ]),
+            ...(d.lunchCategories || []).flatMap(cat => [
+                ...flatten(cat.entreeItems),
+                ...flatten(cat.alternativeItems)
+            ]),
+            ...(d.dinnerCategories || []).flatMap(cat => [
+                ...flatten(cat.entreeItems),
+                ...flatten(cat.alternativeItems)
+            ])
         ];
 
         const selectedRoom = userData.rooms.find(x => x.name === roomNo);
@@ -445,7 +452,7 @@ const Order = () => {
             });
             const newMealSelections = getUpdatedMealSelections(mealSelections, dataCopy, date.format("YYYY-MM-DD"));
             const payload = buildOrderPayload(newMealSelections, date);
-            // console.log("payload", payload);
+            console.log("payload", payload);
             let response = await OrderServices.submitOrder(payload);
             if (response.ResponseText === "success") {
                 setMealSelections([])
@@ -546,19 +553,15 @@ const Order = () => {
         }
     }
 
-    const totalLunchSoupQty = (data.lunchSoup || []).reduce((sum, i) => sum + (i.qty || 0), 0);
-    const totalDinnerSoupQty = (data.dinnerSoup || []).reduce((sum, i) => sum + (i.qty || 0), 0);
-
     const showBreakFastGuideline =
         userData?.guideline &&
-        data.breakFastDailySpecial &&
-        data.breakFastDailySpecial.length > 0;
+        data.breakfastCategories &&
+        data.breakfastCategories.length > 0;
 
     const showLunchGuideline =
         userData?.guideline &&
-        data.lunchSoup && data.lunchSoup.length > 0 ||
-        data.lunchEntree && data.lunchEntree.length > 0 ||
-        data.lunchAlternative && data.lunchAlternative.length > 0;
+        data.lunchCategories &&
+        data.lunchCategories.length > 0;
 
 
     return (
@@ -640,10 +643,8 @@ const Order = () => {
                         </Tabs>
                         {tabIndex === 0 && (
                             <Box>
-
-                                {/* Daily Special */}
-                                {data.breakFastDailySpecial && data.breakFastDailySpecial.length > 0 && (
-                                    <>
+                                {Array.isArray(data.breakfastCategories) && data.breakfastCategories.map((cat, catIdx) => (
+                                    <Box key={cat.cat_id} mb={3}>
                                         <Typography
                                             variant="h6"
                                             sx={{
@@ -653,72 +654,66 @@ const Order = () => {
                                                 px: 2,
                                                 py: 1,
                                                 borderRadius: 1,
-                                                display: "block",
                                                 textAlign: "center"
                                             }}
                                         >
-                                            {userData?.langCode === "cn" && data.breakFastDailySpecialCatName_cn && data.breakFastDailySpecialCatName_cn.trim() !== ""
-                                                ? data.breakFastDailySpecialCatName_cn
-                                                : data.breakFastDailySpecialCatName}
+                                            {userData?.langCode === "cn" && cat.cat_name_cn && cat.cat_name_cn.trim() !== ""
+                                                ? cat.cat_name_cn
+                                                : cat.cat_name}
                                         </Typography>
-                                        {data.breakFastDailySpecial.map((item, idx) => (
+
+                                        {/* Entree Items */}
+                                        {cat.entreeItems.map(item => (
                                             <Box key={item.id} mb={1}>
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
                                                     <Box display="flex" alignItems="center">
                                                         {item.image && (
                                                             <img
                                                                 src={item.image}
-                                                                alt={userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== "" ? item.chinese_name : item.name}
+                                                                alt={userData?.langCode === "cn" && item.chinese_name ? item.chinese_name : item.name}
                                                                 style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, marginRight: 12 }}
                                                             />
                                                         )}
                                                         <Typography>
-                                                            {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
-                                                                ? item.chinese_name
-                                                                : item.name}
+                                                            {userData?.langCode === "cn" && item.chinese_name ? item.chinese_name : item.name}
                                                         </Typography>
                                                     </Box>
                                                     <Box display="flex" alignItems="center">
                                                         {!kitchenSummery && (
                                                             <button
                                                                 onClick={() =>
-                                                                    setData((prev) => ({
+                                                                    setData(prev => ({
                                                                         ...prev,
-                                                                        breakFastDailySpecial: prev.breakFastDailySpecial.map((i) => {
-                                                                            if (i.id === item.id) {
-                                                                                return {
-                                                                                    ...i,
-                                                                                    qty: 0,
-                                                                                    options: (i.options || []).length > 0
-                                                                                        ? i.options.map((opt, idx) => ({
-                                                                                            ...opt,
-                                                                                            is_selected: idx === 0 ? 1 : 0,
-                                                                                        }))
-                                                                                        : i.options,
-                                                                                    preference: (i.preference || []).map((p) => ({
-                                                                                        ...p,
-                                                                                        is_selected: 0,
-                                                                                    })),
-                                                                                };
-                                                                            }
-                                                                            // If previous qty is 0, also reset options and preference
-                                                                            if ((i.qty || 0) === 0) {
-                                                                                return {
-                                                                                    ...i,
-                                                                                    options: (i.options || []).length > 0
-                                                                                        ? i.options.map((opt, idx) => ({
-                                                                                            ...opt,
-                                                                                            is_selected: idx === 0 ? 1 : 0,
-                                                                                        }))
-                                                                                        : i.options,
-                                                                                    preference: (i.preference || []).map((p) => ({
-                                                                                        ...p,
-                                                                                        is_selected: 0,
-                                                                                    })),
-                                                                                };
-                                                                            }
-                                                                            return i;
-                                                                        }),
+                                                                        breakfastCategories: prev.breakfastCategories.map((c, idx) =>
+                                                                            idx === catIdx
+                                                                                ? {
+                                                                                    ...c,
+                                                                                    entreeItems: c.entreeItems.map(i => {
+                                                                                        if (i.id === item.id) {
+                                                                                            const newQty = Math.max((i.qty || 0) - 1, 0);
+                                                                                            return {
+                                                                                                ...i,
+                                                                                                qty: newQty,
+                                                                                                options: (i.options || []).length > 0 && newQty === 0
+                                                                                                    ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                                    : i.options,
+                                                                                                preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                                            };
+                                                                                        }
+                                                                                        if ((i.qty || 0) === 0) {
+                                                                                            return {
+                                                                                                ...i,
+                                                                                                options: (i.options || []).length > 0
+                                                                                                    ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                                    : i.options,
+                                                                                                preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                                            };
+                                                                                        }
+                                                                                        return i;
+                                                                                    }),
+                                                                                }
+                                                                                : c
+                                                                        )
                                                                     }))
                                                                 }
                                                                 style={{ marginRight: 8 }}
@@ -727,35 +722,18 @@ const Order = () => {
                                                                 -
                                                             </button>
                                                         )}
-                                                        <Typography
-                                                            sx={kitchenSummery ? { fontSize: 24, fontWeight: 700 } : {}}
-                                                        >
+                                                        <Typography sx={kitchenSummery ? { fontSize: 24, fontWeight: 700 } : {}}>
                                                             {item.qty || 0}
                                                         </Typography>
-                                                        {/* <button
-                                                            onClick={() =>
-                                                                setData((prev) => ({
-                                                                    ...prev,
-                                                                    breakFastDailySpecial: prev.breakFastDailySpecial.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? { ...i, qty: 1 }
-                                                                            : { ...i, qty: 0 } // only single items selected 
-                                                                    ),
-                                                                }))
-                                                            }
-                                                            style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1 || isAfter10AM || isPast}
-                                                        >
-                                                            +
-                                                        </button> */}
                                                         {!kitchenSummery && (
                                                             <button
                                                                 onClick={() => {
-                                                                    setData((prev) => {
-                                                                        const totalQty = (prev.breakFastDailySpecial?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
-                                                                            (prev.breakFastAlternative?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
-                                                                        let newSpecial = [...prev.breakFastDailySpecial];
-                                                                        let newAlternative = [...(prev.breakFastAlternative || [])];
+                                                                    setData(prev => {
+                                                                        const totalQty =
+                                                                            (prev.breakfastCategories[catIdx]?.entreeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
+                                                                            (prev.breakfastCategories[catIdx]?.alternativeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
+                                                                        let newEntree = [...prev.breakfastCategories[catIdx].entreeItems];
+                                                                        let newAlternative = [...(prev.breakfastCategories[catIdx].alternativeItems || [])];
                                                                         if (totalQty >= MAX_MEAL_QTY) {
                                                                             let removed = false;
                                                                             newAlternative = newAlternative.map((alt) => {
@@ -765,241 +743,209 @@ const Order = () => {
                                                                                     return {
                                                                                         ...alt,
                                                                                         qty: newQty,
-                                                                                        options: (alt.options || []).length > 0 && newQty === 0
-                                                                                            ? alt.options.map((opt, idx) => ({
-                                                                                                ...opt,
-                                                                                                is_selected: idx === 0 ? 1 : 0,
-                                                                                            }))
+                                                                                        options: (alt.options || []).length > 0 && alt.qty > 0 && newQty === 0
+                                                                                            ? alt.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                             : alt.options,
-                                                                                        preference: (alt.preference || []).length > 0 && newQty === 0
-                                                                                            ? alt.preference.map((p) => ({
-                                                                                                ...p,
-                                                                                                is_selected: 0,
-                                                                                            }))
+                                                                                        preference: (alt.preference || []).length > 0 && alt.qty > 0 && newQty === 0
+                                                                                            ? alt.preference.map((p) => ({ ...p, is_selected: 0 }))
                                                                                             : alt.preference,
-                                                                                    };
-                                                                                }
-                                                                                if ((alt.qty || 0) === 0) {
-                                                                                    return {
-                                                                                        ...alt,
-                                                                                        options: (alt.options || []).length > 0
-                                                                                            ? alt.options.map((opt, idx) => ({
-                                                                                                ...opt,
-                                                                                                is_selected: idx === 0 ? 1 : 0,
-                                                                                            }))
-                                                                                            : alt.options,
-                                                                                        preference: (alt.preference || []).map((p) => ({
-                                                                                            ...p,
-                                                                                            is_selected: 0,
-                                                                                        })),
                                                                                     };
                                                                                 }
                                                                                 return alt;
                                                                             });
                                                                             if (!removed) {
-                                                                                newSpecial = newSpecial.map((sp) => {
-                                                                                    if (!removed && sp.id !== item.id && sp.qty > 0) {
+                                                                                newEntree = newEntree.map((en) => {
+                                                                                    if (!removed && en.id !== item.id && en.qty > 0) {
                                                                                         removed = true;
-                                                                                        const newQty = sp.qty - 1;
+                                                                                        const newQty = en.qty - 1;
                                                                                         return {
-                                                                                            ...sp,
+                                                                                            ...en,
                                                                                             qty: newQty,
-                                                                                            options: (sp.options || []).length > 0 && newQty === 0
-                                                                                                ? sp.options.map((opt, idx) => ({
-                                                                                                    ...opt,
-                                                                                                    is_selected: idx === 0 ? 1 : 0,
-                                                                                                }))
-                                                                                                : sp.options,
-                                                                                            preference: (sp.preference || []).length > 0 && newQty === 0
-                                                                                                ? sp.preference.map((p) => ({
-                                                                                                    ...p,
-                                                                                                    is_selected: 0,
-                                                                                                }))
-                                                                                                : sp.preference,
+                                                                                            options: (en.options || []).length > 0 && en.qty > 0 && newQty === 0
+                                                                                                ? en.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                                : en.options,
+                                                                                            preference: (en.preference || []).length > 0 && en.qty > 0 && newQty === 0
+                                                                                                ? en.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                                : en.preference,
                                                                                         };
                                                                                     }
-                                                                                    if ((sp.qty || 0) === 0) {
-                                                                                        return {
-                                                                                            ...sp,
-                                                                                            options: (sp.options || []).length > 0
-                                                                                                ? sp.options.map((opt, idx) => ({
-                                                                                                    ...opt,
-                                                                                                    is_selected: idx === 0 ? 1 : 0,
-                                                                                                }))
-                                                                                                : sp.options,
-                                                                                            preference: (sp.preference || []).map((p) => ({
-                                                                                                ...p,
-                                                                                                is_selected: 0,
-                                                                                            })),
-                                                                                        };
-                                                                                    }
-                                                                                    return sp;
+                                                                                    return en;
                                                                                 });
                                                                             }
                                                                         }
-                                                                        newSpecial = newSpecial.map((i) =>
-                                                                            i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
+                                                                        newEntree = newEntree.map((i) =>
+                                                                            i.id === item.id
+                                                                                ? {
+                                                                                    ...i,
+                                                                                    qty: (i.qty || 0) + 1,
+                                                                                    options: (i.options || []).length > 0 && (i.qty || 0) === 0
+                                                                                        ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                        : i.options,
+                                                                                    preference: (i.preference || []).length > 0 && (i.qty || 0) === 0
+                                                                                        ? i.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                        : i.preference,
+                                                                                }
+                                                                                : i
                                                                         );
                                                                         return {
                                                                             ...prev,
-                                                                            breakFastDailySpecial: newSpecial,
-                                                                            breakFastAlternative: newAlternative,
+                                                                            breakfastCategories: prev.breakfastCategories.map((c, idx) =>
+                                                                                idx === catIdx
+                                                                                    ? {
+                                                                                        ...c,
+                                                                                        entreeItems: newEntree,
+                                                                                        alternativeItems: newAlternative,
+                                                                                    }
+                                                                                    : c
+                                                                            )
                                                                         };
                                                                     });
                                                                 }}
                                                                 style={{ marginLeft: 8 }}
-                                                                disabled={
-                                                                    item.qty >= MAX_MEAL_QTY ||
-                                                                    isAfter10AM ||
-                                                                    isPast
-                                                                }
+                                                                disabled={item.qty >= MAX_MEAL_QTY || isAfter10AM || isPast}
                                                             >
                                                                 +
                                                             </button>
                                                         )}
                                                     </Box>
                                                 </Box>
-                                                {/* Show options and preference if qty > 0 and available */}
-                                                {(item.qty > 0) && ((item.options && item.options.length > 0) || (item.preference && item.preference.length > 0)) && (
-                                                    <Box mt={1} ml={3}>
-                                                        {item.options && item.options.length > 0 && (
-                                                            <Box mb={1}>
-                                                                {item.options.map((opt) => (
-                                                                    <label key={opt.id} style={{ marginRight: 12 }}>
-                                                                        <input
-                                                                            type="radio"
-                                                                            name={`option-${item.id}`}
-                                                                            checked={!!opt.is_selected}
-                                                                            onChange={() => {
-                                                                                setData((prev) => ({
-                                                                                    ...prev,
-                                                                                    breakFastDailySpecial: prev.breakFastDailySpecial.map((i) =>
-                                                                                        i.id === item.id
-                                                                                            ? {
-                                                                                                ...i,
-                                                                                                options: i.options.map((o) =>
-                                                                                                    o.id === opt.id
-                                                                                                        ? { ...o, is_selected: 1 }
-                                                                                                        : { ...o, is_selected: 0 }
-                                                                                                ),
-                                                                                            }
-                                                                                            : i
-                                                                                    ),
-                                                                                }));
-                                                                            }}
-                                                                        />
-                                                                        {opt.name}
-                                                                    </label>
-                                                                ))}
-                                                            </Box>
-                                                        )}
-                                                        {/* Display Preference as checkboxes */}
-                                                        {item.preference && item.preference.length > 0 && (
-                                                            <Box>
-                                                                {item.preference.map((pref) => (
-                                                                    <label key={pref.id} style={{ marginRight: 12 }}>
-                                                                        <input
-                                                                            type="checkbox"
-                                                                            checked={!!pref.is_selected}
-                                                                            onChange={() => {
-                                                                                setData((prev) => ({
-                                                                                    ...prev,
-                                                                                    breakFastDailySpecial: prev.breakFastDailySpecial.map((i) =>
-                                                                                        i.id === item.id
-                                                                                            ? {
-                                                                                                ...i,
-                                                                                                preference: i.preference.map((p) =>
-                                                                                                    p.id === pref.id
-                                                                                                        ? { ...p, is_selected: p.is_selected ? 0 : 1 }
-                                                                                                        : p
-                                                                                                ),
-                                                                                            }
-                                                                                            : i
-                                                                                    ),
-                                                                                }));
-                                                                            }}
-                                                                        />
-                                                                        {pref.name}
-                                                                    </label>
-                                                                ))}
-                                                            </Box>
-                                                        )}
-                                                    </Box>
-                                                )}
+                                                {/* Options and Preference */}
+                                                <Box mt={2} ml={1} sx={{ width: "100%", minHeight: item.qty > 0 ? "auto" : 0 }}>
+                                                    {(item.qty > 0) && (
+                                                        <Box mt={2} ml={1} sx={{ width: "100%" }}>
+                                                            {item.options && item.options.length > 0 && (
+                                                                <Box mb={1}>
+                                                                    {item.options.map((opt) => (
+                                                                        <label key={opt.id} style={{ marginRight: 12 }}>
+                                                                            <input
+                                                                                type="radio"
+                                                                                name={`breakfast-entree-option-${cat.cat_id}-${item.id}`}
+                                                                                checked={!!opt.is_selected}
+                                                                                onChange={() => {
+                                                                                    setData(prev => ({
+                                                                                        ...prev,
+                                                                                        breakfastCategories: prev.breakfastCategories.map((c, idx) =>
+                                                                                            idx === catIdx
+                                                                                                ? {
+                                                                                                    ...c,
+                                                                                                    entreeItems: c.entreeItems.map(i =>
+                                                                                                        i.id === item.id
+                                                                                                            ? {
+                                                                                                                ...i,
+                                                                                                                options: i.options.map(o =>
+                                                                                                                    o.id === opt.id
+                                                                                                                        ? { ...o, is_selected: 1 }
+                                                                                                                        : { ...o, is_selected: 0 }
+                                                                                                                ),
+                                                                                                            }
+                                                                                                            : i
+                                                                                                    ),
+                                                                                                }
+                                                                                                : c
+                                                                                        )
+                                                                                    }));
+                                                                                }}
+                                                                            />
+                                                                            {opt.name}
+                                                                        </label>
+                                                                    ))}
+                                                                </Box>
+                                                            )}
+                                                            {item.preference && item.preference.length > 0 && (
+                                                                <Box>
+                                                                    {item.preference.map((pref) => (
+                                                                        <label key={pref.id} style={{ marginRight: 12 }}>
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={!!pref.is_selected}
+                                                                                onChange={() => {
+                                                                                    setData(prev => ({
+                                                                                        ...prev,
+                                                                                        breakfastCategories: prev.breakfastCategories.map((c, idx) =>
+                                                                                            idx === catIdx
+                                                                                                ? {
+                                                                                                    ...c,
+                                                                                                    entreeItems: c.entreeItems.map(i =>
+                                                                                                        i.id === item.id
+                                                                                                            ? {
+                                                                                                                ...i,
+                                                                                                                preference: i.preference.map(p =>
+                                                                                                                    p.id === pref.id
+                                                                                                                        ? { ...p, is_selected: p.is_selected ? 0 : 1 }
+                                                                                                                        : p
+                                                                                                                ),
+                                                                                                            }
+                                                                                                            : i
+                                                                                                    ),
+                                                                                                }
+                                                                                                : c
+                                                                                        )
+                                                                                    }));
+                                                                                }}
+                                                                            />
+                                                                            {pref.name}
+                                                                        </label>
+                                                                    ))}
+                                                                </Box>
+                                                            )}
+                                                        </Box>
+                                                    )}
+                                                </Box>
                                             </Box>
                                         ))}
-                                    </>
-                                )}
 
-                                {/* Alternatives  */}
-                                {data.breakFastAlternative && data.breakFastAlternative.length > 0 && (
-                                    <>
-                                        <Typography variant="h6" sx={{ mt: 3, mb: 2, fontWeight: 600 }}>
-                                            {userData?.langCode === "cn" && data.breakFastAlternativeCatName_cn && data.breakFastAlternativeCatName_cn.trim() !== ""
-                                                ? data.breakFastAlternativeCatName_cn
-                                                : data.breakFastAlternativeCatName}
-                                        </Typography>
-                                        {data.breakFastAlternative.map((item) => (
+                                        {/* Alternative Subcategory Title */}
+                                        {cat.alternativeCatName && (
+                                            <Typography variant="subtitle1" sx={{ mt: 3, mb: 2, fontWeight: 700 }}>
+                                                {userData?.langCode === "cn" && cat.alternativeCatName_cn && cat.alternativeCatName_cn.trim() !== ""
+                                                    ? cat.alternativeCatName_cn
+                                                    : cat.alternativeCatName}
+                                            </Typography>
+                                        )}
+
+                                        {/* Alternative Items */}
+                                        {cat.alternativeItems.map(item => (
                                             <Box key={item.id} mb={1}>
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
                                                     <Box display="flex" alignItems="center">
                                                         {item.image && (
                                                             <img
                                                                 src={item.image}
-                                                                alt={userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== "" ? item.chinese_name : item.name}
+                                                                alt={userData?.langCode === "cn" && item.chinese_name ? item.chinese_name : item.name}
                                                                 style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, marginRight: 12 }}
                                                             />
                                                         )}
                                                         <Typography>
-                                                            {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
-                                                                ? item.chinese_name
-                                                                : item.name}
+                                                            {userData?.langCode === "cn" && item.chinese_name ? item.chinese_name : item.name}
                                                         </Typography>
                                                     </Box>
                                                     <Box display="flex" alignItems="center">
                                                         {!kitchenSummery && (
                                                             <button
                                                                 onClick={() =>
-                                                                    setData((prev) => ({
+                                                                    setData(prev => ({
                                                                         ...prev,
-                                                                        breakFastAlternative: prev.breakFastAlternative.map((i) => {
-                                                                            const newQty = Math.max((i.qty || 0) - (i.id === item.id ? 1 : 0), 0);
-                                                                            if (i.id === item.id) {
-                                                                                return {
-                                                                                    ...i,
-                                                                                    qty: newQty,
-                                                                                    options: (i.options || []).length > 0 && newQty === 0
-                                                                                        ? i.options.map((opt, idx) => ({
-                                                                                            ...opt,
-                                                                                            is_selected: idx === 0 ? 1 : 0,
-                                                                                        }))
-                                                                                        : i.options,
-                                                                                    preference: (i.preference || []).length > 0 && newQty === 0
-                                                                                        ? i.preference.map((p) => ({
-                                                                                            ...p,
-                                                                                            is_selected: 0,
-                                                                                        }))
-                                                                                        : i.preference,
-                                                                                };
-                                                                            }
-                                                                            // If previous qty is 0, also reset options and preference
-                                                                            if ((i.qty || 0) === 0) {
-                                                                                return {
-                                                                                    ...i,
-                                                                                    options: (i.options || []).length > 0
-                                                                                        ? i.options.map((opt, idx) => ({
-                                                                                            ...opt,
-                                                                                            is_selected: idx === 0 ? 1 : 0,
-                                                                                        }))
-                                                                                        : i.options,
-                                                                                    preference: (i.preference || []).map((p) => ({
-                                                                                        ...p,
-                                                                                        is_selected: 0,
-                                                                                    })),
-                                                                                };
-                                                                            }
-                                                                            return i;
-                                                                        }),
+                                                                        breakfastCategories: prev.breakfastCategories.map((c, idx) =>
+                                                                            idx === catIdx
+                                                                                ? {
+                                                                                    ...c,
+                                                                                    alternativeItems: c.alternativeItems.map(i =>
+                                                                                        i.id === item.id
+                                                                                            ? {
+                                                                                                ...i,
+                                                                                                qty: Math.max((i.qty || 0) - 1, 0),
+                                                                                                options: (i.options || []).length > 0 && Math.max((i.qty || 0) - 1, 0) === 0
+                                                                                                    ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                                    : i.options,
+                                                                                                preference: (i.preference || []).length > 0 && Math.max((i.qty || 0) - 1, 0) === 0
+                                                                                                    ? i.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                                    : i.preference,
+                                                                                            }
+                                                                                            : i
+                                                                                    )
+                                                                                }
+                                                                                : c
+                                                                        )
                                                                     }))
                                                                 }
                                                                 style={{ marginRight: 8 }}
@@ -1008,57 +954,36 @@ const Order = () => {
                                                                 -
                                                             </button>
                                                         )}
-                                                        <Typography
-                                                            sx={kitchenSummery ? { fontSize: 24, fontWeight: 700 } : {}}
-                                                        >
+                                                        <Typography sx={kitchenSummery ? { fontSize: 24, fontWeight: 700 } : {}}>
                                                             {item.qty || 0}
-                                                        </Typography>                                                        {!kitchenSummery && (
+                                                        </Typography>
+                                                        {!kitchenSummery && (
                                                             <button
                                                                 onClick={() => {
-                                                                    setData((prev) => {
-                                                                        const totalQty = (prev.breakFastDailySpecial?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
-                                                                            (prev.breakFastAlternative?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
-                                                                        let newAlternative = [...prev.breakFastAlternative];
-                                                                        let newSpecial = [...(prev.breakFastDailySpecial || [])];
+                                                                    setData(prev => {
+                                                                        const totalQty =
+                                                                            (prev.breakfastCategories[catIdx]?.entreeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
+                                                                            (prev.breakfastCategories[catIdx]?.alternativeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
+                                                                        let newAlternative = [...prev.breakfastCategories[catIdx].alternativeItems];
+                                                                        let newEntree = [...(prev.breakfastCategories[catIdx].entreeItems || [])];
                                                                         if (totalQty >= MAX_MEAL_QTY) {
                                                                             let removed = false;
-                                                                            newSpecial = newSpecial.map((sp) => {
-                                                                                if (!removed && sp.qty > 0) {
+                                                                            newEntree = newEntree.map((en) => {
+                                                                                if (!removed && en.qty > 0) {
                                                                                     removed = true;
-                                                                                    const newQty = sp.qty - 1;
+                                                                                    const newQty = en.qty - 1;
                                                                                     return {
-                                                                                        ...sp,
+                                                                                        ...en,
                                                                                         qty: newQty,
-                                                                                        options: (sp.options || []).length > 0 && newQty === 0
-                                                                                            ? sp.options.map((opt, idx) => ({
-                                                                                                ...opt,
-                                                                                                is_selected: idx === 0 ? 1 : 0,
-                                                                                            }))
-                                                                                            : sp.options,
-                                                                                        preference: (sp.preference || []).length > 0 && newQty === 0
-                                                                                            ? sp.preference.map((p) => ({
-                                                                                                ...p,
-                                                                                                is_selected: 0,
-                                                                                            }))
-                                                                                            : sp.preference,
+                                                                                        options: (en.options || []).length > 0 && en.qty > 0 && newQty === 0
+                                                                                            ? en.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                            : en.options,
+                                                                                        preference: (en.preference || []).length > 0 && en.qty > 0 && newQty === 0
+                                                                                            ? en.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                            : en.preference,
                                                                                     };
                                                                                 }
-                                                                                if ((sp.qty || 0) === 0) {
-                                                                                    return {
-                                                                                        ...sp,
-                                                                                        options: (sp.options || []).length > 0
-                                                                                            ? sp.options.map((opt, idx) => ({
-                                                                                                ...opt,
-                                                                                                is_selected: idx === 0 ? 1 : 0,
-                                                                                            }))
-                                                                                            : sp.options,
-                                                                                        preference: (sp.preference || []).map((p) => ({
-                                                                                            ...p,
-                                                                                            is_selected: 0,
-                                                                                        })),
-                                                                                    };
-                                                                                }
-                                                                                return sp;
+                                                                                return en;
                                                                             });
                                                                             if (!removed) {
                                                                                 newAlternative = newAlternative.map((alt) => {
@@ -1068,33 +993,12 @@ const Order = () => {
                                                                                         return {
                                                                                             ...alt,
                                                                                             qty: newQty,
-                                                                                            options: (alt.options || []).length > 0 && newQty === 0
-                                                                                                ? alt.options.map((opt, idx) => ({
-                                                                                                    ...opt,
-                                                                                                    is_selected: idx === 0 ? 1 : 0,
-                                                                                                }))
+                                                                                            options: (alt.options || []).length > 0 && alt.qty > 0 && newQty === 0
+                                                                                                ? alt.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                                 : alt.options,
-                                                                                            preference: (alt.preference || []).length > 0 && newQty === 0
-                                                                                                ? alt.preference.map((p) => ({
-                                                                                                    ...p,
-                                                                                                    is_selected: 0,
-                                                                                                }))
+                                                                                            preference: (alt.preference || []).length > 0 && alt.qty > 0 && newQty === 0
+                                                                                                ? alt.preference.map((p) => ({ ...p, is_selected: 0 }))
                                                                                                 : alt.preference,
-                                                                                        };
-                                                                                    }
-                                                                                    if ((alt.qty || 0) === 0) {
-                                                                                        return {
-                                                                                            ...alt,
-                                                                                            options: (alt.options || []).length > 0
-                                                                                                ? alt.options.map((opt, idx) => ({
-                                                                                                    ...opt,
-                                                                                                    is_selected: idx === 0 ? 1 : 0,
-                                                                                                }))
-                                                                                                : alt.options,
-                                                                                            preference: (alt.preference || []).map((p) => ({
-                                                                                                ...p,
-                                                                                                is_selected: 0,
-                                                                                            })),
                                                                                         };
                                                                                     }
                                                                                     return alt;
@@ -1102,101 +1006,133 @@ const Order = () => {
                                                                             }
                                                                         }
                                                                         newAlternative = newAlternative.map((i) =>
-                                                                            i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
+                                                                            i.id === item.id
+                                                                                ? {
+                                                                                    ...i,
+                                                                                    qty: (i.qty || 0) + 1,
+                                                                                    options: (i.options || []).length > 0 && (i.qty || 0) === 0
+                                                                                        ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                        : i.options,
+                                                                                    preference: (i.preference || []).length > 0 && (i.qty || 0) === 0
+                                                                                        ? i.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                        : i.preference,
+                                                                                }
+                                                                                : i
                                                                         );
                                                                         return {
                                                                             ...prev,
-                                                                            breakFastDailySpecial: newSpecial,
-                                                                            breakFastAlternative: newAlternative,
+                                                                            breakfastCategories: prev.breakfastCategories.map((c, idx) =>
+                                                                                idx === catIdx
+                                                                                    ? {
+                                                                                        ...c,
+                                                                                        entreeItems: newEntree,
+                                                                                        alternativeItems: newAlternative,
+                                                                                    }
+                                                                                    : c
+                                                                            )
                                                                         };
                                                                     });
                                                                 }}
                                                                 style={{ marginLeft: 8 }}
-                                                                disabled={
-                                                                    item.qty >= MAX_MEAL_QTY ||
-                                                                    isAfter10AM ||
-                                                                    isPast
-                                                                }
+                                                                disabled={item.qty >= MAX_MEAL_QTY || isAfter10AM || isPast}
                                                             >
                                                                 +
                                                             </button>
                                                         )}
                                                     </Box>
                                                 </Box>
-                                                {/* Show options and preference if qty > 0 and available */}
-                                                {(item.qty > 0) && ((item.options && item.options.length > 0) || (item.preference && item.preference.length > 0)) && (
-                                                    <Box mt={1} ml={3}>
-                                                        {item.options && item.options.length > 0 && (
-                                                            <Box mb={1}>
-                                                                {item.options.map((opt) => (
-                                                                    <label key={opt.id} style={{ marginRight: 12 }}>
-                                                                        <input
-                                                                            type="radio"
-                                                                            name={`breakfast-alt-option-${item.id}`}
-                                                                            checked={!!opt.is_selected}
-                                                                            onChange={() => {
-                                                                                setData((prev) => ({
-                                                                                    ...prev,
-                                                                                    breakFastAlternative: prev.breakFastAlternative.map((i) =>
-                                                                                        i.id === item.id
-                                                                                            ? {
-                                                                                                ...i,
-                                                                                                options: i.options.map((o) =>
-                                                                                                    o.id === opt.id
-                                                                                                        ? { ...o, is_selected: 1 }
-                                                                                                        : { ...o, is_selected: 0 }
-                                                                                                ),
-                                                                                            }
-                                                                                            : i
-                                                                                    ),
-                                                                                }));
-                                                                            }}
-                                                                        />
-                                                                        {opt.name}
-                                                                    </label>
-                                                                ))}
-                                                            </Box>
-                                                        )}
-                                                        {item.preference && item.preference.length > 0 && (
-                                                            <Box>
-                                                                {item.preference.map((pref) => (
-                                                                    <label key={pref.id} style={{ marginRight: 12 }}>
-                                                                        <input
-                                                                            type="checkbox"
-                                                                            checked={!!pref.is_selected}
-                                                                            onChange={() => {
-                                                                                setData((prev) => ({
-                                                                                    ...prev,
-                                                                                    breakFastAlternative: prev.breakFastAlternative.map((i) =>
-                                                                                        i.id === item.id
-                                                                                            ? {
-                                                                                                ...i,
-                                                                                                preference: i.preference.map((p) =>
-                                                                                                    p.id === pref.id
-                                                                                                        ? { ...p, is_selected: p.is_selected ? 0 : 1 }
-                                                                                                        : p
-                                                                                                ),
-                                                                                            }
-                                                                                            : i
-                                                                                    ),
-                                                                                }));
-                                                                            }}
-                                                                        />
-                                                                        {pref.name}
-                                                                    </label>
-                                                                ))}
-                                                            </Box>
-                                                        )}
-                                                    </Box>
-                                                )}
+                                                {/* Options and Preference */}
+                                                <Box mt={2} ml={1} sx={{ width: "100%", minHeight: item.qty > 0 ? "auto" : 0 }}>
+                                                    {(item.qty > 0) && (
+                                                        <Box mt={2} ml={1}>
+                                                            {item.options && item.options.length > 0 && (
+                                                                <Box mb={1}>
+                                                                    {item.options.map((opt) => (
+                                                                        <label key={opt.id} style={{ marginRight: 12 }}>
+                                                                            <input
+                                                                                type="radio"
+                                                                                name={`breakfast-alt-option-${cat.cat_id}-${item.id}`}
+                                                                                checked={!!opt.is_selected}
+                                                                                onChange={() => {
+                                                                                    setData(prev => ({
+                                                                                        ...prev,
+                                                                                        breakfastCategories: prev.breakfastCategories.map((c, idx) =>
+                                                                                            idx === catIdx
+                                                                                                ? {
+                                                                                                    ...c,
+                                                                                                    alternativeItems: c.alternativeItems.map(i =>
+                                                                                                        i.id === item.id
+                                                                                                            ? {
+                                                                                                                ...i,
+                                                                                                                options: i.options.map(o =>
+                                                                                                                    o.id === opt.id
+                                                                                                                        ? { ...o, is_selected: 1 }
+                                                                                                                        : { ...o, is_selected: 0 }
+                                                                                                                ),
+                                                                                                            }
+                                                                                                            : i
+                                                                                                    ),
+                                                                                                }
+                                                                                                : c
+                                                                                        )
+                                                                                    }));
+                                                                                }}
+                                                                            />
+                                                                            {opt.name}
+                                                                        </label>
+                                                                    ))}
+                                                                </Box>
+                                                            )}
+                                                            {item.preference && item.preference.length > 0 && (
+                                                                <Box>
+                                                                    {item.preference.map((pref) => (
+                                                                        <label key={pref.id} style={{ marginRight: 12 }}>
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={!!pref.is_selected}
+                                                                                onChange={() => {
+                                                                                    setData(prev => ({
+                                                                                        ...prev,
+                                                                                        breakfastCategories: prev.breakfastCategories.map((c, idx) =>
+                                                                                            idx === catIdx
+                                                                                                ? {
+                                                                                                    ...c,
+                                                                                                    alternativeItems: c.alternativeItems.map(i =>
+                                                                                                        i.id === item.id
+                                                                                                            ? {
+                                                                                                                ...i,
+                                                                                                                preference: i.preference.map(p =>
+                                                                                                                    p.id === pref.id
+                                                                                                                        ? { ...p, is_selected: p.is_selected ? 0 : 1 }
+                                                                                                                        : p
+                                                                                                                ),
+                                                                                                            }
+                                                                                                            : i
+                                                                                                    ),
+                                                                                                }
+                                                                                                : c
+                                                                                        )
+                                                                                    }));
+                                                                                }}
+                                                                            />
+                                                                            {pref.name}
+                                                                        </label>
+                                                                    ))}
+                                                                </Box>
+                                                            )}
+                                                        </Box>
+                                                    )}
+                                                </Box>
                                             </Box>
                                         ))}
-                                    </>
-                                )}
-                                {/* Add Additional Services */}
+                                    </Box>
+                                ))}
                                 {(
-                                    (data.breakFastDailySpecial?.some(item => item.qty > 0) ||
-                                        data.breakFastAlternative?.some(item => item.qty > 0)) &&
+                                    Array.isArray(data.breakfastCategories) &&
+                                    data.breakfastCategories.some(cat =>
+                                        (cat.entreeItems && cat.entreeItems.some(item => item.qty > 0)) ||
+                                        (cat.alternativeItems && cat.alternativeItems.some(item => item.qty > 0))
+                                    ) &&
                                     !kitchenSummery
                                 ) && (
                                         <Box mt={3} display="flex" gap={2}>
@@ -1227,16 +1163,7 @@ const Order = () => {
                                                 <span style={{ marginLeft: 5 }}>{langObj.escortService}</span>
                                             </label>
                                             <label style={{ display: "flex", alignItems: "center" }}>
-                                                <input
-                                                    type="checkbox"
-                                                // checked={data.is_dinner_tray_service === 1}
-                                                // onChange={e => {
-                                                //     setData(prev => ({
-                                                //         ...prev,
-                                                //         is_dinner_tray_service: e.target.checked ? 1 : 0
-                                                //     }));
-                                                // }}
-                                                />
+                                                <input type="checkbox" />
                                                 <span style={{ marginLeft: 5 }}>{langObj.Takeout}</span>
                                             </label>
                                         </Box>
@@ -1251,14 +1178,13 @@ const Order = () => {
                                         </Typography>
                                     </>
                                 )}
-                                {data.breakFastDailySpecial && data.breakFastAlternative &&
-                                    data.breakFastDailySpecial.length === 0 &&
-                                    data.breakFastAlternative.length === 0 && (
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                            {langObj.breakFasrMenuWarn}
-                                        </Typography>
-                                    )}
-                                {/* Add Submit Button for BreakFast DataSubmit */}
+
+                                {Array.isArray(data.breakfastCategories) && data.breakfastCategories.length === 0 && (
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                        {langObj.breakFasrMenuWarn}
+                                    </Typography>
+                                )}
+
                                 {kitchenSummery && (
                                     <Box mt={3} display="flex" justifyContent="center">
                                         <CustomButton
@@ -1286,13 +1212,14 @@ const Order = () => {
                                         </CustomButton>
                                     </Box>
                                 )}
-                                {(
-                                    (
-                                        (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0)) ||
-                                        (data.lunchSoup?.some(item => item.qty > 0) || data.lunchEntree?.some(item => item.qty > 0) || data.lunchAlternative?.some(item => item.qty > 0)) ||
-                                        (data.dinnerSoup?.some(item => item.qty > 0) || data.dinnerEntree?.some(item => item.qty > 0) || data.dinnerAlternative?.some(item => item.qty > 0))
-                                    ) && !kitchenSummery
-                                ) && (
+
+                                {tabIndex === 0 &&
+                                    Array.isArray(data.breakfastCategories) &&
+                                    data.breakfastCategories.some(cat =>
+                                        (cat.entreeItems && cat.entreeItems.some(item => item.qty > 0)) ||
+                                        (cat.alternativeItems && cat.alternativeItems.some(item => item.qty > 0))
+                                    ) &&
+                                    !kitchenSummery && (
                                         <Box mt={3} display="flex" justifyContent="center">
                                             <CustomButton
                                                 sx={{
@@ -1306,250 +1233,89 @@ const Order = () => {
                                                     cursor: "pointer",
                                                     width: 'auto'
                                                 }}
+                                                disabled={isAfter10AM || isPast}
                                                 onClick={() => {
                                                     submitData(data, date)
                                                 }}
-                                                disabled={isAfter10AM || isPast}
                                             >
                                                 {langObj.submit}
                                             </CustomButton>
                                         </Box>
-                                    )}
+                                    )
+                                }
                             </Box>
                         )}
-
                         {tabIndex === 1 && (
                             <Box>
-                                {/* Soup */}
-                                {data.lunchSoup && data.lunchSoup.length > 0 && (
-                                    <>
-                                        <Typography variant="h6"
-                                            sx={{
-                                                mb: 2,
-                                                fontWeight: 600,
-                                                backgroundColor: "#f5f5f5",
-                                                px: 2,
-                                                py: 1,
-                                                borderRadius: 1,
-                                                display: "block",
-                                                textAlign: "center"
-                                            }}>
-                                            {userData?.langCode === "cn" && data.lunchSoupCatName_cn && data.lunchSoupCatName_cn.trim() !== ""
-                                                ? data.lunchSoupCatName_cn
-                                                : data.lunchSoupCatName}
+                                {Array.isArray(data.lunchCategories) && data.lunchCategories.map((cat, catIdx) => (
+                                    <Box key={cat.cat_id} mb={3}>
+                                        <Typography variant="h6" sx={{
+                                            mb: 2,
+                                            fontWeight: 600,
+                                            backgroundColor: "#f5f5f5",
+                                            px: 2,
+                                            py: 1,
+                                            borderRadius: 1,
+                                            textAlign: "center"
+                                        }}>
+                                            {userData?.langCode === "cn" && cat.cat_name_cn && cat.cat_name_cn.trim() !== ""
+                                                ? cat.cat_name_cn
+                                                : cat.cat_name}
+                                            {cat.cat_name === "LUNCH ENTREE" && ` (${langObj.servedWithSoup})`}
                                         </Typography>
-                                        {data.lunchSoup.map((item) => (
-                                            <Box key={item.id} mb={1}>
-                                                <Box display="flex" alignItems="center" justifyContent="space-between">
-                                                    <Box display="flex" alignItems="center">
-                                                        {item.image && (
-                                                            <img
-                                                                src={item.image}
-                                                                alt={userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== "" ? item.chinese_name : item.name}
-                                                                style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, marginRight: 12 }}
-                                                            />
-                                                        )}
-                                                        <Typography>
-                                                            {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
-                                                                ? item.chinese_name
-                                                                : item.name}
-                                                        </Typography>
-                                                    </Box>
-                                                    <Box display="flex" alignItems="center">
-                                                        {!kitchenSummery && (
-                                                            <button
-                                                                onClick={() =>
-                                                                    setData((prev) => ({
-                                                                        ...prev,
-                                                                        lunchSoup: prev.lunchSoup.map((i) =>
-                                                                            i.id === item.id
-                                                                                ? {
-                                                                                    ...i,
-                                                                                    qty: Math.max((i.qty || 0) - 1, 0),
-                                                                                    options: (i.options || []).length > 0
-                                                                                        ? i.options.map((opt, idx) => ({
-                                                                                            ...opt,
-                                                                                            is_selected: idx === 0 ? 1 : 0,
-                                                                                        }))
-                                                                                        : i.options,
-                                                                                    preference: (i.preference || []).map((p) => ({
-                                                                                        ...p,
-                                                                                        is_selected: 0,
-                                                                                    })),
-                                                                                }
-                                                                                : i
-                                                                        ),
-                                                                    }))
-                                                                }
-                                                                style={{ marginRight: 8 }}
-                                                                disabled={item.qty === 0 || isAfter3PM || isPast}
-                                                            >
-                                                                -
-                                                            </button>
-                                                        )}
-                                                        <Typography
-                                                            sx={kitchenSummery ? { fontSize: 24, fontWeight: 700 } : {}}
-                                                        >
-                                                            {item.qty || 0}
-                                                        </Typography>                                                        {!kitchenSummery && (
-                                                            <button
-                                                                onClick={() =>
-                                                                    setData((prev) => ({
-                                                                        ...prev,
-                                                                        lunchSoup: prev.lunchSoup.map((i) =>
-                                                                            i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
-                                                                        ),
-                                                                    }))
-                                                                }
-                                                                style={{ marginLeft: 8 }}
-                                                                disabled={
-                                                                    item.qty >= MAX_MEAL_QTY ||
-                                                                    totalLunchSoupQty >= MAX_MEAL_QTY ||
-                                                                    isAfter3PM ||
-                                                                    isPast
-                                                                }
-                                                            >
-                                                                +
-                                                            </button>
-                                                        )}
-                                                    </Box>
-                                                </Box>
-                                                {/* Show options and preference if qty > 0 and available */}
-                                                {(item.qty > 0) && ((item.options && item.options.length > 0) || (item.preference && item.preference.length > 0)) && (
-                                                    <Box mt={1} ml={3}>
-                                                        {item.options && item.options.length > 0 && (
-                                                            <Box mb={1}>
-                                                                {item.options.map((opt) => (
-                                                                    <label key={opt.id} style={{ marginRight: 12 }}>
-                                                                        <input
-                                                                            type="radio"
-                                                                            name={`lunch-soup-option-${item.id}`}
-                                                                            checked={!!opt.is_selected}
-                                                                            onChange={() => {
-                                                                                setData((prev) => ({
-                                                                                    ...prev,
-                                                                                    lunchSoup: prev.lunchSoup.map((i) =>
-                                                                                        i.id === item.id
-                                                                                            ? {
-                                                                                                ...i,
-                                                                                                options: i.options.map((o) =>
-                                                                                                    o.id === opt.id
-                                                                                                        ? { ...o, is_selected: 1 }
-                                                                                                        : { ...o, is_selected: 0 }
-                                                                                                ),
-                                                                                            }
-                                                                                            : i
-                                                                                    ),
-                                                                                }));
-                                                                            }}
-                                                                        />
-                                                                        {opt.name}
-                                                                    </label>
-                                                                ))}
-                                                            </Box>
-                                                        )}
-                                                        {item.preference && item.preference.length > 0 && (
-                                                            <Box>
-                                                                {item.preference.map((pref) => (
-                                                                    <label key={pref.id} style={{ marginRight: 12 }}>
-                                                                        <input
-                                                                            type="checkbox"
-                                                                            checked={!!pref.is_selected}
-                                                                            onChange={() => {
-                                                                                setData((prev) => ({
-                                                                                    ...prev,
-                                                                                    lunchSoup: prev.lunchSoup.map((i) =>
-                                                                                        i.id === item.id
-                                                                                            ? {
-                                                                                                ...i,
-                                                                                                preference: i.preference.map((p) =>
-                                                                                                    p.id === pref.id
-                                                                                                        ? { ...p, is_selected: p.is_selected ? 0 : 1 }
-                                                                                                        : p
-                                                                                                ),
-                                                                                            }
-                                                                                            : i
-                                                                                    ),
-                                                                                }));
-                                                                            }}
-                                                                        />
-                                                                        {pref.name}
-                                                                    </label>
-                                                                ))}
-                                                            </Box>
-                                                        )}
-                                                    </Box>
-                                                )}
-                                            </Box>
-                                        ))}
-                                    </>
-                                )}
 
-                                {/* Entree  */}
-                                {data.lunchEntree && data.lunchEntree.length > 0 && (
-                                    <>
-                                        <Typography variant="h6"
-                                            sx={{
-                                                mb: 2,
-                                                fontWeight: 600,
-                                                backgroundColor: "#f5f5f5",
-                                                px: 2,
-                                                py: 1,
-                                                borderRadius: 1,
-                                                display: "block",
-                                                textAlign: "center"
-                                            }}>
-                                            {userData?.langCode === "cn" && data.lunchEntreeCatName_cn && data.lunchEntreeCatName_cn.trim() !== ""
-                                                ? data.lunchEntreeCatName_cn
-                                                : data.lunchEntreeCatName} ({langObj.servedWithSoup})
-                                        </Typography>
-                                        {data.lunchEntree.map((item) => (
+                                        {/* Entree Items */}
+                                        {cat.entreeItems.map(item => (
                                             <Box key={item.id} mb={1}>
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
                                                     <Box display="flex" alignItems="center">
                                                         {item.image && (
                                                             <img
                                                                 src={item.image}
-                                                                alt={userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== "" ? item.chinese_name : item.name}
+                                                                alt={userData?.langCode === "cn" && item.chinese_name ? item.chinese_name : item.name}
                                                                 style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, marginRight: 12 }}
                                                             />
                                                         )}
                                                         <Typography>
-                                                            {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
-                                                                ? item.chinese_name
-                                                                : item.name}
+                                                            {userData?.langCode === "cn" && item.chinese_name ? item.chinese_name : item.name}
                                                         </Typography>
                                                     </Box>
                                                     <Box display="flex" alignItems="center">
                                                         {!kitchenSummery && (
                                                             <button
                                                                 onClick={() =>
-                                                                    setData((prev) => ({
+                                                                    setData(prev => ({
                                                                         ...prev,
-                                                                        lunchEntree: prev.lunchEntree.map((i) => {
-                                                                            if (i.id === item.id) {
-                                                                                const newQty = Math.max((i.qty || 0) - 1, 0);
-                                                                                return {
-                                                                                    ...i,
-                                                                                    qty: newQty,
-                                                                                    options: (i.options || []).length > 0 && newQty === 0
-                                                                                        ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
-                                                                                        : i.options,
-                                                                                    preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
-                                                                                };
-                                                                            }
-                                                                            // If qty is already 0, also reset options/preference
-                                                                            if ((i.qty || 0) === 0) {
-                                                                                return {
-                                                                                    ...i,
-                                                                                    options: (i.options || []).length > 0
-                                                                                        ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
-                                                                                        : i.options,
-                                                                                    preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
-                                                                                };
-                                                                            }
-                                                                            return i;
-                                                                        }),
+                                                                        lunchCategories: prev.lunchCategories.map((c, idx) =>
+                                                                            idx === catIdx
+                                                                                ? {
+                                                                                    ...c,
+                                                                                    entreeItems: c.entreeItems.map(i => {
+                                                                                        if (i.id === item.id) {
+                                                                                            const newQty = Math.max((i.qty || 0) - 1, 0);
+                                                                                            return {
+                                                                                                ...i,
+                                                                                                qty: newQty,
+                                                                                                options: (i.options || []).length > 0 && newQty === 0
+                                                                                                    ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                                    : i.options,
+                                                                                                preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                                            };
+                                                                                        }
+                                                                                        if ((i.qty || 0) === 0) {
+                                                                                            return {
+                                                                                                ...i,
+                                                                                                options: (i.options || []).length > 0
+                                                                                                    ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                                    : i.options,
+                                                                                                preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                                            };
+                                                                                        }
+                                                                                        return i;
+                                                                                    }),
+                                                                                }
+                                                                                : c
+                                                                        )
                                                                     }))
                                                                 }
                                                                 style={{ marginRight: 8 }}
@@ -1558,37 +1324,19 @@ const Order = () => {
                                                                 -
                                                             </button>
                                                         )}
-                                                        <Typography
-                                                            sx={kitchenSummery ? { fontSize: 24, fontWeight: 700 } : {}}
-                                                        >
+                                                        <Typography sx={kitchenSummery ? { fontSize: 24, fontWeight: 700 } : {}}>
                                                             {item.qty || 0}
-                                                        </Typography>                                                        {/* <button
-                                                            onClick={() =>
-                                                                setData((prev) => ({
-                                                                    ...prev,
-                                                                    lunchEntree: prev.lunchEntree.map((i) =>
-                                                                        i.id === item.id ? { ...i, qty: 1 } : { ...i, qty: 0 }
-                                                                    ),
-                                                                    lunchAlternative: prev.lunchAlternative.map((i) => ({ ...i, qty: 0 })),
-                                                                }))
-                                                            }
-                                                            style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1 || isAfter3PM || isPast}
-                                                        >
-                                                            +
-                                                        </button> */}
+                                                        </Typography>
                                                         {!kitchenSummery && (
                                                             <button
                                                                 onClick={() => {
-                                                                    setData((prev) => {
+                                                                    setData(prev => {
                                                                         const totalQty =
-                                                                            (prev.lunchEntree?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
-                                                                            (prev.lunchAlternative?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
-                                                                        let newEntree = [...prev.lunchEntree];
-                                                                        let newAlternative = [...(prev.lunchAlternative || [])];
+                                                                            (prev.lunchCategories[catIdx]?.entreeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
+                                                                            (prev.lunchCategories[catIdx]?.alternativeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
+                                                                        let newEntree = [...prev.lunchCategories[catIdx].entreeItems];
+                                                                        let newAlternative = [...(prev.lunchCategories[catIdx].alternativeItems || [])];
                                                                         if (totalQty >= MAX_MEAL_QTY) {
-                                                                            // Remove 1 qty from the other group if possible
-                                                                            // Try to remove from lunchAlternative first
                                                                             let removed = false;
                                                                             newAlternative = newAlternative.map((alt) => {
                                                                                 if (!removed && alt.qty > 0) {
@@ -1597,39 +1345,17 @@ const Order = () => {
                                                                                     return {
                                                                                         ...alt,
                                                                                         qty: newQty,
-                                                                                        options: (alt.options || []).length > 0 && newQty === 0
-                                                                                            ? alt.options.map((opt, idx) => ({
-                                                                                                ...opt,
-                                                                                                is_selected: idx === 0 ? 1 : 0,
-                                                                                            }))
+                                                                                        options: (alt.options || []).length > 0 && alt.qty > 0 && newQty === 0
+                                                                                            ? alt.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                             : alt.options,
-                                                                                        preference: (alt.preference || []).length > 0 && newQty === 0
-                                                                                            ? alt.preference.map((p) => ({
-                                                                                                ...p,
-                                                                                                is_selected: 0,
-                                                                                            }))
+                                                                                        preference: (alt.preference || []).length > 0 && alt.qty > 0 && newQty === 0
+                                                                                            ? alt.preference.map((p) => ({ ...p, is_selected: 0 }))
                                                                                             : alt.preference,
-                                                                                    };
-                                                                                }
-                                                                                if ((alt.qty || 0) === 0) {
-                                                                                    return {
-                                                                                        ...alt,
-                                                                                        options: (alt.options || []).length > 0
-                                                                                            ? alt.options.map((opt, idx) => ({
-                                                                                                ...opt,
-                                                                                                is_selected: idx === 0 ? 1 : 0,
-                                                                                            }))
-                                                                                            : alt.options,
-                                                                                        preference: (alt.preference || []).map((p) => ({
-                                                                                            ...p,
-                                                                                            is_selected: 0,
-                                                                                        })),
                                                                                     };
                                                                                 }
                                                                                 return alt;
                                                                             });
                                                                             if (!removed) {
-                                                                                // Try to remove from another entree item (not the current one)
                                                                                 newEntree = newEntree.map((en) => {
                                                                                     if (!removed && en.id !== item.id && en.qty > 0) {
                                                                                         removed = true;
@@ -1637,188 +1363,191 @@ const Order = () => {
                                                                                         return {
                                                                                             ...en,
                                                                                             qty: newQty,
-                                                                                            options: (en.options || []).length > 0 && newQty === 0
-                                                                                                ? en.options.map((opt, idx) => ({
-                                                                                                    ...opt,
-                                                                                                    is_selected: idx === 0 ? 1 : 0,
-                                                                                                }))
+                                                                                            options: (en.options || []).length > 0 && en.qty > 0 && newQty === 0
+                                                                                                ? en.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                                 : en.options,
-                                                                                            preference: (en.preference || []).length > 0 && newQty === 0
-                                                                                                ? en.preference.map((p) => ({
-                                                                                                    ...p,
-                                                                                                    is_selected: 0,
-                                                                                                }))
+                                                                                            preference: (en.preference || []).length > 0 && en.qty > 0 && newQty === 0
+                                                                                                ? en.preference.map((p) => ({ ...p, is_selected: 0 }))
                                                                                                 : en.preference,
-                                                                                        };
-                                                                                    }
-                                                                                    if ((en.qty || 0) === 0) {
-                                                                                        return {
-                                                                                            ...en,
-                                                                                            options: (en.options || []).length > 0
-                                                                                                ? en.options.map((opt, idx) => ({
-                                                                                                    ...opt,
-                                                                                                    is_selected: idx === 0 ? 1 : 0,
-                                                                                                }))
-                                                                                                : en.options,
-                                                                                            preference: (en.preference || []).map((p) => ({
-                                                                                                ...p,
-                                                                                                is_selected: 0,
-                                                                                            })),
                                                                                         };
                                                                                     }
                                                                                     return en;
                                                                                 });
                                                                             }
                                                                         }
-                                                                        // Now add qty to the current item
                                                                         newEntree = newEntree.map((i) =>
-                                                                            i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
+                                                                            i.id === item.id
+                                                                                ? {
+                                                                                    ...i,
+                                                                                    qty: (i.qty || 0) + 1,
+                                                                                    options: (i.options || []).length > 0 && (i.qty || 0) === 0
+                                                                                        ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                        : i.options,
+                                                                                    preference: (i.preference || []).length > 0 && (i.qty || 0) === 0
+                                                                                        ? i.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                        : i.preference,
+                                                                                }
+                                                                                : i
                                                                         );
                                                                         return {
                                                                             ...prev,
-                                                                            lunchEntree: newEntree,
-                                                                            lunchAlternative: newAlternative,
+                                                                            lunchCategories: prev.lunchCategories.map((c, idx) =>
+                                                                                idx === catIdx
+                                                                                    ? {
+                                                                                        ...c,
+                                                                                        entreeItems: newEntree,
+                                                                                        alternativeItems: newAlternative,
+                                                                                    }
+                                                                                    : c
+                                                                            )
                                                                         };
                                                                     });
                                                                 }}
                                                                 style={{ marginLeft: 8 }}
-                                                                disabled={
-                                                                    item.qty >= MAX_MEAL_QTY ||
-                                                                    isAfter3PM ||
-                                                                    isPast
-                                                                }
+                                                                disabled={item.qty >= MAX_MEAL_QTY || isAfter3PM || isPast}
                                                             >
                                                                 +
                                                             </button>
                                                         )}
                                                     </Box>
                                                 </Box>
-                                                {/* Show options and preference if qty > 0 and available */}
-                                                {(item.qty > 0) && ((item.options && item.options.length > 0) || (item.preference && item.preference.length > 0)) && (
-                                                    <Box mt={1} ml={3}>
-                                                        {item.options && item.options.length > 0 && (
-                                                            <Box mb={1}>
-                                                                {item.options.map((opt) => (
-                                                                    <label key={opt.id} style={{ marginRight: 12 }}>
-                                                                        <input
-                                                                            type="radio"
-                                                                            name={`lunch-entree-option-${item.id}`}
-                                                                            checked={!!opt.is_selected}
-                                                                            onChange={() => {
-                                                                                setData((prev) => ({
-                                                                                    ...prev,
-                                                                                    lunchEntree: prev.lunchEntree.map((i) =>
-                                                                                        i.id === item.id
-                                                                                            ? {
-                                                                                                ...i,
-                                                                                                options: i.options.map((o) =>
-                                                                                                    o.id === opt.id
-                                                                                                        ? { ...o, is_selected: 1 }
-                                                                                                        : { ...o, is_selected: 0 }
-                                                                                                ),
-                                                                                            }
-                                                                                            : i
-                                                                                    ),
-                                                                                }));
-                                                                            }}
-                                                                        />
-                                                                        {opt.name}
-                                                                    </label>
-                                                                ))}
-                                                            </Box>
-                                                        )}
-                                                        {item.preference && item.preference.length > 0 && (
-                                                            <Box>
-                                                                {item.preference.map((pref) => (
-                                                                    <label key={pref.id} style={{ marginRight: 12 }}>
-                                                                        <input
-                                                                            type="checkbox"
-                                                                            checked={!!pref.is_selected}
-                                                                            onChange={() => {
-                                                                                setData((prev) => ({
-                                                                                    ...prev,
-                                                                                    lunchEntree: prev.lunchEntree.map((i) =>
-                                                                                        i.id === item.id
-                                                                                            ? {
-                                                                                                ...i,
-                                                                                                preference: i.preference.map((p) =>
-                                                                                                    p.id === pref.id
-                                                                                                        ? { ...p, is_selected: p.is_selected ? 0 : 1 }
-                                                                                                        : p
-                                                                                                ),
-                                                                                            }
-                                                                                            : i
-                                                                                    ),
-                                                                                }));
-                                                                            }}
-                                                                        />
-                                                                        {pref.name}
-                                                                    </label>
-                                                                ))}
-                                                            </Box>
-                                                        )}
-                                                    </Box>
-                                                )}
+                                                {/* Options and Preference */}
+                                                <Box mt={2} ml={1} sx={{ width: "100%", minHeight: item.qty > 0 ? "auto" : 0 }} >
+                                                    {(item.qty > 0) && (
+                                                        <Box mt={2} ml={1} /* sx={{ width: "100%", minHeight: item.qty > 0 ? "auto" : 0 }} */ sx={{ width: "100%" }}>
+                                                            {item.options && item.options.length > 0 && (
+                                                                <Box mb={1}>
+                                                                    {item.options.map((opt) => (
+                                                                        <label key={opt.id} style={{ marginRight: 12 }}>
+                                                                            <input
+                                                                                type="radio"
+                                                                                name={`lunch-entree-option-${cat.cat_id}-${item.id}`}
+                                                                                checked={!!opt.is_selected}
+                                                                                onChange={() => {
+                                                                                    setData(prev => ({
+                                                                                        ...prev,
+                                                                                        lunchCategories: prev.lunchCategories.map((c, idx) =>
+                                                                                            idx === catIdx
+                                                                                                ? {
+                                                                                                    ...c,
+                                                                                                    entreeItems: c.entreeItems.map(i =>
+                                                                                                        i.id === item.id
+                                                                                                            ? {
+                                                                                                                ...i,
+                                                                                                                options: i.options.map(o =>
+                                                                                                                    o.id === opt.id
+                                                                                                                        ? { ...o, is_selected: 1 }
+                                                                                                                        : { ...o, is_selected: 0 }
+                                                                                                                ),
+                                                                                                            }
+                                                                                                            : i
+                                                                                                    ),
+                                                                                                }
+                                                                                                : c
+                                                                                        )
+                                                                                    }));
+                                                                                }}
+                                                                            />
+                                                                            {opt.name}
+                                                                        </label>
+                                                                    ))}
+                                                                </Box>
+                                                            )}
+                                                            {item.preference && item.preference.length > 0 && (
+                                                                <Box>
+                                                                    {item.preference.map((pref) => (
+                                                                        <label key={pref.id} style={{ marginRight: 12 }}>
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={!!pref.is_selected}
+                                                                                onChange={() => {
+                                                                                    setData(prev => ({
+                                                                                        ...prev,
+                                                                                        lunchCategories: prev.lunchCategories.map((c, idx) =>
+                                                                                            idx === catIdx
+                                                                                                ? {
+                                                                                                    ...c,
+                                                                                                    entreeItems: c.entreeItems.map(i =>
+                                                                                                        i.id === item.id
+                                                                                                            ? {
+                                                                                                                ...i,
+                                                                                                                preference: i.preference.map(p =>
+                                                                                                                    p.id === pref.id
+                                                                                                                        ? { ...p, is_selected: p.is_selected ? 0 : 1 }
+                                                                                                                        : p
+                                                                                                                ),
+                                                                                                            }
+                                                                                                            : i
+                                                                                                    ),
+                                                                                                }
+                                                                                                : c
+                                                                                        )
+                                                                                    }));
+                                                                                }}
+                                                                            />
+                                                                            {pref.name}
+                                                                        </label>
+                                                                    ))}
+                                                                </Box>
+                                                            )}
+                                                        </Box>
+                                                    )}
+                                                </Box>
                                             </Box>
                                         ))}
-                                    </>
-                                )}
-                                {/* Alternatives  */}
-                                {data.lunchAlternative && data.lunchAlternative.length > 0 && (
-                                    <>
-                                        <Typography variant="h6" sx={{ mt: 3, mb: 2, fontWeight: 600 }}>
-                                            {/* {data.lunchAlternativeCatName} */}
-                                            {userData?.langCode === "cn" && data.lunchAlternativeCatName_cn && data.lunchAlternativeCatName_cn.trim() !== ""
-                                                ? data.lunchAlternativeCatName_cn
-                                                : data.lunchAlternativeCatName}
-                                        </Typography>
-                                        {data.lunchAlternative.map((item) => (
+
+                                        {/* Alternative Subcategory Title */}
+                                        {cat.alternativeCatName && (
+                                            <Typography variant="subtitle1" sx={{ mt: 3, mb: 2, fontWeight: 700 }}>
+                                                {userData?.langCode === "cn" && cat.alternativeCatName_cn && cat.alternativeCatName_cn.trim() !== ""
+                                                    ? cat.alternativeCatName_cn
+                                                    : cat.alternativeCatName}
+                                            </Typography>
+                                        )}
+
+                                        {/* Alternative Items */}
+                                        {cat.alternativeItems.map(item => (
                                             <Box key={item.id} mb={1}>
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
                                                     <Box display="flex" alignItems="center">
                                                         {item.image && (
                                                             <img
                                                                 src={item.image}
-                                                                alt={userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== "" ? item.chinese_name : item.name}
+                                                                alt={userData?.langCode === "cn" && item.chinese_name ? item.chinese_name : item.name}
                                                                 style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, marginRight: 12 }}
                                                             />
                                                         )}
                                                         <Typography>
-                                                            {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
-                                                                ? item.chinese_name
-                                                                : item.name}
+                                                            {userData?.langCode === "cn" && item.chinese_name ? item.chinese_name : item.name}
                                                         </Typography>
                                                     </Box>
                                                     <Box display="flex" alignItems="center">
                                                         {!kitchenSummery && (
                                                             <button
                                                                 onClick={() =>
-                                                                    setData((prev) => ({
+                                                                    setData(prev => ({
                                                                         ...prev,
-                                                                        lunchAlternative: prev.lunchAlternative.map((i) => {
-                                                                            if (i.id === item.id) {
-                                                                                const newQty = Math.max((i.qty || 0) - 1, 0);
-                                                                                return {
-                                                                                    ...i,
-                                                                                    qty: newQty,
-                                                                                    options: (i.options || []).length > 0 && newQty === 0
-                                                                                        ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
-                                                                                        : i.options,
-                                                                                    preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
-                                                                                };
-                                                                            }
-                                                                            // If qty is already 0, also reset options/preference
-                                                                            if ((i.qty || 0) === 0) {
-                                                                                return {
-                                                                                    ...i,
-                                                                                    options: (i.options || []).length > 0
-                                                                                        ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
-                                                                                        : i.options,
-                                                                                    preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
-                                                                                };
-                                                                            }
-                                                                            return i;
-                                                                        }),
+                                                                        lunchCategories: prev.lunchCategories.map((c, idx) =>
+                                                                            idx === catIdx
+                                                                                ? {
+                                                                                    ...c,
+                                                                                    alternativeItems: c.alternativeItems.map(i =>
+                                                                                        i.id === item.id
+                                                                                            ? {
+                                                                                                ...i,
+                                                                                                qty: Math.max((i.qty || 0) - 1, 0),
+                                                                                                options: (i.options || []).length > 0 && Math.max((i.qty || 0) - 1, 0) === 0
+                                                                                                    ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                                    : i.options,
+                                                                                                preference: (i.preference || []).length > 0 && Math.max((i.qty || 0) - 1, 0) === 0
+                                                                                                    ? i.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                                    : i.preference,
+                                                                                            }
+                                                                                            : i
+                                                                                    )
+                                                                                }
+                                                                                : c
+                                                                        )
                                                                     }))
                                                                 }
                                                                 style={{ marginRight: 8 }}
@@ -1827,37 +1556,19 @@ const Order = () => {
                                                                 -
                                                             </button>
                                                         )}
-                                                        <Typography
-                                                            sx={kitchenSummery ? { fontSize: 24, fontWeight: 700 } : {}}
-                                                        >
+                                                        <Typography sx={kitchenSummery ? { fontSize: 24, fontWeight: 700 } : {}}>
                                                             {item.qty || 0}
-                                                        </Typography>                                                        {/* <button
-                                                            onClick={() =>
-                                                                setData((prev) => ({
-                                                                    ...prev,
-                                                                    lunchAlternative: prev.lunchAlternative.map((i) =>
-                                                                        i.id === item.id ? { ...i, qty: 1 } : { ...i, qty: 0 }
-                                                                    ),
-                                                                    lunchEntree: prev.lunchEntree.map((i) => ({ ...i, qty: 0 })),
-                                                                }))
-                                                            }
-                                                            style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1 || isAfter3PM || isPast}
-                                                        >
-                                                            +
-                                                        </button> */}
+                                                        </Typography>
                                                         {!kitchenSummery && (
                                                             <button
                                                                 onClick={() => {
-                                                                    setData((prev) => {
+                                                                    setData(prev => {
                                                                         const totalQty =
-                                                                            (prev.lunchEntree?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
-                                                                            (prev.lunchAlternative?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
-                                                                        let newAlternative = [...prev.lunchAlternative];
-                                                                        let newEntree = [...(prev.lunchEntree || [])];
+                                                                            (prev.lunchCategories[catIdx]?.entreeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
+                                                                            (prev.lunchCategories[catIdx]?.alternativeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
+                                                                        let newAlternative = [...prev.lunchCategories[catIdx].alternativeItems];
+                                                                        let newEntree = [...(prev.lunchCategories[catIdx].entreeItems || [])];
                                                                         if (totalQty >= MAX_MEAL_QTY) {
-                                                                            // Remove 1 qty from the other group if possible
-                                                                            // Try to remove from lunchEntree first
                                                                             let removed = false;
                                                                             newEntree = newEntree.map((en) => {
                                                                                 if (!removed && en.qty > 0) {
@@ -1866,39 +1577,17 @@ const Order = () => {
                                                                                     return {
                                                                                         ...en,
                                                                                         qty: newQty,
-                                                                                        options: (en.options || []).length > 0 && newQty === 0
-                                                                                            ? en.options.map((opt, idx) => ({
-                                                                                                ...opt,
-                                                                                                is_selected: idx === 0 ? 1 : 0,
-                                                                                            }))
+                                                                                        options: (en.options || []).length > 0 && en.qty > 0 && newQty === 0
+                                                                                            ? en.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                             : en.options,
-                                                                                        preference: (en.preference || []).length > 0 && newQty === 0
-                                                                                            ? en.preference.map((p) => ({
-                                                                                                ...p,
-                                                                                                is_selected: 0,
-                                                                                            }))
+                                                                                        preference: (en.preference || []).length > 0 && en.qty > 0 && newQty === 0
+                                                                                            ? en.preference.map((p) => ({ ...p, is_selected: 0 }))
                                                                                             : en.preference,
-                                                                                    };
-                                                                                }
-                                                                                if ((en.qty || 0) === 0) {
-                                                                                    return {
-                                                                                        ...en,
-                                                                                        options: (en.options || []).length > 0
-                                                                                            ? en.options.map((opt, idx) => ({
-                                                                                                ...opt,
-                                                                                                is_selected: idx === 0 ? 1 : 0,
-                                                                                            }))
-                                                                                            : en.options,
-                                                                                        preference: (en.preference || []).map((p) => ({
-                                                                                            ...p,
-                                                                                            is_selected: 0,
-                                                                                        })),
                                                                                     };
                                                                                 }
                                                                                 return en;
                                                                             });
                                                                             if (!removed) {
-                                                                                // Try to remove from another alternative item (not the current one)
                                                                                 newAlternative = newAlternative.map((alt) => {
                                                                                     if (!removed && alt.id !== item.id && alt.qty > 0) {
                                                                                         removed = true;
@@ -1906,139 +1595,148 @@ const Order = () => {
                                                                                         return {
                                                                                             ...alt,
                                                                                             qty: newQty,
-                                                                                            options: (alt.options || []).length > 0 && newQty === 0
-                                                                                                ? alt.options.map((opt, idx) => ({
-                                                                                                    ...opt,
-                                                                                                    is_selected: idx === 0 ? 1 : 0,
-                                                                                                }))
+                                                                                            options: (alt.options || []).length > 0 && alt.qty > 0 && newQty === 0
+                                                                                                ? alt.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                                 : alt.options,
-                                                                                            preference: (alt.preference || []).length > 0 && newQty === 0
-                                                                                                ? alt.preference.map((p) => ({
-                                                                                                    ...p,
-                                                                                                    is_selected: 0,
-                                                                                                }))
+                                                                                            preference: (alt.preference || []).length > 0 && alt.qty > 0 && newQty === 0
+                                                                                                ? alt.preference.map((p) => ({ ...p, is_selected: 0 }))
                                                                                                 : alt.preference,
-                                                                                        };
-                                                                                    }
-                                                                                    if ((alt.qty || 0) === 0) {
-                                                                                        return {
-                                                                                            ...alt,
-                                                                                            options: (alt.options || []).length > 0
-                                                                                                ? alt.options.map((opt, idx) => ({
-                                                                                                    ...opt,
-                                                                                                    is_selected: idx === 0 ? 1 : 0,
-                                                                                                }))
-                                                                                                : alt.options,
-                                                                                            preference: (alt.preference || []).map((p) => ({
-                                                                                                ...p,
-                                                                                                is_selected: 0,
-                                                                                            })),
                                                                                         };
                                                                                     }
                                                                                     return alt;
                                                                                 });
                                                                             }
                                                                         }
-                                                                        // Now add qty to the current item
                                                                         newAlternative = newAlternative.map((i) =>
-                                                                            i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
+                                                                            i.id === item.id
+                                                                                ? {
+                                                                                    ...i,
+                                                                                    qty: (i.qty || 0) + 1,
+                                                                                    options: (i.options || []).length > 0 && (i.qty || 0) === 0
+                                                                                        ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                        : i.options,
+                                                                                    preference: (i.preference || []).length > 0 && (i.qty || 0) === 0
+                                                                                        ? i.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                        : i.preference,
+                                                                                }
+                                                                                : i
                                                                         );
                                                                         return {
                                                                             ...prev,
-                                                                            lunchEntree: newEntree,
-                                                                            lunchAlternative: newAlternative,
+                                                                            lunchCategories: prev.lunchCategories.map((c, idx) =>
+                                                                                idx === catIdx
+                                                                                    ? {
+                                                                                        ...c,
+                                                                                        entreeItems: newEntree,
+                                                                                        alternativeItems: newAlternative,
+                                                                                    }
+                                                                                    : c
+                                                                            )
                                                                         };
                                                                     });
                                                                 }}
                                                                 style={{ marginLeft: 8 }}
-                                                                disabled={
-                                                                    item.qty >= MAX_MEAL_QTY ||
-                                                                    isAfter3PM ||
-                                                                    isPast
-                                                                }
+                                                                disabled={item.qty >= MAX_MEAL_QTY || isAfter3PM || isPast}
                                                             >
                                                                 +
                                                             </button>
                                                         )}
                                                     </Box>
                                                 </Box>
-                                                {/* Show options and preference if qty > 0 and available */}
-                                                {(item.qty > 0) && ((item.options && item.options.length > 0) || (item.preference && item.preference.length > 0)) && (
-                                                    <Box mt={1} ml={3}>
-                                                        {item.options && item.options.length > 0 && (
-                                                            <Box mb={1}>
-                                                                {item.options.map((opt) => (
-                                                                    <label key={opt.id} style={{ marginRight: 12 }}>
-                                                                        <input
-                                                                            type="radio"
-                                                                            name={`lunch-alt-option-${item.id}`}
-                                                                            checked={!!opt.is_selected}
-                                                                            onChange={() => {
-                                                                                setData((prev) => ({
-                                                                                    ...prev,
-                                                                                    lunchAlternative: prev.lunchAlternative.map((i) =>
-                                                                                        i.id === item.id
-                                                                                            ? {
-                                                                                                ...i,
-                                                                                                options: i.options.map((o) =>
-                                                                                                    o.id === opt.id
-                                                                                                        ? { ...o, is_selected: 1 }
-                                                                                                        : { ...o, is_selected: 0 }
-                                                                                                ),
-                                                                                            }
-                                                                                            : i
-                                                                                    ),
-                                                                                }));
-                                                                            }}
-                                                                        />
-                                                                        {opt.name}
-                                                                    </label>
-                                                                ))}
-                                                            </Box>
-                                                        )}
-                                                        {item.preference && item.preference.length > 0 && (
-                                                            <Box>
-                                                                {item.preference.map((pref) => (
-                                                                    <label key={pref.id} style={{ marginRight: 12 }}>
-                                                                        <input
-                                                                            type="checkbox"
-                                                                            checked={!!pref.is_selected}
-                                                                            onChange={() => {
-                                                                                setData((prev) => ({
-                                                                                    ...prev,
-                                                                                    lunchAlternative: prev.lunchAlternative.map((i) =>
-                                                                                        i.id === item.id
-                                                                                            ? {
-                                                                                                ...i,
-                                                                                                preference: i.preference.map((p) =>
-                                                                                                    p.id === pref.id
-                                                                                                        ? { ...p, is_selected: p.is_selected ? 0 : 1 }
-                                                                                                        : p
-                                                                                                ),
-                                                                                            }
-                                                                                            : i
-                                                                                    ),
-                                                                                }));
-                                                                            }}
-                                                                        />
-                                                                        {pref.name}
-                                                                    </label>
-                                                                ))}
-                                                            </Box>
-                                                        )}
-                                                    </Box>
-                                                )}
+                                                {/* Options and Preference */}
+                                                <Box mt={2} ml={1} sx={{ width: "100%", minHeight: item.qty > 0 ? "auto" : 0 }} >
+
+                                                    {(item.qty > 0) && (
+                                                        <Box mt={2} ml={1} >
+                                                            {item.options && item.options.length > 0 && (
+                                                                <Box mb={1}>
+                                                                    {item.options.map((opt) => (
+                                                                        <label key={opt.id} style={{ marginRight: 12 }}>
+                                                                            <input
+                                                                                type="radio"
+                                                                                name={`lunch-alt-option-${cat.cat_id}-${item.id}`}
+                                                                                checked={!!opt.is_selected}
+                                                                                onChange={() => {
+                                                                                    setData(prev => ({
+                                                                                        ...prev,
+                                                                                        lunchCategories: prev.lunchCategories.map((c, idx) =>
+                                                                                            idx === catIdx
+                                                                                                ? {
+                                                                                                    ...c,
+                                                                                                    alternativeItems: c.alternativeItems.map(i =>
+                                                                                                        i.id === item.id
+                                                                                                            ? {
+                                                                                                                ...i,
+                                                                                                                options: i.options.map(o =>
+                                                                                                                    o.id === opt.id
+                                                                                                                        ? { ...o, is_selected: 1 }
+                                                                                                                        : { ...o, is_selected: 0 }
+                                                                                                                ),
+                                                                                                            }
+                                                                                                            : i
+                                                                                                    ),
+                                                                                                }
+                                                                                                : c
+                                                                                        )
+                                                                                    }));
+                                                                                }}
+                                                                            />
+                                                                            {opt.name}
+                                                                        </label>
+                                                                    ))}
+                                                                </Box>
+                                                            )}
+                                                            {item.preference && item.preference.length > 0 && (
+                                                                <Box>
+                                                                    {item.preference.map((pref) => (
+                                                                        <label key={pref.id} style={{ marginRight: 12 }}>
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={!!pref.is_selected}
+                                                                                onChange={() => {
+                                                                                    setData(prev => ({
+                                                                                        ...prev,
+                                                                                        lunchCategories: prev.lunchCategories.map((c, idx) =>
+                                                                                            idx === catIdx
+                                                                                                ? {
+                                                                                                    ...c,
+                                                                                                    alternativeItems: c.alternativeItems.map(i =>
+                                                                                                        i.id === item.id
+                                                                                                            ? {
+                                                                                                                ...i,
+                                                                                                                preference: i.preference.map(p =>
+                                                                                                                    p.id === pref.id
+                                                                                                                        ? { ...p, is_selected: p.is_selected ? 0 : 1 }
+                                                                                                                        : p
+                                                                                                                ),
+                                                                                                            }
+                                                                                                            : i
+                                                                                                    ),
+                                                                                                }
+                                                                                                : c
+                                                                                        )
+                                                                                    }));
+                                                                                }}
+                                                                            />
+                                                                            {pref.name}
+                                                                        </label>
+                                                                    ))}
+                                                                </Box>
+                                                            )}
+                                                        </Box>
+                                                    )}
+                                                </Box>
                                             </Box>
                                         ))}
-                                    </>
-                                )}
-                                {/* Add Lunch Additional Services */}
-
+                                    </Box>
+                                ))}
+                                {/* Lunch Services */}
                                 {(
-                                    (data.lunchSoup?.some(item => item.qty > 0) ||
-                                        data.lunchEntree?.some(item => item.qty > 0) ||
-                                        data.lunchAlternative?.some(item => item.qty > 0))
-                                    &&
+                                    Array.isArray(data.lunchCategories) &&
+                                    data.lunchCategories.some(cat =>
+                                        (cat.entreeItems && cat.entreeItems.some(item => item.qty > 0)) ||
+                                        (cat.alternativeItems && cat.alternativeItems.some(item => item.qty > 0))
+                                    ) &&
                                     !kitchenSummery
                                 ) && (
                                         <Box mt={3} display="flex" gap={3}>
@@ -2069,16 +1767,7 @@ const Order = () => {
                                                 <span style={{ marginLeft: 5 }}>{langObj.escortService}</span>
                                             </label>
                                             <label style={{ display: "flex", alignItems: "center" }}>
-                                                <input
-                                                    type="checkbox"
-                                                // checked={data.is_dinner_tray_service === 1}
-                                                // onChange={e => {
-                                                //     setData(prev => ({
-                                                //         ...prev,
-                                                //         is_dinner_tray_service: e.target.checked ? 1 : 0
-                                                //     }));
-                                                // }}
-                                                />
+                                                <input type="checkbox" />
                                                 <span style={{ marginLeft: 5 }}>{langObj.Takeout}</span>
                                             </label>
                                         </Box>
@@ -2093,14 +1782,12 @@ const Order = () => {
                                         </Typography>
                                     </>
                                 )}
-                                {data.lunchSoup && data.lunchEntree && data.lunchAlternative &&
-                                    data.lunchSoup.length === 0 &&
-                                    data.lunchEntree.length === 0 &&
-                                    data.lunchAlternative.length === 0 && (
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                            {langObj.lunchMenuWarn}
-                                        </Typography>
-                                    )}
+
+                                {Array.isArray(data.lunchCategories) && data.lunchCategories.length === 0 && (
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                        {langObj.lunchMenuWarn}
+                                    </Typography>
+                                )}
                                 {kitchenSummery && (
                                     <Box mt={3} display="flex" justifyContent="center">
                                         <CustomButton
@@ -2128,14 +1815,13 @@ const Order = () => {
                                         </CustomButton>
                                     </Box>
                                 )}
-                                {/* Add lunch submit button,  if breakfast not submited then here breakfast and lunch submited */}
-                                {(
-                                    (
-                                        (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0)) ||
-                                        (data.lunchSoup?.some(item => item.qty > 0) || data.lunchEntree?.some(item => item.qty > 0) || data.lunchAlternative?.some(item => item.qty > 0)) ||
-                                        (data.dinnerSoup?.some(item => item.qty > 0) || data.dinnerEntree?.some(item => item.qty > 0) || data.dinnerAlternative?.some(item => item.qty > 0))
-                                    ) && !kitchenSummery
-                                ) && (
+                                {tabIndex === 1 &&
+                                    Array.isArray(data.lunchCategories) &&
+                                    data.lunchCategories.some(cat =>
+                                        (cat.entreeItems && cat.entreeItems.some(item => item.qty > 0)) ||
+                                        (cat.alternativeItems && cat.alternativeItems.some(item => item.qty > 0))
+                                    ) &&
+                                    !kitchenSummery && (
                                         <Box mt={3} display="flex" justifyContent="center">
                                             <CustomButton
                                                 sx={{
@@ -2160,98 +1846,10 @@ const Order = () => {
                                     )}
                             </Box>
                         )}
-
                         {tabIndex === 2 && (
                             <Box>
-                                {/* Dinner soup */}
-                                {data.dinnerSoup && data.dinnerSoup.length > 0 && (
-                                    <>
-                                        <Typography variant="h6"
-                                            sx={{
-                                                mb: 2,
-                                                fontWeight: 600,
-                                                backgroundColor: "#f5f5f5",
-                                                px: 2,
-                                                py: 1,
-                                                borderRadius: 1,
-                                                display: "block",
-                                                textAlign: "center"
-                                            }}>
-                                            {/* {data.dinnerSoupCatName || "Soup"} */}
-                                            {userData?.langCode === "cn" && data.dinnerSoupCatName_cn && data.dinnerSoupCatName_cn.trim() !== ""
-                                                ? data.dinnerSoupCatName_cn
-                                                : data.dinnerSoupCatName || "Soup"}
-                                        </Typography>
-                                        {data.dinnerSoup.map((item) => (
-                                            <Box key={item.id} display="flex" alignItems="center" justifyContent="space-between" mb={1}>
-                                                <Box display="flex" alignItems="center">
-                                                    {item.image && (
-                                                        <img
-                                                            src={item.image}
-                                                            alt={userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== "" ? item.chinese_name : item.name}
-                                                            style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, marginRight: 12 }}
-                                                        />
-                                                    )}
-                                                    <Typography>
-                                                        {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
-                                                            ? item.chinese_name
-                                                            : item.name}
-                                                    </Typography>
-                                                </Box>
-                                                <Box display="flex" alignItems="center">
-                                                    {!kitchenSummery && (
-                                                        <button
-                                                            onClick={() =>
-                                                                setData((prev) => ({
-                                                                    ...prev,
-                                                                    dinnerSoup: prev.dinnerSoup.map((i) =>
-                                                                        i.id === item.id
-                                                                            ? { ...i, qty: Math.max((i.qty || 0) - 1, 0) }
-                                                                            : i
-                                                                    ),
-                                                                }))
-                                                            }
-                                                            style={{ marginRight: 8 }}
-                                                            disabled={item.qty === 0 || isAfter12PM || isPast}
-                                                        >
-                                                            -
-                                                        </button>
-                                                    )}
-                                                    <Typography
-                                                        sx={kitchenSummery ? { fontSize: 24, fontWeight: 700 } : {}}
-                                                    >
-                                                        {item.qty || 0}
-                                                    </Typography>
-                                                    {!kitchenSummery && (
-                                                        <button
-                                                            onClick={() =>
-                                                                setData((prev) => ({
-                                                                    ...prev,
-                                                                    dinnerSoup: prev.dinnerSoup.map((i) =>
-                                                                        i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
-                                                                    ),
-                                                                }))
-                                                            }
-                                                            style={{ marginLeft: 8 }}
-                                                            disabled={
-                                                                item.qty >= MAX_MEAL_QTY ||
-                                                                totalDinnerSoupQty >= MAX_MEAL_QTY ||
-                                                                isAfter12PM ||
-                                                                isPast
-                                                            }
-                                                        >
-                                                            +
-                                                        </button>
-                                                    )}
-                                                </Box>
-                                            </Box>
-                                        ))}
-                                    </>
-                                )}
-
-                                {/* Entree */}
-                                {data.dinnerEntree && data.dinnerEntree.length > 0 && (
-                                    <>
+                                {Array.isArray(data.dinnerCategories) && data.dinnerCategories.map((cat, catIdx) => (
+                                    <Box key={cat.cat_id} mb={3}>
                                         <Typography variant="h6" sx={{
                                             mb: 2,
                                             fontWeight: 600,
@@ -2259,60 +1857,66 @@ const Order = () => {
                                             px: 2,
                                             py: 1,
                                             borderRadius: 1,
-                                            display: "block",
                                             textAlign: "center"
                                         }}>
-                                            {userData?.langCode === "cn" && data.dinnerEntreeCatName_cn && data.dinnerEntreeCatName_cn.trim() !== ""
-                                                ? data.dinnerEntreeCatName_cn
-                                                : data.dinnerEntreeCatName} ({langObj.servedWithDessert})
+                                            {userData?.langCode === "cn" && cat.cat_name_cn && cat.cat_name_cn.trim() !== ""
+                                                ? cat.cat_name_cn
+                                                : cat.cat_name}
+                                            {cat.cat_name === "DINNER ENTREE" && ` (${langObj.servedWithDessert})`}
                                         </Typography>
-                                        {data.dinnerEntree.map((item) => (
+
+                                        {/* Entree Items */}
+                                        {cat.entreeItems.map(item => (
                                             <Box key={item.id} mb={1}>
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
                                                     <Box display="flex" alignItems="center">
                                                         {item.image && (
                                                             <img
                                                                 src={item.image}
-                                                                alt={userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== "" ? item.chinese_name : item.name}
+                                                                alt={userData?.langCode === "cn" && item.chinese_name ? item.chinese_name : item.name}
                                                                 style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, marginRight: 12 }}
                                                             />
                                                         )}
                                                         <Typography>
-                                                            {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
-                                                                ? item.chinese_name
-                                                                : item.name}
+                                                            {userData?.langCode === "cn" && item.chinese_name ? item.chinese_name : item.name}
                                                         </Typography>
                                                     </Box>
                                                     <Box display="flex" alignItems="center">
                                                         {!kitchenSummery && (
                                                             <button
                                                                 onClick={() =>
-                                                                    setData((prev) => ({
+                                                                    setData(prev => ({
                                                                         ...prev,
-                                                                        dinnerEntree: prev.dinnerEntree.map((i) => {
-                                                                            if (i.id === item.id) {
-                                                                                const newQty = Math.max((i.qty || 0) - 1, 0);
-                                                                                return {
-                                                                                    ...i,
-                                                                                    qty: newQty,
-                                                                                    options: (i.options || []).length > 0 && newQty === 0
-                                                                                        ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
-                                                                                        : i.options,
-                                                                                    preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
-                                                                                };
-                                                                            }
-                                                                            // If qty is already 0, also reset options/preference
-                                                                            if ((i.qty || 0) === 0) {
-                                                                                return {
-                                                                                    ...i,
-                                                                                    options: (i.options || []).length > 0
-                                                                                        ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
-                                                                                        : i.options,
-                                                                                    preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
-                                                                                };
-                                                                            }
-                                                                            return i;
-                                                                        }),
+                                                                        dinnerCategories: prev.dinnerCategories.map((c, idx) =>
+                                                                            idx === catIdx
+                                                                                ? {
+                                                                                    ...c,
+                                                                                    entreeItems: c.entreeItems.map(i => {
+                                                                                        if (i.id === item.id) {
+                                                                                            const newQty = Math.max((i.qty || 0) - 1, 0);
+                                                                                            return {
+                                                                                                ...i,
+                                                                                                qty: newQty,
+                                                                                                options: (i.options || []).length > 0 && newQty === 0
+                                                                                                    ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                                    : i.options,
+                                                                                                preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                                            };
+                                                                                        }
+                                                                                        if ((i.qty || 0) === 0) {
+                                                                                            return {
+                                                                                                ...i,
+                                                                                                options: (i.options || []).length > 0
+                                                                                                    ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                                    : i.options,
+                                                                                                preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                                            };
+                                                                                        }
+                                                                                        return i;
+                                                                                    }),
+                                                                                }
+                                                                                : c
+                                                                        )
                                                                     }))
                                                                 }
                                                                 style={{ marginRight: 8 }}
@@ -2321,22 +1925,19 @@ const Order = () => {
                                                                 -
                                                             </button>
                                                         )}
-                                                        <Typography
-                                                            sx={kitchenSummery ? { fontSize: 24, fontWeight: 700 } : {}}
-                                                        >
+                                                        <Typography sx={kitchenSummery ? { fontSize: 24, fontWeight: 700 } : {}}>
                                                             {item.qty || 0}
-                                                        </Typography>                                                        {!kitchenSummery && (
+                                                        </Typography>
+                                                        {!kitchenSummery && (
                                                             <button
                                                                 onClick={() => {
-                                                                    setData((prev) => {
+                                                                    setData(prev => {
                                                                         const totalQty =
-                                                                            (prev.dinnerEntree?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
-                                                                            (prev.dinnerAlternative?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
-                                                                        let newEntree = [...prev.dinnerEntree];
-                                                                        let newAlternative = [...(prev.dinnerAlternative || [])];
+                                                                            (prev.dinnerCategories[catIdx]?.entreeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
+                                                                            (prev.dinnerCategories[catIdx]?.alternativeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
+                                                                        let newEntree = [...prev.dinnerCategories[catIdx].entreeItems];
+                                                                        let newAlternative = [...(prev.dinnerCategories[catIdx].alternativeItems || [])];
                                                                         if (totalQty >= MAX_MEAL_QTY) {
-                                                                            // Remove 1 qty from the other group if possible
-                                                                            // Try to remove from dinnerAlternative first
                                                                             let removed = false;
                                                                             newAlternative = newAlternative.map((alt) => {
                                                                                 if (!removed && alt.qty > 0) {
@@ -2345,39 +1946,17 @@ const Order = () => {
                                                                                     return {
                                                                                         ...alt,
                                                                                         qty: newQty,
-                                                                                        options: (alt.options || []).length > 0 && newQty === 0
-                                                                                            ? alt.options.map((opt, idx) => ({
-                                                                                                ...opt,
-                                                                                                is_selected: idx === 0 ? 1 : 0,
-                                                                                            }))
+                                                                                        options: (alt.options || []).length > 0 && alt.qty > 0 && newQty === 0
+                                                                                            ? alt.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                             : alt.options,
-                                                                                        preference: (alt.preference || []).length > 0 && newQty === 0
-                                                                                            ? alt.preference.map((p) => ({
-                                                                                                ...p,
-                                                                                                is_selected: 0,
-                                                                                            }))
+                                                                                        preference: (alt.preference || []).length > 0 && alt.qty > 0 && newQty === 0
+                                                                                            ? alt.preference.map((p) => ({ ...p, is_selected: 0 }))
                                                                                             : alt.preference,
-                                                                                    };
-                                                                                }
-                                                                                if ((alt.qty || 0) === 0) {
-                                                                                    return {
-                                                                                        ...alt,
-                                                                                        options: (alt.options || []).length > 0
-                                                                                            ? alt.options.map((opt, idx) => ({
-                                                                                                ...opt,
-                                                                                                is_selected: idx === 0 ? 1 : 0,
-                                                                                            }))
-                                                                                            : alt.options,
-                                                                                        preference: (alt.preference || []).map((p) => ({
-                                                                                            ...p,
-                                                                                            is_selected: 0,
-                                                                                        })),
                                                                                     };
                                                                                 }
                                                                                 return alt;
                                                                             });
                                                                             if (!removed) {
-                                                                                // Try to remove from another entree item (not the current one)
                                                                                 newEntree = newEntree.map((en) => {
                                                                                     if (!removed && en.id !== item.id && en.qty > 0) {
                                                                                         removed = true;
@@ -2385,189 +1964,191 @@ const Order = () => {
                                                                                         return {
                                                                                             ...en,
                                                                                             qty: newQty,
-                                                                                            options: (en.options || []).length > 0 && newQty === 0
-                                                                                                ? en.options.map((opt, idx) => ({
-                                                                                                    ...opt,
-                                                                                                    is_selected: idx === 0 ? 1 : 0,
-                                                                                                }))
+                                                                                            options: (en.options || []).length > 0 && en.qty > 0 && newQty === 0
+                                                                                                ? en.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                                 : en.options,
-                                                                                            preference: (en.preference || []).length > 0 && newQty === 0
-                                                                                                ? en.preference.map((p) => ({
-                                                                                                    ...p,
-                                                                                                    is_selected: 0,
-                                                                                                }))
+                                                                                            preference: (en.preference || []).length > 0 && en.qty > 0 && newQty === 0
+                                                                                                ? en.preference.map((p) => ({ ...p, is_selected: 0 }))
                                                                                                 : en.preference,
-                                                                                        };
-                                                                                    }
-                                                                                    if ((en.qty || 0) === 0) {
-                                                                                        return {
-                                                                                            ...en,
-                                                                                            options: (en.options || []).length > 0
-                                                                                                ? en.options.map((opt, idx) => ({
-                                                                                                    ...opt,
-                                                                                                    is_selected: idx === 0 ? 1 : 0,
-                                                                                                }))
-                                                                                                : en.options,
-                                                                                            preference: (en.preference || []).map((p) => ({
-                                                                                                ...p,
-                                                                                                is_selected: 0,
-                                                                                            })),
                                                                                         };
                                                                                     }
                                                                                     return en;
                                                                                 });
                                                                             }
                                                                         }
-                                                                        // Now add qty to the current item
                                                                         newEntree = newEntree.map((i) =>
-                                                                            i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
+                                                                            i.id === item.id
+                                                                                ? {
+                                                                                    ...i,
+                                                                                    qty: (i.qty || 0) + 1,
+                                                                                    options: (i.options || []).length > 0 && (i.qty || 0) === 0
+                                                                                        ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                        : i.options,
+                                                                                    preference: (i.preference || []).length > 0 && (i.qty || 0) === 0
+                                                                                        ? i.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                        : i.preference,
+                                                                                }
+                                                                                : i
                                                                         );
                                                                         return {
                                                                             ...prev,
-                                                                            dinnerEntree: newEntree,
-                                                                            dinnerAlternative: newAlternative,
+                                                                            dinnerCategories: prev.dinnerCategories.map((c, idx) =>
+                                                                                idx === catIdx
+                                                                                    ? {
+                                                                                        ...c,
+                                                                                        entreeItems: newEntree,
+                                                                                        alternativeItems: newAlternative,
+                                                                                    }
+                                                                                    : c
+                                                                            )
                                                                         };
                                                                     });
                                                                 }}
                                                                 style={{ marginLeft: 8 }}
-                                                                disabled={
-                                                                    item.qty >= MAX_MEAL_QTY ||
-                                                                    isAfter12PM ||
-                                                                    isPast
-                                                                }
+                                                                disabled={item.qty >= MAX_MEAL_QTY || isAfter12PM || isPast}
                                                             >
                                                                 +
                                                             </button>
                                                         )}
                                                     </Box>
                                                 </Box>
-                                                {/* Show options and preference if qty > 0 and available */}
-                                                {(item.qty > 0) && ((item.options && item.options.length > 0) || (item.preference && item.preference.length > 0)) && (
-                                                    <Box mt={1} ml={3}>
-                                                        {item.options && item.options.length > 0 && (
-                                                            <Box mb={1}>
-                                                                {item.options.map((opt) => (
-                                                                    <label key={opt.id} style={{ marginRight: 12 }}>
-                                                                        <input
-                                                                            type="radio"
-                                                                            name={`dinner-entree-option-${item.id}`}
-                                                                            checked={!!opt.is_selected}
-                                                                            onChange={() => {
-                                                                                setData((prev) => ({
-                                                                                    ...prev,
-                                                                                    dinnerEntree: prev.dinnerEntree.map((i) =>
-                                                                                        i.id === item.id
-                                                                                            ? {
-                                                                                                ...i,
-                                                                                                options: i.options.map((o) =>
-                                                                                                    o.id === opt.id
-                                                                                                        ? { ...o, is_selected: 1 }
-                                                                                                        : { ...o, is_selected: 0 }
-                                                                                                ),
-                                                                                            }
-                                                                                            : i
-                                                                                    ),
-                                                                                }));
-                                                                            }}
-                                                                        />
-                                                                        {opt.name}
-                                                                    </label>
-                                                                ))}
-                                                            </Box>
-                                                        )}
-                                                        {item.preference && item.preference.length > 0 && (
-                                                            <Box>
-                                                                {item.preference.map((pref) => (
-                                                                    <label key={pref.id} style={{ marginRight: 12 }}>
-                                                                        <input
-                                                                            type="checkbox"
-                                                                            checked={!!pref.is_selected}
-                                                                            onChange={() => {
-                                                                                setData((prev) => ({
-                                                                                    ...prev,
-                                                                                    dinnerEntree: prev.dinnerEntree.map((i) =>
-                                                                                        i.id === item.id
-                                                                                            ? {
-                                                                                                ...i,
-                                                                                                preference: i.preference.map((p) =>
-                                                                                                    p.id === pref.id
-                                                                                                        ? { ...p, is_selected: p.is_selected ? 0 : 1 }
-                                                                                                        : p
-                                                                                                ),
-                                                                                            }
-                                                                                            : i
-                                                                                    ),
-                                                                                }));
-                                                                            }}
-                                                                        />
-                                                                        {pref.name}
-                                                                    </label>
-                                                                ))}
-                                                            </Box>
-                                                        )}
-                                                    </Box>
-                                                )}
+                                                {/* Options and Preference always at the bottom */}
+                                                <Box mt={2} ml={1} sx={{ width: "100%", minHeight: item.qty > 0 ? "auto" : 0 }}>
+                                                    {(item.qty > 0) && (
+                                                        <Box mt={2} ml={1} >
+                                                            {item.options && item.options.length > 0 && (
+                                                                <Box mb={1}>
+                                                                    {item.options.map((opt) => (
+                                                                        <label key={opt.id} style={{ marginRight: 12 }}>
+                                                                            <input
+                                                                                type="radio"
+                                                                                name={`dinner-entree-option-${cat.cat_id}-${item.id}`}
+                                                                                checked={!!opt.is_selected}
+                                                                                onChange={() => {
+                                                                                    setData(prev => ({
+                                                                                        ...prev,
+                                                                                        dinnerCategories: prev.dinnerCategories.map((c, idx) =>
+                                                                                            idx === catIdx
+                                                                                                ? {
+                                                                                                    ...c,
+                                                                                                    entreeItems: c.entreeItems.map(i =>
+                                                                                                        i.id === item.id
+                                                                                                            ? {
+                                                                                                                ...i,
+                                                                                                                options: i.options.map(o =>
+                                                                                                                    o.id === opt.id
+                                                                                                                        ? { ...o, is_selected: 1 }
+                                                                                                                        : { ...o, is_selected: 0 }
+                                                                                                                ),
+                                                                                                            }
+                                                                                                            : i
+                                                                                                    ),
+                                                                                                }
+                                                                                                : c
+                                                                                        )
+                                                                                    }));
+                                                                                }}
+                                                                            />
+                                                                            {opt.name}
+                                                                        </label>
+                                                                    ))}
+                                                                </Box>
+                                                            )}
+                                                            {item.preference && item.preference.length > 0 && (
+                                                                <Box>
+                                                                    {item.preference.map((pref) => (
+                                                                        <label key={pref.id} style={{ marginRight: 12 }}>
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={!!pref.is_selected}
+                                                                                onChange={() => {
+                                                                                    setData(prev => ({
+                                                                                        ...prev,
+                                                                                        dinnerCategories: prev.dinnerCategories.map((c, idx) =>
+                                                                                            idx === catIdx
+                                                                                                ? {
+                                                                                                    ...c,
+                                                                                                    entreeItems: c.entreeItems.map(i =>
+                                                                                                        i.id === item.id
+                                                                                                            ? {
+                                                                                                                ...i,
+                                                                                                                preference: i.preference.map(p =>
+                                                                                                                    p.id === pref.id
+                                                                                                                        ? { ...p, is_selected: p.is_selected ? 0 : 1 }
+                                                                                                                        : p
+                                                                                                                ),
+                                                                                                            }
+                                                                                                            : i
+                                                                                                    ),
+                                                                                                }
+                                                                                                : c
+                                                                                        )
+                                                                                    }));
+                                                                                }}
+                                                                            />
+                                                                            {pref.name}
+                                                                        </label>
+                                                                    ))}
+                                                                </Box>
+                                                            )}
+                                                        </Box>
+                                                    )}
+                                                </Box>
                                             </Box>
                                         ))}
-                                    </>
-                                )}
 
-                                {/* Alternatives */}
-                                {data.dinnerAlternative && data.dinnerAlternative.length > 0 && (
-                                    <>
-                                        <Typography variant="h6" sx={{ mt: 3, mb: 2, fontWeight: 600 }}>
-                                            {/* {data.dinnerAlternativeCatName} */}
-                                            {userData?.langCode === "cn" && data.dinnerAlternativeCatName_cn && data.dinnerAlternativeCatName_cn.trim() !== ""
-                                                ? data.dinnerAlternativeCatName_cn
-                                                : data.dinnerAlternativeCatName}
-                                        </Typography>
-                                        {data.dinnerAlternative.map((item) => (
+                                        {/* Alternative Subcategory Title */}
+                                        {cat.alternativeCatName && (
+                                            <Typography variant="subtitle1" sx={{ mt: 3, mb: 2, fontWeight: 700 }}>
+                                                {userData?.langCode === "cn" && cat.alternativeCatName_cn && cat.alternativeCatName_cn.trim() !== ""
+                                                    ? cat.alternativeCatName_cn
+                                                    : cat.alternativeCatName}
+                                            </Typography>
+                                        )}
+
+                                        {/* Alternative Items */}
+                                        {cat.alternativeItems.map(item => (
                                             <Box key={item.id} mb={1}>
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
                                                     <Box display="flex" alignItems="center">
                                                         {item.image && (
                                                             <img
                                                                 src={item.image}
-                                                                alt={userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== "" ? item.chinese_name : item.name}
+                                                                alt={userData?.langCode === "cn" && item.chinese_name ? item.chinese_name : item.name}
                                                                 style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, marginRight: 12 }}
                                                             />
                                                         )}
                                                         <Typography>
-                                                            {userData?.langCode === "cn" && item.chinese_name && item.chinese_name.trim() !== ""
-                                                                ? item.chinese_name
-                                                                : item.name}
+                                                            {userData?.langCode === "cn" && item.chinese_name ? item.chinese_name : item.name}
                                                         </Typography>
                                                     </Box>
                                                     <Box display="flex" alignItems="center">
                                                         {!kitchenSummery && (
                                                             <button
                                                                 onClick={() =>
-                                                                    setData((prev) => ({
+                                                                    setData(prev => ({
                                                                         ...prev,
-                                                                        dinnerAlternative: prev.dinnerAlternative.map((i) => {
-                                                                            if (i.id === item.id) {
-                                                                                const newQty = Math.max((i.qty || 0) - 1, 0);
-                                                                                return {
-                                                                                    ...i,
-                                                                                    qty: newQty,
-                                                                                    options: (i.options || []).length > 0 && newQty === 0
-                                                                                        ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
-                                                                                        : i.options,
-                                                                                    preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
-                                                                                };
-                                                                            }
-                                                                            // If qty is already 0, also reset options/preference
-                                                                            if ((i.qty || 0) === 0) {
-                                                                                return {
-                                                                                    ...i,
-                                                                                    options: (i.options || []).length > 0
-                                                                                        ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
-                                                                                        : i.options,
-                                                                                    preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
-                                                                                };
-                                                                            }
-                                                                            return i;
-                                                                        }),
+                                                                        dinnerCategories: prev.dinnerCategories.map((c, idx) =>
+                                                                            idx === catIdx
+                                                                                ? {
+                                                                                    ...c,
+                                                                                    alternativeItems: c.alternativeItems.map(i =>
+                                                                                        i.id === item.id
+                                                                                            ? {
+                                                                                                ...i,
+                                                                                                qty: Math.max((i.qty || 0) - 1, 0),
+                                                                                                options: (i.options || []).length > 0 && Math.max((i.qty || 0) - 1, 0) === 0
+                                                                                                    ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                                    : i.options,
+                                                                                                preference: (i.preference || []).length > 0 && Math.max((i.qty || 0) - 1, 0) === 0
+                                                                                                    ? i.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                                    : i.preference,
+                                                                                            }
+                                                                                            : i
+                                                                                    )
+                                                                                }
+                                                                                : c
+                                                                        )
                                                                     }))
                                                                 }
                                                                 style={{ marginRight: 8 }}
@@ -2576,38 +2157,19 @@ const Order = () => {
                                                                 -
                                                             </button>
                                                         )}
-                                                        <Typography
-                                                            sx={kitchenSummery ? { fontSize: 24, fontWeight: 700 } : {}}
-                                                        >
+                                                        <Typography sx={kitchenSummery ? { fontSize: 24, fontWeight: 700 } : {}}>
                                                             {item.qty || 0}
-                                                        </Typography>                                                        {/* <button
-                                                            onClick={() =>
-                                                                setData((prev) => ({
-                                                                    ...prev,
-                                                                    dinnerAlternative: prev.dinnerAlternative.map((i) =>
-                                                                        i.id === item.id ? { ...i, qty: 1 } : { ...i, qty: 0 }
-                                                                    ),
-                                                                    //  DinnerEntrese Items Remove
-                                                                    dinnerEntree: prev.dinnerEntree.map((i) => ({ ...i, qty: 0 })),
-                                                                }))
-                                                            }
-                                                            style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1 || isAfter12PM || isPast}
-                                                        >
-                                                            +
-                                                        </button> */}
+                                                        </Typography>
                                                         {!kitchenSummery && (
                                                             <button
                                                                 onClick={() => {
-                                                                    setData((prev) => {
+                                                                    setData(prev => {
                                                                         const totalQty =
-                                                                            (prev.dinnerEntree?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
-                                                                            (prev.dinnerAlternative?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
-                                                                        let newAlternative = [...prev.dinnerAlternative];
-                                                                        let newEntree = [...(prev.dinnerEntree || [])];
+                                                                            (prev.dinnerCategories[catIdx]?.entreeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
+                                                                            (prev.dinnerCategories[catIdx]?.alternativeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
+                                                                        let newAlternative = [...prev.dinnerCategories[catIdx].alternativeItems];
+                                                                        let newEntree = [...(prev.dinnerCategories[catIdx].entreeItems || [])];
                                                                         if (totalQty >= MAX_MEAL_QTY) {
-                                                                            // Remove 1 qty from the other group if possible
-                                                                            // Try to remove from dinnerEntree first
                                                                             let removed = false;
                                                                             newEntree = newEntree.map((en) => {
                                                                                 if (!removed && en.qty > 0) {
@@ -2616,39 +2178,17 @@ const Order = () => {
                                                                                     return {
                                                                                         ...en,
                                                                                         qty: newQty,
-                                                                                        options: (en.options || []).length > 0 && newQty === 0
-                                                                                            ? en.options.map((opt, idx) => ({
-                                                                                                ...opt,
-                                                                                                is_selected: idx === 0 ? 1 : 0,
-                                                                                            }))
+                                                                                        options: (en.options || []).length > 0 && en.qty > 0 && newQty === 0
+                                                                                            ? en.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                             : en.options,
-                                                                                        preference: (en.preference || []).length > 0 && newQty === 0
-                                                                                            ? en.preference.map((p) => ({
-                                                                                                ...p,
-                                                                                                is_selected: 0,
-                                                                                            }))
+                                                                                        preference: (en.preference || []).length > 0 && en.qty > 0 && newQty === 0
+                                                                                            ? en.preference.map((p) => ({ ...p, is_selected: 0 }))
                                                                                             : en.preference,
-                                                                                    };
-                                                                                }
-                                                                                if ((en.qty || 0) === 0) {
-                                                                                    return {
-                                                                                        ...en,
-                                                                                        options: (en.options || []).length > 0
-                                                                                            ? en.options.map((opt, idx) => ({
-                                                                                                ...opt,
-                                                                                                is_selected: idx === 0 ? 1 : 0,
-                                                                                            }))
-                                                                                            : en.options,
-                                                                                        preference: (en.preference || []).map((p) => ({
-                                                                                            ...p,
-                                                                                            is_selected: 0,
-                                                                                        })),
                                                                                     };
                                                                                 }
                                                                                 return en;
                                                                             });
                                                                             if (!removed) {
-                                                                                // Try to remove from another alternative item (not the current one)
                                                                                 newAlternative = newAlternative.map((alt) => {
                                                                                     if (!removed && alt.id !== item.id && alt.qty > 0) {
                                                                                         removed = true;
@@ -2656,137 +2196,148 @@ const Order = () => {
                                                                                         return {
                                                                                             ...alt,
                                                                                             qty: newQty,
-                                                                                            options: (alt.options || []).length > 0 && newQty === 0
-                                                                                                ? alt.options.map((opt, idx) => ({
-                                                                                                    ...opt,
-                                                                                                    is_selected: idx === 0 ? 1 : 0,
-                                                                                                }))
+                                                                                            options: (alt.options || []).length > 0 && alt.qty > 0 && newQty === 0
+                                                                                                ? alt.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                                 : alt.options,
-                                                                                            preference: (alt.preference || []).length > 0 && newQty === 0
-                                                                                                ? alt.preference.map((p) => ({
-                                                                                                    ...p,
-                                                                                                    is_selected: 0,
-                                                                                                }))
+                                                                                            preference: (alt.preference || []).length > 0 && alt.qty > 0 && newQty === 0
+                                                                                                ? alt.preference.map((p) => ({ ...p, is_selected: 0 }))
                                                                                                 : alt.preference,
-                                                                                        };
-                                                                                    }
-                                                                                    if ((alt.qty || 0) === 0) {
-                                                                                        return {
-                                                                                            ...alt,
-                                                                                            options: (alt.options || []).length > 0
-                                                                                                ? alt.options.map((opt, idx) => ({
-                                                                                                    ...opt,
-                                                                                                    is_selected: idx === 0 ? 1 : 0,
-                                                                                                }))
-                                                                                                : alt.options,
-                                                                                            preference: (alt.preference || []).map((p) => ({
-                                                                                                ...p,
-                                                                                                is_selected: 0,
-                                                                                            })),
                                                                                         };
                                                                                     }
                                                                                     return alt;
                                                                                 });
                                                                             }
                                                                         }
-                                                                        // Now add qty to the current item
                                                                         newAlternative = newAlternative.map((i) =>
-                                                                            i.id === item.id ? { ...i, qty: (i.qty || 0) + 1 } : i
+                                                                            i.id === item.id
+                                                                                ? {
+                                                                                    ...i,
+                                                                                    qty: (i.qty || 0) + 1,
+                                                                                    options: (i.options || []).length > 0 && (i.qty || 0) === 0
+                                                                                        ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
+                                                                                        : i.options,
+                                                                                    preference: (i.preference || []).length > 0 && (i.qty || 0) === 0
+                                                                                        ? i.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                        : i.preference,
+                                                                                }
+                                                                                : i
                                                                         );
                                                                         return {
                                                                             ...prev,
-                                                                            dinnerEntree: newEntree,
-                                                                            dinnerAlternative: newAlternative,
+                                                                            dinnerCategories: prev.dinnerCategories.map((c, idx) =>
+                                                                                idx === catIdx
+                                                                                    ? {
+                                                                                        ...c,
+                                                                                        entreeItems: newEntree,
+                                                                                        alternativeItems: newAlternative,
+                                                                                    }
+                                                                                    : c
+                                                                            )
                                                                         };
                                                                     });
                                                                 }}
                                                                 style={{ marginLeft: 8 }}
-                                                                disabled={
-                                                                    item.qty >= MAX_MEAL_QTY ||
-                                                                    isAfter12PM ||
-                                                                    isPast
-                                                                }
+                                                                disabled={item.qty >= MAX_MEAL_QTY || isAfter12PM || isPast}
                                                             >
                                                                 +
                                                             </button>
                                                         )}
                                                     </Box>
                                                 </Box>
-                                                {/* Show options and preference if qty > 0 and available */}
-                                                {(item.qty > 0) && ((item.options && item.options.length > 0) || (item.preference && item.preference.length > 0)) && (
-                                                    <Box mt={1} ml={3}>
-                                                        {item.options && item.options.length > 0 && (
-                                                            <Box mb={1}>
-                                                                {item.options.map((opt) => (
-                                                                    <label key={opt.id} style={{ marginRight: 12 }}>
-                                                                        <input
-                                                                            type="radio"
-                                                                            name={`dinner-alt-option-${item.id}`}
-                                                                            checked={!!opt.is_selected}
-                                                                            onChange={() => {
-                                                                                setData((prev) => ({
-                                                                                    ...prev,
-                                                                                    dinnerAlternative: prev.dinnerAlternative.map((i) =>
-                                                                                        i.id === item.id
-                                                                                            ? {
-                                                                                                ...i,
-                                                                                                options: i.options.map((o) =>
-                                                                                                    o.id === opt.id
-                                                                                                        ? { ...o, is_selected: 1 }
-                                                                                                        : { ...o, is_selected: 0 }
-                                                                                                ),
-                                                                                            }
-                                                                                            : i
-                                                                                    ),
-                                                                                }));
-                                                                            }}
-                                                                        />
-                                                                        {opt.name}
-                                                                    </label>
-                                                                ))}
-                                                            </Box>
-                                                        )}
-                                                        {item.preference && item.preference.length > 0 && (
-                                                            <Box>
-                                                                {item.preference.map((pref) => (
-                                                                    <label key={pref.id} style={{ marginRight: 12 }}>
-                                                                        <input
-                                                                            type="checkbox"
-                                                                            checked={!!pref.is_selected}
-                                                                            onChange={() => {
-                                                                                setData((prev) => ({
-                                                                                    ...prev,
-                                                                                    dinnerAlternative: prev.dinnerAlternative.map((i) =>
-                                                                                        i.id === item.id
-                                                                                            ? {
-                                                                                                ...i,
-                                                                                                preference: i.preference.map((p) =>
-                                                                                                    p.id === pref.id
-                                                                                                        ? { ...p, is_selected: p.is_selected ? 0 : 1 }
-                                                                                                        : p
-                                                                                                ),
-                                                                                            }
-                                                                                            : i
-                                                                                    ),
-                                                                                }));
-                                                                            }}
-                                                                        />
-                                                                        {pref.name}
-                                                                    </label>
-                                                                ))}
-                                                            </Box>
-                                                        )}
-                                                    </Box>
-                                                )}
+                                                {/* Options and Preference always at the bottom */}
+                                                <Box mt={2} ml={1} sx={{ width: "100%", minHeight: item.qty > 0 ? "auto" : 0 }}>
+                                                    {(item.qty > 0) && (
+                                                        <Box mt={2} ml={3}>
+                                                            {item.options && item.options.length > 0 && (
+                                                                <Box mb={1}>
+                                                                    {item.options.map((opt) => (
+                                                                        <label key={opt.id} style={{ marginRight: 12 }}>
+                                                                            <input
+                                                                                type="radio"
+                                                                                name={`dinner-alt-option-${cat.cat_id}-${item.id}`}
+                                                                                checked={!!opt.is_selected}
+                                                                                onChange={() => {
+                                                                                    setData(prev => ({
+                                                                                        ...prev,
+                                                                                        dinnerCategories: prev.dinnerCategories.map((c, idx) =>
+                                                                                            idx === catIdx
+                                                                                                ? {
+                                                                                                    ...c,
+                                                                                                    alternativeItems: c.alternativeItems.map(i =>
+                                                                                                        i.id === item.id
+                                                                                                            ? {
+                                                                                                                ...i,
+                                                                                                                options: i.options.map(o =>
+                                                                                                                    o.id === opt.id
+                                                                                                                        ? { ...o, is_selected: 1 }
+                                                                                                                        : { ...o, is_selected: 0 }
+                                                                                                                ),
+                                                                                                            }
+                                                                                                            : i
+                                                                                                    ),
+                                                                                                }
+                                                                                                : c
+                                                                                        )
+                                                                                    }));
+                                                                                }}
+                                                                            />
+                                                                            {opt.name}
+                                                                        </label>
+                                                                    ))}
+                                                                </Box>
+                                                            )}
+                                                            {item.preference && item.preference.length > 0 && (
+                                                                <Box>
+                                                                    {item.preference.map((pref) => (
+                                                                        <label key={pref.id} style={{ marginRight: 12 }}>
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={!!pref.is_selected}
+                                                                                onChange={() => {
+                                                                                    setData(prev => ({
+                                                                                        ...prev,
+                                                                                        dinnerCategories: prev.dinnerCategories.map((c, idx) =>
+                                                                                            idx === catIdx
+                                                                                                ? {
+                                                                                                    ...c,
+                                                                                                    alternativeItems: c.alternativeItems.map(i =>
+                                                                                                        i.id === item.id
+                                                                                                            ? {
+                                                                                                                ...i,
+                                                                                                                preference: i.preference.map(p =>
+                                                                                                                    p.id === pref.id
+                                                                                                                        ? { ...p, is_selected: p.is_selected ? 0 : 1 }
+                                                                                                                        : p
+                                                                                                                ),
+                                                                                                            }
+                                                                                                            : i
+                                                                                                    ),
+                                                                                                }
+                                                                                                : c
+                                                                                        )
+                                                                                    }));
+                                                                                }}
+                                                                            />
+                                                                            {pref.name}
+                                                                        </label>
+                                                                    ))}
+                                                                </Box>
+                                                            )}
+                                                        </Box>
+                                                    )}
+                                                </Box>
                                             </Box>
                                         ))}
-                                    </>
-                                )}
-                                {/* Add Dinner Additional Services */}
+
+                                    </Box>
+                                ))}
+                                {/* Dinner Services */}
                                 {(
-                                    (data.dinnerSoup?.some(item => item.qty > 0) ||
-                                        data.dinnerEntree?.some(item => item.qty > 0) ||
-                                        data.dinnerAlternative?.some(item => item.qty > 0)) &&
+                                    Array.isArray(data.dinnerCategories) &&
+                                    data.dinnerCategories.some(cat =>
+                                        (cat.entreeItems && cat.entreeItems.some(item => item.qty > 0)) ||
+                                        (cat.alternativeItems && cat.alternativeItems.some(item => item.qty > 0))
+                                    ) &&
                                     !kitchenSummery
                                 ) && (
                                         <Box mt={3} display="flex" gap={3}>
@@ -2817,29 +2368,18 @@ const Order = () => {
                                                 <span style={{ marginLeft: 5 }}>{langObj.escortService}</span>
                                             </label>
                                             <label style={{ display: "flex", alignItems: "center" }}>
-                                                <input
-                                                    type="checkbox"
-                                                // checked={data.is_dinner_tray_service === 1}
-                                                // onChange={e => {
-                                                //     setData(prev => ({
-                                                //         ...prev,
-                                                //         is_dinner_tray_service: e.target.checked ? 1 : 0
-                                                //     }));
-                                                // }}
-                                                />
+                                                <input type="checkbox" />
                                                 <span style={{ marginLeft: 5 }}>{langObj.Takeout}</span>
                                             </label>
                                         </Box>
                                     )}
-                                {data.dinnerSoup && data.dinnerEntree && data.dinnerAlternative &&
-                                    data.dinnerSoup.length === 0 &&
-                                    data.dinnerEntree.length === 0 &&
-                                    data.dinnerAlternative.length === 0 && (
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                            {langObj.dinnerMenuWarn}
-                                        </Typography>
-                                    )}
-                                {/* Add Dinner Submit, if lunch and breakfast not submited then here all data submited like breakfast, lunch and dinner */}
+
+                                {Array.isArray(data.dinnerCategories) && data.dinnerCategories.length === 0 && (
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                        {langObj.dinnerMenuWarn}
+                                    </Typography>
+                                )}
+
                                 {kitchenSummery && (
                                     <Box mt={3} display="flex" justifyContent="center">
                                         <CustomButton
@@ -2867,13 +2407,14 @@ const Order = () => {
                                         </CustomButton>
                                     </Box>
                                 )}
-                                {(
-                                    (
-                                        (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0)) ||
-                                        (data.lunchSoup?.some(item => item.qty > 0) || data.lunchEntree?.some(item => item.qty > 0) || data.lunchAlternative?.some(item => item.qty > 0)) ||
-                                        (data.dinnerSoup?.some(item => item.qty > 0) || data.dinnerEntree?.some(item => item.qty > 0) || data.dinnerAlternative?.some(item => item.qty > 0))
-                                    ) && !kitchenSummery
-                                ) && (
+
+                                {tabIndex === 2 &&
+                                    Array.isArray(data.dinnerCategories) &&
+                                    data.dinnerCategories.some(cat =>
+                                        (cat.entreeItems && cat.entreeItems.some(item => item.qty > 0)) ||
+                                        (cat.alternativeItems && cat.alternativeItems.some(item => item.qty > 0))
+                                    ) &&
+                                    !kitchenSummery && (
                                         <Box mt={3} display="flex" justifyContent="center">
                                             <CustomButton
                                                 sx={{
