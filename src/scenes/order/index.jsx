@@ -379,7 +379,12 @@ const Order = () => {
             ...flatten(d.lunchAlternative),
             ...flatten(d.dinnerSoup),
             ...flatten(d.dinnerEntree),
-            ...flatten(d.dinnerAlternative)
+            ...flatten(d.dinnerAlternative),
+            ...(d.dinnerCategories || []).flatMap(cat => [
+                ...flatten(cat.entreeItems),
+                ...flatten(cat.alternativeItems)
+            ])
+
         ];
 
         const selectedRoom = userData.rooms.find(x => x.name === roomNo);
@@ -499,7 +504,7 @@ const Order = () => {
             });
             const newMealSelections = getUpdatedMealSelections(mealSelections, dataCopy, date.format("YYYY-MM-DD"));
             const payload = buildOrderPayload(newMealSelections, date);
-            // console.log("payload", payload);
+            console.log("payload", payload);
             let response = await OrderServices.submitOrder(payload);
             if (response.ResponseText === "success") {
                 setMealSelections([])
@@ -614,7 +619,7 @@ const Order = () => {
         data.lunchEntree && data.lunchEntree.length > 0 ||
         data.lunchAlternative && data.lunchAlternative.length > 0;
 
-    console.log(data?.dinnerCategories)
+    console.log(data)
     return (
         <Box m="20px">
             <Header
@@ -2386,85 +2391,87 @@ const Order = () => {
                                                         </Box>
                                                     </Box>
                                                     {/* Options and Preference always at the bottom */}
-                                                    {(item.qty > 0) && (
-                                                        <Box mt={2} ml={3} sx={{ width: "100%" }}>
-                                                            {item.options && item.options.length > 0 && (
-                                                                <Box mb={1}>
-                                                                    {item.options.map((opt) => (
-                                                                        <label key={opt.id} style={{ marginRight: 12 }}>
-                                                                            <input
-                                                                                type="radio"
-                                                                                name={`dinner-entree-option-${cat.cat_id}-${item.id}`}
-                                                                                checked={!!opt.is_selected}
-                                                                                onChange={() => {
-                                                                                    setData(prev => ({
-                                                                                        ...prev,
-                                                                                        dinnerCategories: prev.dinnerCategories.map((c, idx) =>
-                                                                                            idx === catIdx
-                                                                                                ? {
-                                                                                                    ...c,
-                                                                                                    entreeItems: c.entreeItems.map(i =>
-                                                                                                        i.id === item.id
-                                                                                                            ? {
-                                                                                                                ...i,
-                                                                                                                options: i.options.map(o =>
-                                                                                                                    o.id === opt.id
-                                                                                                                        ? { ...o, is_selected: 1 }
-                                                                                                                        : { ...o, is_selected: 0 }
-                                                                                                                ),
-                                                                                                            }
-                                                                                                            : i
-                                                                                                    ),
-                                                                                                }
-                                                                                                : c
-                                                                                        )
-                                                                                    }));
-                                                                                }}
-                                                                            />
-                                                                            {opt.name}
-                                                                        </label>
-                                                                    ))}
-                                                                </Box>
-                                                            )}
-                                                            {item.preference && item.preference.length > 0 && (
-                                                                <Box>
-                                                                    {item.preference.map((pref) => (
-                                                                        <label key={pref.id} style={{ marginRight: 12 }}>
-                                                                            <input
-                                                                                type="checkbox"
-                                                                                checked={!!pref.is_selected}
-                                                                                onChange={() => {
-                                                                                    setData(prev => ({
-                                                                                        ...prev,
-                                                                                        dinnerCategories: prev.dinnerCategories.map((c, idx) =>
-                                                                                            idx === catIdx
-                                                                                                ? {
-                                                                                                    ...c,
-                                                                                                    entreeItems: c.entreeItems.map(i =>
-                                                                                                        i.id === item.id
-                                                                                                            ? {
-                                                                                                                ...i,
-                                                                                                                preference: i.preference.map(p =>
-                                                                                                                    p.id === pref.id
-                                                                                                                        ? { ...p, is_selected: p.is_selected ? 0 : 1 }
-                                                                                                                        : p
-                                                                                                                ),
-                                                                                                            }
-                                                                                                            : i
-                                                                                                    ),
-                                                                                                }
-                                                                                                : c
-                                                                                        )
-                                                                                    }));
-                                                                                }}
-                                                                            />
-                                                                            {pref.name}
-                                                                        </label>
-                                                                    ))}
-                                                                </Box>
-                                                            )}
-                                                        </Box>
-                                                    )}
+                                                    <Box mt={2} ml={1} sx={{ width: "100%", minHeight: item.qty > 0 ? "auto" : 0 }}>
+                                                        {(item.qty > 0) && (
+                                                            <Box mt={2} ml={3} >
+                                                                {item.options && item.options.length > 0 && (
+                                                                    <Box mb={1}>
+                                                                        {item.options.map((opt) => (
+                                                                            <label key={opt.id} style={{ marginRight: 12 }}>
+                                                                                <input
+                                                                                    type="radio"
+                                                                                    name={`dinner-entree-option-${cat.cat_id}-${item.id}`}
+                                                                                    checked={!!opt.is_selected}
+                                                                                    onChange={() => {
+                                                                                        setData(prev => ({
+                                                                                            ...prev,
+                                                                                            dinnerCategories: prev.dinnerCategories.map((c, idx) =>
+                                                                                                idx === catIdx
+                                                                                                    ? {
+                                                                                                        ...c,
+                                                                                                        entreeItems: c.entreeItems.map(i =>
+                                                                                                            i.id === item.id
+                                                                                                                ? {
+                                                                                                                    ...i,
+                                                                                                                    options: i.options.map(o =>
+                                                                                                                        o.id === opt.id
+                                                                                                                            ? { ...o, is_selected: 1 }
+                                                                                                                            : { ...o, is_selected: 0 }
+                                                                                                                    ),
+                                                                                                                }
+                                                                                                                : i
+                                                                                                        ),
+                                                                                                    }
+                                                                                                    : c
+                                                                                            )
+                                                                                        }));
+                                                                                    }}
+                                                                                />
+                                                                                {opt.name}
+                                                                            </label>
+                                                                        ))}
+                                                                    </Box>
+                                                                )}
+                                                                {item.preference && item.preference.length > 0 && (
+                                                                    <Box>
+                                                                        {item.preference.map((pref) => (
+                                                                            <label key={pref.id} style={{ marginRight: 12 }}>
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    checked={!!pref.is_selected}
+                                                                                    onChange={() => {
+                                                                                        setData(prev => ({
+                                                                                            ...prev,
+                                                                                            dinnerCategories: prev.dinnerCategories.map((c, idx) =>
+                                                                                                idx === catIdx
+                                                                                                    ? {
+                                                                                                        ...c,
+                                                                                                        entreeItems: c.entreeItems.map(i =>
+                                                                                                            i.id === item.id
+                                                                                                                ? {
+                                                                                                                    ...i,
+                                                                                                                    preference: i.preference.map(p =>
+                                                                                                                        p.id === pref.id
+                                                                                                                            ? { ...p, is_selected: p.is_selected ? 0 : 1 }
+                                                                                                                            : p
+                                                                                                                    ),
+                                                                                                                }
+                                                                                                                : i
+                                                                                                        ),
+                                                                                                    }
+                                                                                                    : c
+                                                                                            )
+                                                                                        }));
+                                                                                    }}
+                                                                                />
+                                                                                {pref.name}
+                                                                            </label>
+                                                                        ))}
+                                                                    </Box>
+                                                                )}
+                                                            </Box>
+                                                        )}
+                                                    </Box>
                                                 </Box>
                                             ))}
 
@@ -2620,7 +2627,7 @@ const Order = () => {
                                                     </Box>
                                                     {/* Options and Preference always at the bottom */}
                                                     {(item.qty > 0) && (
-                                                        <Box mt={2} ml={3} sx={{ width: "100%" }}>
+                                                        <Box mt={2} ml={3}>
                                                             {item.options && item.options.length > 0 && (
                                                                 <Box mb={1}>
                                                                     {item.options.map((opt) => (
@@ -2703,6 +2710,7 @@ const Order = () => {
 
                                         </Box>
                                     ))}
+                                    {/* Dinner Services */}
                                     {(
                                         Array.isArray(data.dinnerCategories) &&
                                         data.dinnerCategories.some(cat =>
@@ -2753,10 +2761,74 @@ const Order = () => {
                                                 {langObj.dinnerMenuWarn}
                                             </Typography>
                                         )}
+
+                                    {kitchenSummery && (
+                                        <Box mt={3} display="flex" justifyContent="center">
+                                            <CustomButton
+                                                onClick={() => navigate('/report')}
+                                                endIcon={<ArrowForwardIosOutlined />}
+                                                sx={{
+                                                    bgcolor: colors.blueAccent[50],
+                                                    color: colors.blueAccent[700],
+                                                    "&:hover": {
+                                                        bgcolor: colors.blueAccent[100],
+                                                        color: colors.blueAccent[800],
+                                                    },
+                                                    padding: "10px 32px",
+                                                    boxShadow: "none",
+                                                    borderRadius: "30px",
+                                                    border: "none",
+                                                    borderRadius: 4,
+                                                    fontWeight: 600,
+                                                    fontSize: 16,
+                                                    cursor: "pointer",
+                                                    width: 'auto'
+                                                }}
+                                            >
+                                                {langObj.viewReport}
+                                            </CustomButton>
+                                        </Box>
+                                    )}
+
+                                    {(
+                                        (
+                                            (data.breakFastDailySpecial?.some(item => item.qty > 0) || data.breakFastAlternative?.some(item => item.qty > 0)) ||
+                                            (data.lunchSoup?.some(item => item.qty > 0) || data.lunchEntree?.some(item => item.qty > 0) || data.lunchAlternative?.some(item => item.qty > 0)) ||
+                                            (
+                                                Array.isArray(data.dinnerCategories) &&
+                                                data.dinnerCategories.some(cat =>
+                                                    (cat.entreeItems && cat.entreeItems.some(item => item.qty > 0)) ||
+                                                    (cat.alternativeItems && cat.alternativeItems.some(item => item.qty > 0))
+                                                )
+                                            )
+                                        ) && !kitchenSummery
+                                    ) && (
+                                            <Box mt={3} display="flex" justifyContent="center">
+                                                <CustomButton
+                                                    sx={{
+                                                        padding: "10px 32px",
+                                                        bgcolor: colors.blueAccent[700],
+                                                        color: "#fcfcfc",
+                                                        border: "none",
+                                                        borderRadius: 4,
+                                                        fontWeight: 600,
+                                                        fontSize: 16,
+                                                        cursor: "pointer",
+                                                        width: 'auto'
+                                                    }}
+                                                    disabled={isAfter12PM || isPast}
+                                                    onClick={() => {
+                                                        submitData(data, date)
+                                                    }}
+                                                >
+                                                    {langObj.submit}
+                                                </CustomButton>
+                                            </Box>
+                                        )}
                                 </Box>
 
-                                <Box>
-                                    {/* Dinner soup */}
+                                {/* <Box>
+                                    /* Dinner soup *
                                     {data.dinnerSoup && data.dinnerSoup.length > 0 && (
                                         <>
                                             <Typography variant="h6"
@@ -2841,7 +2913,7 @@ const Order = () => {
                                         </>
                                     )}
 
-                                    {/* Entree */}
+                                    /* Entree *
                                     {data.dinnerEntree && data.dinnerEntree.length > 0 && (
                                         <>
                                             <Typography variant="h6" sx={{
@@ -3033,7 +3105,6 @@ const Order = () => {
                                                             )}
                                                         </Box>
                                                     </Box>
-                                                    {/* Show options and preference if qty > 0 and available */}
                                                     {(item.qty > 0) && ((item.options && item.options.length > 0) || (item.preference && item.preference.length > 0)) && (
                                                         <Box mt={1} ml={3}>
                                                             {item.options && item.options.length > 0 && (
@@ -3104,11 +3175,10 @@ const Order = () => {
                                         </>
                                     )}
 
-                                    {/* Alternatives */}
+                                    /* Alternatives *
                                     {data.dinnerAlternative && data.dinnerAlternative.length > 0 && (
                                         <>
                                             <Typography variant="h6" sx={{ mt: 3, mb: 2, fontWeight: 600 }}>
-                                                {/* {data.dinnerAlternativeCatName} */}
                                                 {userData?.langCode === "cn" && data.dinnerAlternativeCatName_cn && data.dinnerAlternativeCatName_cn.trim() !== ""
                                                     ? data.dinnerAlternativeCatName_cn
                                                     : data.dinnerAlternativeCatName}
@@ -3172,22 +3242,7 @@ const Order = () => {
                                                                 sx={kitchenSummery ? { fontSize: 24, fontWeight: 700 } : {}}
                                                             >
                                                                 {item.qty || 0}
-                                                            </Typography>                                                        {/* <button
-                                                            onClick={() =>
-                                                                setData((prev) => ({
-                                                                    ...prev,
-                                                                    dinnerAlternative: prev.dinnerAlternative.map((i) =>
-                                                                        i.id === item.id ? { ...i, qty: 1 } : { ...i, qty: 0 }
-                                                                    ),
-                                                                    //  DinnerEntrese Items Remove
-                                                                    dinnerEntree: prev.dinnerEntree.map((i) => ({ ...i, qty: 0 })),
-                                                                }))
-                                                            }
-                                                            style={{ marginLeft: 8 }}
-                                                            disabled={item.qty >= 1 || isAfter12PM || isPast}
-                                                        >
-                                                            +
-                                                        </button> */}
+                                                            </Typography>                                                    
                                                             {!kitchenSummery && (
                                                                 <button
                                                                     onClick={() => {
@@ -3304,7 +3359,6 @@ const Order = () => {
                                                             )}
                                                         </Box>
                                                     </Box>
-                                                    {/* Show options and preference if qty > 0 and available */}
                                                     {(item.qty > 0) && ((item.options && item.options.length > 0) || (item.preference && item.preference.length > 0)) && (
                                                         <Box mt={1} ml={3}>
                                                             {item.options && item.options.length > 0 && (
@@ -3374,7 +3428,7 @@ const Order = () => {
                                             ))}
                                         </>
                                     )}
-                                    {/* Add Dinner Additional Services */}
+                                    /* Add Dinner Additional Services *
                                     {(
                                         (data.dinnerSoup?.some(item => item.qty > 0) ||
                                             data.dinnerEntree?.some(item => item.qty > 0) ||
@@ -3431,7 +3485,6 @@ const Order = () => {
                                                 {langObj.dinnerMenuWarn}
                                             </Typography>
                                         )}
-                                    {/* Add Dinner Submit, if lunch and breakfast not submited then here all data submited like breakfast, lunch and dinner */}
                                     {kitchenSummery && (
                                         <Box mt={3} display="flex" justifyContent="center">
                                             <CustomButton
@@ -3488,7 +3541,7 @@ const Order = () => {
                                                 </CustomButton>
                                             </Box>
                                         )}
-                                </Box>
+                                </Box> */}
                             </>
                         )}
                     </>
