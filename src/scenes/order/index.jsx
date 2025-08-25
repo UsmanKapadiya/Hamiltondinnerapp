@@ -150,11 +150,7 @@ const Order = () => {
         // Breakfast
         const breakfastCat = mealData.breakfast?.[0];
         const breakfast = breakfastCat?.items || [];
-        const breakFastDailySpecialCatName = breakfastCat?.cat_name || "";
-        const breakFastDailySpecialCatName_cn = breakfastCat?.chinese_name || "";
-        const breakFastAlternativeCat = breakfast.find(item => item.type === "sub_cat");
-        const breakFastAlternativeCatName = breakFastAlternativeCat?.item_name || "";
-        const breakFastAlternativeCatName_cn = breakFastAlternativeCat?.chinese_name || "";
+
         const breakFastDailySpecial = breakfast
             .filter(item => item.type === "item")
             .map(item => ({
@@ -179,6 +175,7 @@ const Order = () => {
                 order_id: item?.order_id,
                 image: item?.item_image
             }));
+
         const breakfastCategories = (mealData.breakfast || []).map(cat => {
             // Entree items
             const entreeItems = (cat.items || [])
@@ -223,18 +220,13 @@ const Order = () => {
                 alternativeItems
             };
         });
+
         console.log("breakfastCategories", breakfastCategories);
         const is_brk_escort_service = mealData?.is_brk_escort_service
         const is_brk_tray_service = mealData?.is_brk_tray_service
-
-        const lunchSoupCatName = mealData.lunch?.[0]?.cat_name || "";
-        const lunchSoupCatName_cn = mealData.lunch?.[0]?.chinese_name || "";
         const lunchCat = mealData.lunch?.[0];
-        const lunchEntreeCatName = lunchCat?.cat_name || "";
-        const lunchEntreeCatName_cn = lunchCat?.chinese_name || "";
-        const lunchAlternativeCat = lunchCat?.items?.find(item => item.type === "sub_cat");
-        const lunchAlternativeCatName = lunchAlternativeCat?.item_name || "";
-        const lunchAlternativeCatName_cn = lunchAlternativeCat?.chinese_name || "";
+   
+    
         const lunchSoup = []
         // Before 0 index on lunch Soup Category show, now lunch Soup Category is not get
         // = mealData.lunch?.[0]?.items?.map(item => ({
@@ -323,15 +315,8 @@ const Order = () => {
 
 
         // Dinner
-        const dinnerSoupCatName = mealData.dinner?.[0]?.cat_name || "";
-        const dinnerSoupCatName_cn = mealData.dinner?.[0]?.chinese_name || "";
         const dinnerCat = mealData.dinner?.[0];
-        const dinnerEntreeCatName = dinnerCat?.cat_name || "";
-        const dinnerEntreeCatName_cn = dinnerCat?.chinese_name || "";
-        const dinnerAlternativeCat = dinnerCat?.items?.find(item => item.type === "sub_cat");
-        const dinnerAlternativeCatName = dinnerAlternativeCat?.item_name || "";
-        const dinnerAlternativeCatName_cn = dinnerAlternativeCat?.chinese_name || "";
-        const dinnerSoup = []; // If you have soup in dinner, extract it here
+        const dinnerSoup = [];
         const dinnerEntree = dinnerCat?.items
             ?.filter(item => item.type === "item")
             .map(item => ({
@@ -359,7 +344,7 @@ const Order = () => {
         const is_dinner_escort_service = mealData?.is_dinner_escort_service
         const is_dinner_tray_service = mealData?.is_dinner_tray_service
 
-        // ...existing code...
+        
 
         // Dinner categories extraction (dynamic)
         const dinnerCategories = (mealData.dinner || []).map(cat => {
@@ -406,40 +391,24 @@ const Order = () => {
                 alternativeItems
             };
         });
-        console.log("dinnerCategories", dinnerCategories);
 
-        // Example usage:
-        // dinnerCategories[0] is DINNER ENTREE, dinnerCategories[1] is DINNER DESSERT, etc.
 
-        // ...existing code...
         return {
             date: mealData.date,
-            breakFastDailySpecialCatName,
-            breakFastDailySpecialCatName_cn,
-            breakFastAlternativeCatName,
-            breakFastAlternativeCatName_cn,
+
             breakFastDailySpecial,
             breakFastAlternative,
             breakfastCategories,
+
             lunchSoup,
-            lunchSoupCatName,
-            lunchSoupCatName_cn,
             lunchEntree,
-            lunchEntreeCatName,
-            lunchEntreeCatName_cn,
             lunchAlternative,
-            lunchAlternativeCatName,
-            lunchAlternativeCatName_cn,
             lunchCategories,
-            dinnerSoupCatName,
-            dinnerSoupCatName_cn,
+
             dinnerEntree,
-            dinnerEntreeCatName,
-            dinnerEntreeCatName_cn,
             dinnerAlternative,
-            dinnerAlternativeCatName,
-            dinnerAlternativeCatName_cn,
             dinnerSoup,
+
             dinnerCategories,
             is_brk_escort_service,
             is_brk_tray_service,
@@ -474,7 +443,7 @@ const Order = () => {
             ...flatten(d.dinnerSoup),
             ...flatten(d.dinnerEntree),
             ...flatten(d.dinnerAlternative),
-              ...(d.breakfastCategories || []).flatMap(cat => [
+            ...(d.breakfastCategories || []).flatMap(cat => [
                 ...flatten(cat.entreeItems),
                 ...flatten(cat.alternativeItems)
             ]),
@@ -1960,6 +1929,7 @@ const Order = () => {
                                             </Typography>
                                         </>
                                     )}
+                        
                                     {data.lunchSoup && data.lunchEntree && data.lunchAlternative &&
                                         data.lunchSoup.length === 0 &&
                                         data.lunchEntree.length === 0 &&
