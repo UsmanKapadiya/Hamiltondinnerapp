@@ -1007,13 +1007,16 @@ const GuestOrder = () => {
                                                                                             }));
                                                                                         }}
                                                                                     />
-                                                                                    {opt.name}
+                                                                                    <span style={{ marginLeft: 5 }}>{opt.name}</span>
                                                                                 </label>
                                                                             ))}
                                                                         </Box>
                                                                     )}
                                                                     {item.preference && item.preference.length > 0 && (
                                                                         <Box>
+                                                                            <Typography sx={{ fontWeight: 700, fontSize: 18 }}>
+                                                                                * Preference
+                                                                            </Typography>
                                                                             {item.preference.map((pref) => (
                                                                                 <label key={pref.id} style={{ marginRight: 12 }}>
                                                                                     <input
@@ -1044,7 +1047,7 @@ const GuestOrder = () => {
                                                                                             }));
                                                                                         }}
                                                                                     />
-                                                                                    {pref.name}
+                                                                                    <span style={{ marginLeft: 5 }}>{pref.name}</span>
                                                                                 </label>
                                                                             ))}
                                                                         </Box>
@@ -1066,7 +1069,7 @@ const GuestOrder = () => {
 
                                                 {/* Alternative Items */}
                                                 {cat.alternativeItems.map(item => (
-                                                    <Box key={item.id} mb={1}>
+                                                    <Box key={item.id} mb={1} ml={2}>
                                                         <Box display="flex" alignItems="center" justifyContent="space-between">
                                                             <Box display="flex" alignItems="center">
                                                                 {item.image && (
@@ -1239,13 +1242,16 @@ const GuestOrder = () => {
                                                                                             }));
                                                                                         }}
                                                                                     />
-                                                                                    {opt.name}
+                                                                                    <span style={{ marginLeft: 5 }}>{opt.name}</span>
                                                                                 </label>
                                                                             ))}
                                                                         </Box>
                                                                     )}
                                                                     {item.preference && item.preference.length > 0 && (
                                                                         <Box>
+                                                                            <Typography sx={{ fontWeight: 700, fontSize: 18 }}>
+                                                                                * Preference
+                                                                            </Typography>
                                                                             {item.preference.map((pref) => (
                                                                                 <label key={pref.id} style={{ marginRight: 12 }}>
                                                                                     <input
@@ -1276,7 +1282,7 @@ const GuestOrder = () => {
                                                                                             }));
                                                                                         }}
                                                                                     />
-                                                                                    {pref.name}
+                                                                                    <span style={{ marginLeft: 5 }}>{pref.name}</span>
                                                                                 </label>
                                                                             ))}
                                                                         </Box>
@@ -1563,13 +1569,16 @@ const GuestOrder = () => {
                                                                                             }));
                                                                                         }}
                                                                                     />
-                                                                                    {opt.name}
+                                                                                    <span style={{ marginLeft: 5 }}>{opt.name}</span>
                                                                                 </label>
                                                                             ))}
                                                                         </Box>
                                                                     )}
                                                                     {item.preference && item.preference.length > 0 && (
                                                                         <Box>
+                                                                            <Typography sx={{ fontWeight: 700, fontSize: 18 }}>
+                                                                                * Preference
+                                                                            </Typography>
                                                                             {item.preference.map((pref) => (
                                                                                 <label key={pref.id} style={{ marginRight: 12 }}>
                                                                                     <input
@@ -1600,7 +1609,7 @@ const GuestOrder = () => {
                                                                                             }));
                                                                                         }}
                                                                                     />
-                                                                                    {pref.name}
+                                                                                    <span style={{ marginLeft: 5 }}>{pref.name}</span>
                                                                                 </label>
                                                                             ))}
                                                                         </Box>
@@ -1622,7 +1631,7 @@ const GuestOrder = () => {
 
                                                 {/* Alternative Items */}
                                                 {cat.alternativeItems.map(item => (
-                                                    <Box key={item.id} mb={1}>
+                                                    <Box key={item.id} mb={1} ml={2}>
                                                         <Box display="flex" alignItems="center" justifyContent="space-between">
                                                             <Box display="flex" alignItems="center">
                                                                 {item.image && (
@@ -1792,13 +1801,16 @@ const GuestOrder = () => {
                                                                                             }));
                                                                                         }}
                                                                                     />
-                                                                                    {opt.name}
+                                                                                    <span style={{ marginLeft: 5 }}>{opt.name}</span>
                                                                                 </label>
                                                                             ))}
                                                                         </Box>
                                                                     )}
                                                                     {item.preference && item.preference.length > 0 && (
                                                                         <Box>
+                                                                            <Typography sx={{ fontWeight: 700, fontSize: 18 }}>
+                                                                                * Preference
+                                                                            </Typography>
                                                                             {item.preference.map((pref) => (
                                                                                 <label key={pref.id} style={{ marginRight: 12 }}>
                                                                                     <input
@@ -1829,7 +1841,7 @@ const GuestOrder = () => {
                                                                                             }));
                                                                                         }}
                                                                                     />
-                                                                                    {pref.name}
+                                                                                    <span style={{ marginLeft: 5 }}>{pref.name}</span>
                                                                                 </label>
                                                                             ))}
                                                                         </Box>
@@ -2117,13 +2129,16 @@ const GuestOrder = () => {
                                                                                             }));
                                                                                         }}
                                                                                     />
-                                                                                    {opt.name}
+                                                                                    <span style={{ marginLeft: 5 }}>{opt.name}</span>
                                                                                 </label>
                                                                             ))}
                                                                         </Box>
                                                                     )}
                                                                     {item.preference && item.preference.length > 0 && (
                                                                         <Box>
+                                                                            <Typography sx={{ fontWeight: 700, fontSize: 18 }}>
+                                                                                * Preference
+                                                                            </Typography>
                                                                             {item.preference.map((pref) => (
                                                                                 <label key={pref.id} style={{ marginRight: 12 }}>
                                                                                     <input
@@ -2154,7 +2169,7 @@ const GuestOrder = () => {
                                                                                             }));
                                                                                         }}
                                                                                     />
-                                                                                    {pref.name}
+                                                                                    <span style={{ marginLeft: 5 }}>{pref.name}</span>
                                                                                 </label>
                                                                             ))}
                                                                         </Box>
@@ -2176,7 +2191,7 @@ const GuestOrder = () => {
 
                                                 {/* Alternative Items */}
                                                 {cat.alternativeItems.map(item => (
-                                                    <Box key={item.id} mb={1}>
+                                                    <Box key={item.id} mb={1} ml={2}>
                                                         <Box display="flex" alignItems="center" justifyContent="space-between">
                                                             <Box display="flex" alignItems="center">
                                                                 {item.image && (
@@ -2348,13 +2363,16 @@ const GuestOrder = () => {
                                                                                             }));
                                                                                         }}
                                                                                     />
-                                                                                    {opt.name}
+                                                                                    <span style={{ marginLeft: 5 }}>{opt.name}</span>
                                                                                 </label>
                                                                             ))}
                                                                         </Box>
                                                                     )}
                                                                     {item.preference && item.preference.length > 0 && (
                                                                         <Box>
+                                                                            <Typography sx={{ fontWeight: 700, fontSize: 18 }}>
+                                                                                * Preference
+                                                                            </Typography>
                                                                             {item.preference.map((pref) => (
                                                                                 <label key={pref.id} style={{ marginRight: 12 }}>
                                                                                     <input
@@ -2385,7 +2403,7 @@ const GuestOrder = () => {
                                                                                             }));
                                                                                         }}
                                                                                     />
-                                                                                    {pref.name}
+                                                                                    <span style={{ marginLeft: 5 }}>{pref.name}</span>
                                                                                 </label>
                                                                             ))}
                                                                         </Box>
