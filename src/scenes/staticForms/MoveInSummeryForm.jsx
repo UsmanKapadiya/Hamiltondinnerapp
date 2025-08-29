@@ -521,6 +521,7 @@ const MoveInSummeryForm = () => {
                                                     onChange={(newValue) =>
                                                         setFieldValue("contract_signing_date", newValue ? newValue.format("YYYY-MM-DD") : "")
                                                     }
+                                                    format="DD MMM YYYY"
                                                     slotProps={{
                                                         textField: {
                                                             fullWidth: true,
@@ -590,6 +591,7 @@ const MoveInSummeryForm = () => {
                                                             onChange={(newValue) =>
                                                                 setFieldValue("tenancy_commence_date", newValue ? newValue.format("YYYY-MM-DD") : "")
                                                             }
+                                                            format="DD MMM YYYY" 
                                                             slotProps={{
                                                                 textField: {
                                                                     fullWidth: true,
@@ -611,6 +613,7 @@ const MoveInSummeryForm = () => {
                                                             onChange={(newValue) =>
                                                                 setFieldValue("contract_expiry_date", newValue ? newValue.format("YYYY-MM-DD") : "")
                                                             }
+                                                            format="DD MMM YYYY"
                                                             slotProps={{
                                                                 textField: {
                                                                     fullWidth: true,
@@ -674,6 +677,7 @@ const MoveInSummeryForm = () => {
                                                             onChange={(newValue) =>
                                                                 setFieldValue("first_resident_dob", newValue ? newValue.format("YYYY-MM-DD") : "")
                                                             }
+                                                            format="DD MMM YYYY"
                                                             slotProps={{
                                                                 textField: {
                                                                     fullWidth: true,
@@ -744,6 +748,7 @@ const MoveInSummeryForm = () => {
                                                                     onChange={(newValue) =>
                                                                         setFieldValue("second_resident_dob", newValue ? newValue.format("YYYY-MM-DD") : "")
                                                                     }
+                                                                    format="DD MMM YYYY"
                                                                     slotProps={{
                                                                         textField: {
                                                                             fullWidth: true,
@@ -802,6 +807,7 @@ const MoveInSummeryForm = () => {
                                                                 onChange={newValue =>
                                                                     setFieldValue("first_month_payment_received_cheque_date", newValue ? newValue.format("YYYY-MM-DD") : "")
                                                                 }
+                                                                format="DD MMM YYYY"
                                                                 slotProps={{
                                                                     textField: {
                                                                         fullWidth: true,
@@ -1035,6 +1041,7 @@ const MoveInSummeryForm = () => {
                                                                     onChange={newValue =>
                                                                         setFieldValue("security_deposit_received_cheque_date", newValue ? newValue.format("YYYY-MM-DD") : "")
                                                                     }
+                                                                    format="DD MMM YYYY"
                                                                     slotProps={{
                                                                         textField: {
                                                                             fullWidth: true,
@@ -1380,6 +1387,7 @@ const MoveInSummeryForm = () => {
                                                                             label="Copy Received Date"
                                                                             value={values.suite_insurance_copy_received_date ? dayjs(values.suite_insurance_copy_received_date) : null}
                                                                             onChange={newValue => setFieldValue('suite_insurance_copy_received_date', newValue ? newValue.format('YYYY-MM-DD') : '')}
+                                                                            format="DD MMM YYYY"
                                                                             slotProps={{
                                                                                 textField: {
                                                                                     fullWidth: true,
@@ -1447,6 +1455,7 @@ const MoveInSummeryForm = () => {
                                                                 label="Date"
                                                                 value={values.date ? dayjs(values.date) : null}
                                                                 onChange={newValue => setFieldValue('date', newValue ? newValue.format('YYYY-MM-DD') : '')}
+                                                                format="DD MMM YYYY"
                                                                 slotProps={{
                                                                     textField: {
                                                                         fullWidth: true,
