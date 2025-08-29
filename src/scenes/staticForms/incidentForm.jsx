@@ -749,7 +749,6 @@ const IncidentForm = () => {
                 </Box>
                 <Box sx={{ width: "100%", display: "flex", gap: 2 }}>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
-
                     <DatePicker
                       label="Date"
                       value={values.incident_date ? dayjs(values.incident_date) : null}
@@ -763,7 +762,7 @@ const IncidentForm = () => {
                           setFieldValue("incident_tm", "12:00");
                         }
                       }}
-                      minDate={dayjs()}
+                      // minDate={dayjs()}
                       slotProps={{
                         textField: {
                           fullWidth: true,
@@ -865,7 +864,7 @@ const IncidentForm = () => {
                         }
                       }
                       }
-                      minDate={dayjs()}
+                      // minDate={dayjs()}
                       slotProps={{
                         textField: {
                           fullWidth: true,
