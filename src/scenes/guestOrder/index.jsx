@@ -779,9 +779,23 @@ const GuestOrder = () => {
                                 {langObj.noOfGuests}
                             </Typography>
                             <Box display="flex" alignItems="center">
-                                <Button variant="outlined" sx={{ minWidth: 36, mx: 1 }} onClick={handleDecrement}>-</Button>
+                                <Button
+                                    variant="outlined"
+                                    sx={{ minWidth: 36, mx: 1 }}
+                                    onClick={handleDecrement}
+                                    disabled={isPast}
+                                >
+                                    -
+                                </Button>
                                 <Typography sx={{ mx: 1 }}>{guestCount}</Typography>
-                                <Button variant="outlined" sx={{ minWidth: 36, mx: 1 }} onClick={handleIncrement}>+</Button>
+                                <Button
+                                    variant="outlined"
+                                    sx={{ minWidth: 36, mx: 1 }}
+                                    onClick={handleIncrement}
+                                    disabled={isPast}
+                                >
+                                    +
+                                </Button>
                             </Box>
                         </Box>
                     </Box>
