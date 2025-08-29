@@ -857,7 +857,9 @@ const GuestOrder = () => {
                                                                                                     options: (i.options || []).length > 0 && newQty === 0
                                                                                                         ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                                         : i.options,
-                                                                                                    preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                                                    preference: (i.preference || []).length > 0 && newQty === 0
+                                                                                                        ? i.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                                        : i.preference,
                                                                                                 };
                                                                                             }
                                                                                             if ((i.qty || 0) === 0) {
@@ -866,7 +868,9 @@ const GuestOrder = () => {
                                                                                                     options: (i.options || []).length > 0
                                                                                                         ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                                         : i.options,
-                                                                                                    preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                                                    preference: (i.preference || []).length > 0
+                                                                                                        ? i.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                                        : i.preference,
                                                                                                 };
                                                                                             }
                                                                                             return i;
@@ -1423,7 +1427,9 @@ const GuestOrder = () => {
                                                                                                     options: (i.options || []).length > 0 && newQty === 0
                                                                                                         ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                                         : i.options,
-                                                                                                    preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                                                    preference: (i.preference || []).length > 0 && newQty === 0
+                                                                                                        ? i.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                                        : i.preference,
                                                                                                 };
                                                                                             }
                                                                                             if ((i.qty || 0) === 0) {
@@ -1432,7 +1438,9 @@ const GuestOrder = () => {
                                                                                                     options: (i.options || []).length > 0
                                                                                                         ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                                         : i.options,
-                                                                                                    preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                                                    preference: (i.preference || []).length > 0
+                                                                                                        ? i.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                                        : i.preference,
                                                                                                 };
                                                                                             }
                                                                                             return i;
@@ -1983,7 +1991,9 @@ const GuestOrder = () => {
                                                                                                     options: (i.options || []).length > 0 && newQty === 0
                                                                                                         ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                                         : i.options,
-                                                                                                    preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                                                    preference: (i.preference || []).length > 0 && newQty === 0
+                                                                                                        ? i.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                                        : i.preference,
                                                                                                 };
                                                                                             }
                                                                                             if ((i.qty || 0) === 0) {
@@ -1992,7 +2002,9 @@ const GuestOrder = () => {
                                                                                                     options: (i.options || []).length > 0
                                                                                                         ? i.options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }))
                                                                                                         : i.options,
-                                                                                                    preference: (i.preference || []).map((p) => ({ ...p, is_selected: 0 })),
+                                                                                                    preference: (i.preference || []).length > 0
+                                                                                                        ? i.preference.map((p) => ({ ...p, is_selected: 0 }))
+                                                                                                        : i.preference,
                                                                                                 };
                                                                                             }
                                                                                             return i;
