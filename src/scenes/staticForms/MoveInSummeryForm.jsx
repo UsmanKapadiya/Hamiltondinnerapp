@@ -290,7 +290,7 @@ const MoveInSummeryForm = () => {
     const [initialFormValues, setInitialFormValues] = useState(initialValues);
     const [defaultElpasRate, setDefaultElpasRate] = useState(0);
     const [defaultGaregeFobRate, setDefaultGaregeFobRate] = useState(0);
-    
+
     useEffect(() => {
         const fetchFormData = async () => {
             setLoading(true);
@@ -519,7 +519,7 @@ const MoveInSummeryForm = () => {
                                                     label="Contract Sign Date"
                                                     value={values.contract_signing_date ? dayjs(values.contract_signing_date) : null}
                                                     onChange={(newValue) =>
-                                                        setFieldValue("contract_signing_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                        setFieldValue("contract_signing_date", newValue ? newValue.format("DD MMM YYYY") : "")
                                                     }
                                                     format="DD MMM YYYY"
                                                     slotProps={{
@@ -589,9 +589,9 @@ const MoveInSummeryForm = () => {
                                                             label="Tenancy Commence Date"
                                                             value={values.tenancy_commence_date ? dayjs(values.tenancy_commence_date) : null}
                                                             onChange={(newValue) =>
-                                                                setFieldValue("tenancy_commence_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                                setFieldValue("tenancy_commence_date", newValue ? newValue.format("DD MMM YYYY") : "")
                                                             }
-                                                            format="DD MMM YYYY" 
+                                                            format="DD MMM YYYY"
                                                             slotProps={{
                                                                 textField: {
                                                                     fullWidth: true,
@@ -611,7 +611,7 @@ const MoveInSummeryForm = () => {
                                                             label="Contract Expiry Date"
                                                             value={values.contract_expiry_date ? dayjs(values.contract_expiry_date) : null}
                                                             onChange={(newValue) =>
-                                                                setFieldValue("contract_expiry_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                                setFieldValue("contract_expiry_date", newValue ? newValue.format("DD MMM YYYY") : "")
                                                             }
                                                             format="DD MMM YYYY"
                                                             slotProps={{
@@ -619,6 +619,7 @@ const MoveInSummeryForm = () => {
                                                                     fullWidth: true,
                                                                     variant: "filled",
                                                                     error: touched.contract_expiry_date && Boolean(errors.contract_expiry_date),
+                                                                    helperText: touched.contract_expiry_date && errors.contract_expiry_date,
                                                                 },
                                                             }}
                                                         />
@@ -675,7 +676,7 @@ const MoveInSummeryForm = () => {
                                                             label="Date of Birth"
                                                             value={values.first_resident_dob ? dayjs(values.first_resident_dob) : null}
                                                             onChange={(newValue) =>
-                                                                setFieldValue("first_resident_dob", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                                setFieldValue("first_resident_dob", newValue ? newValue.format("DD MMM YYYY") : "")
                                                             }
                                                             format="DD MMM YYYY"
                                                             slotProps={{
@@ -683,6 +684,7 @@ const MoveInSummeryForm = () => {
                                                                     fullWidth: true,
                                                                     variant: "filled",
                                                                     error: touched.first_resident_dob && Boolean(errors.first_resident_dob),
+                                                                    helperText: touched.first_resident_dob && errors.first_resident_dob, // <-- Add this line
                                                                 },
                                                             }}
                                                         />
@@ -746,7 +748,7 @@ const MoveInSummeryForm = () => {
                                                                     label="Date of Birth"
                                                                     value={values.second_resident_dob ? dayjs(values.second_resident_dob) : null}
                                                                     onChange={(newValue) =>
-                                                                        setFieldValue("second_resident_dob", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                                        setFieldValue("second_resident_dob", newValue ? newValue.format("DD MMM YYYY") : "")
                                                                     }
                                                                     format="DD MMM YYYY"
                                                                     slotProps={{
@@ -754,6 +756,7 @@ const MoveInSummeryForm = () => {
                                                                             fullWidth: true,
                                                                             variant: "filled",
                                                                             error: touched.second_resident_dob && Boolean(errors.second_resident_dob),
+                                                                            helperText: touched.second_resident_dob && errors.second_resident_dob, // <-- Add this line
                                                                         },
                                                                     }}
                                                                 />
@@ -805,7 +808,7 @@ const MoveInSummeryForm = () => {
                                                                 label="Cheque Date"
                                                                 value={values.first_month_payment_received_cheque_date ? dayjs(values.first_month_payment_received_cheque_date) : null}
                                                                 onChange={newValue =>
-                                                                    setFieldValue("first_month_payment_received_cheque_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                                    setFieldValue("first_month_payment_received_cheque_date", newValue ? newValue.format("DD MMM YYYY") : "")
                                                                 }
                                                                 format="DD MMM YYYY"
                                                                 slotProps={{
@@ -813,6 +816,7 @@ const MoveInSummeryForm = () => {
                                                                         fullWidth: true,
                                                                         variant: "filled",
                                                                         error: touched.first_month_payment_received_cheque_date && Boolean(errors.first_month_payment_received_cheque_date),
+                                                                        helperText: touched.first_month_payment_received_cheque_date && errors.first_month_payment_received_cheque_date, // <-- Add this line
                                                                     },
                                                                 }}
                                                             />
@@ -1039,7 +1043,7 @@ const MoveInSummeryForm = () => {
                                                                     label="Cheque Date"
                                                                     value={values.security_deposit_received_cheque_date ? dayjs(values.security_deposit_received_cheque_date) : null}
                                                                     onChange={newValue =>
-                                                                        setFieldValue("security_deposit_received_cheque_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                                                                        setFieldValue("security_deposit_received_cheque_date", newValue ? newValue.format("DD MMM YYYY") : "")
                                                                     }
                                                                     format="DD MMM YYYY"
                                                                     slotProps={{
@@ -1047,6 +1051,7 @@ const MoveInSummeryForm = () => {
                                                                             fullWidth: true,
                                                                             variant: "filled",
                                                                             error: Boolean(errors.security_deposit_received_cheque_date) && (touched.security_deposit_received_cheque_date || submitCount > 0),
+                                                                            helperText: Boolean(errors.security_deposit_received_cheque_date) && (touched.security_deposit_received_cheque_date || submitCount > 0) ? errors.security_deposit_received_cheque_date : "", // <-- Add this line
                                                                         },
                                                                     }}
                                                                 />
@@ -1386,13 +1391,15 @@ const MoveInSummeryForm = () => {
                                                                         <DatePicker
                                                                             label="Copy Received Date"
                                                                             value={values.suite_insurance_copy_received_date ? dayjs(values.suite_insurance_copy_received_date) : null}
-                                                                            onChange={newValue => setFieldValue('suite_insurance_copy_received_date', newValue ? newValue.format('YYYY-MM-DD') : '')}
+                                                                            onChange={newValue => setFieldValue('suite_insurance_copy_received_date', newValue ? newValue.format('DD MMM YYYY') : '')}
                                                                             format="DD MMM YYYY"
                                                                             slotProps={{
                                                                                 textField: {
                                                                                     fullWidth: true,
                                                                                     variant: 'filled',
-                                                                                    sx: { mt: 1, width: '95%' }
+                                                                                    sx: { mt: 1, width: '95%' },
+                                                                                    error: Boolean(errors.suite_insurance_copy_received_date) && (touched.suite_insurance_copy_received_date || submitCount > 0),
+                                                                                    helperText: Boolean(errors.suite_insurance_copy_received_date) && (touched.suite_insurance_copy_received_date || submitCount > 0) ? errors.suite_insurance_copy_received_date : "",
                                                                                 },
                                                                             }}
                                                                         />
@@ -1454,14 +1461,15 @@ const MoveInSummeryForm = () => {
                                                             <DatePicker
                                                                 label="Date"
                                                                 value={values.date ? dayjs(values.date) : null}
-                                                                onChange={newValue => setFieldValue('date', newValue ? newValue.format('YYYY-MM-DD') : '')}
+                                                                onChange={newValue => setFieldValue('date', newValue ? newValue.format('DD MMM YYYY') : '')}
                                                                 format="DD MMM YYYY"
                                                                 slotProps={{
                                                                     textField: {
                                                                         fullWidth: true,
                                                                         variant: 'filled',
                                                                         sx: { width: '95%' },
-                                                                        error: Boolean(errors.date) && (touched.date || submitCount > 0), // <-- Add this line
+                                                                        error: Boolean(errors.date) && (touched.date || submitCount > 0),
+                                                                        helperText: Boolean(errors.date) && (touched.date || submitCount > 0) ? errors.date : "", // <-- Add this line
                                                                     },
                                                                 }}
                                                             />
