@@ -43,10 +43,17 @@ const Login = () => {
       let response = await AuthServices.login({ roomNo: formData?.roomNo, password: formData?.password });
 
       if (response.ResponseCode === "1") {
-        const { authentication_token, role, user_id, show_dining, show_incident, language, guideline, guideline_cn, room_id, rooms, form_types, user_list } = response;
+        const { authentication_token, role, user_id, show_dining, show_incident, language, guideline, guideline_cn, room_id, rooms, form_types, user_list,
+          breakfast_guideline,
+          breakfast_guideline_cn,
+          lunch_guideline,
+          lunch_guideline_cn,
+          dinner_guideline,
+          dinner_guideline_cn
+        } = response;
         let langCode = "en";
         if (language === 1) {
-         langCode = "cn";
+          langCode = "cn";
         }
         let userData = {
           role,
@@ -60,7 +67,13 @@ const Login = () => {
           room_id,
           rooms,
           form_types,
-          user_list
+          user_list,
+          breakfast_guideline,
+          breakfast_guideline_cn,
+          lunch_guideline,
+          lunch_guideline_cn,
+          dinner_guideline,
+          dinner_guideline_cn
         };
         localStorage.setItem("authToken", authentication_token);
         localStorage.setItem("userData", JSON.stringify(userData));

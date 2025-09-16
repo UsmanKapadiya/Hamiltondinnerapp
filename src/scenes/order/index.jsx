@@ -452,7 +452,7 @@ const Order = () => {
             });
             const newMealSelections = getUpdatedMealSelections(mealSelections, dataCopy, date.format("YYYY-MM-DD"));
             const payload = buildOrderPayload(newMealSelections, date);
-            console.log("payload", payload);
+            // console.log("payload", payload);
             let response = await OrderServices.submitOrder(payload);
             if (response.ResponseText === "success") {
                 setMealSelections([])
@@ -554,14 +554,19 @@ const Order = () => {
     }
 
     const showBreakFastGuideline =
-        userData?.guideline &&
+        userData?.breakfast_guideline &&
         data.breakfastCategories &&
         data.breakfastCategories.length > 0;
 
     const showLunchGuideline =
-        userData?.guideline &&
+        userData?.lunch_guideline &&
         data.lunchCategories &&
         data.lunchCategories.length > 0;
+
+    const showDinnerGuideline =
+        userData?.dinner_guideline &&
+        data.dinnerCategories &&
+        data.dinnerCategories.length > 0;
 
 
     return (
@@ -1182,9 +1187,9 @@ const Order = () => {
                                     <>
                                         <hr />
                                         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                            {userData?.langCode === "cn" && userData?.guideline_cn && userData?.guideline_cn.trim() !== ""
-                                                ? userData?.guideline_cn
-                                                : userData?.guideline}
+                                            {userData?.langCode === "cn" && userData?.breakfast_guideline_cn && userData?.breakfast_guideline_cn.trim() !== ""
+                                                ? userData?.breakfast_guideline_cn
+                                                : userData?.breakfast_guideline}
                                         </Typography>
                                     </>
                                 )}
@@ -1796,9 +1801,9 @@ const Order = () => {
                                     <>
                                         <hr />
                                         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                            {userData?.langCode === "cn" && userData?.guideline_cn && userData?.guideline_cn.trim() !== ""
-                                                ? userData?.guideline_cn
-                                                : userData?.guideline}
+                                            {userData?.langCode === "cn" && userData?.lunch_guideline_cn && userData?.lunch_guideline_cn.trim() !== ""
+                                                ? userData?.lunch_guideline_cn
+                                                : userData?.lunch_guideline}
                                         </Typography>
                                     </>
                                 )}
@@ -2403,6 +2408,17 @@ const Order = () => {
                                             </label>
                                         </Box>
                                     )}
+
+                                {showDinnerGuideline && (
+                                    <>
+                                        <hr />
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                            {userData?.langCode === "cn" && userData?.dinner_guideline_cn && userData?.dinner_guideline_cn.trim() !== ""
+                                                ? userData?.dinner_guideline_cn
+                                                : userData?.dinner_guideline}
+                                        </Typography>
+                                    </>
+                                )}
 
                                 {Array.isArray(data.dinnerCategories) && data.dinnerCategories.length === 0 && (
                                     <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
