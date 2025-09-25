@@ -107,10 +107,13 @@ const Order = () => {
                 dinner: response?.dinner,
                 is_brk_escort_service: response?.is_brk_escort_service,
                 is_brk_tray_service: response?.is_brk_tray_service,
+                is_brk_takeout_service: response?.is_brk_takeout_service,
                 is_lunch_escort_service: response?.is_lunch_escort_service,
                 is_lunch_tray_service: response?.is_lunch_tray_service,
+                is_lunch_takeout_service: response?.is_lunch_takeout_service,
                 is_dinner_escort_service: response?.is_dinner_escort_service,
                 is_dinner_tray_service: response?.is_dinner_tray_service,
+                is_dinner_takeout_service: response?.is_dinner_takeout_service
             };
             let meal = { ...data, date }; // Add date as a property
             // console.log("meal", meal);
@@ -194,6 +197,7 @@ const Order = () => {
         });
         const is_brk_escort_service = mealData?.is_brk_escort_service
         const is_brk_tray_service = mealData?.is_brk_tray_service
+        const is_brk_takeout_service = mealData?.is_brk_takeout_service
 
         // Lunch
         const lunchCategories = (mealData.lunch || []).map(cat => {
@@ -242,6 +246,7 @@ const Order = () => {
         });
         const is_lunch_escort_service = mealData?.is_lunch_escort_service
         const is_lunch_tray_service = mealData?.is_lunch_tray_service
+        const is_lunch_takeout_service = mealData?.is_lunch_takeout_service
 
         // Dinner
         const dinnerCategories = (mealData.dinner || []).map(cat => {
@@ -290,6 +295,7 @@ const Order = () => {
         });
         const is_dinner_escort_service = mealData?.is_dinner_escort_service
         const is_dinner_tray_service = mealData?.is_dinner_tray_service
+        const is_dinner_takeout_service = mealData?.is_dinner_takeout_service
 
         return {
             date: mealData.date,
@@ -298,10 +304,13 @@ const Order = () => {
             dinnerCategories,
             is_brk_escort_service,
             is_brk_tray_service,
+            is_brk_takeout_service,
             is_lunch_escort_service,
             is_lunch_tray_service,
+            is_lunch_takeout_service,
             is_dinner_escort_service,
             is_dinner_tray_service,
+            is_dinner_takeout_service,
         };
     }
 
@@ -384,12 +393,15 @@ const Order = () => {
             });
 
             const additionalServicesChanged =
+                data.is_dinner_takeout_service !== origDay?.is_dinner_takeout_service ||
                 data.is_dinner_tray_service !== origDay?.is_dinner_tray_service ||
                 data.is_dinner_escort_service !== origDay?.is_dinner_escort_service ||
                 data.is_brk_tray_service !== origDay?.is_brk_tray_service ||
                 data.is_brk_escort_service !== origDay?.is_brk_escort_service ||
+                data.is_brk_takeout_service !== origDay?.is_brk_takeout_service ||
                 data.is_lunch_tray_service !== origDay?.is_lunch_tray_service ||
-                data.is_lunch_escort_service !== origDay?.is_lunch_escort_service;
+                data.is_lunch_escort_service !== origDay?.is_lunch_escort_service ||
+                data.is_lunch_takeout_service !== origDay?.is_lunch_takeout_service;
 
             if (items.length === 0 && !additionalServicesChanged) return null;
 
@@ -403,6 +415,9 @@ const Order = () => {
                 is_brk_escort_service: data.is_brk_escort_service,
                 is_lunch_escort_service: data.is_lunch_escort_service,
                 is_dinner_escort_service: data.is_dinner_escort_service,
+                is_brk_takeout_service: data.is_brk_takeout_service,
+                is_lunch_takeout_service: data.is_lunch_takeout_service,
+                is_dinner_takeout_service: data.is_dinner_takeout_service,
                 items
                 // ...(items.length > 0 ? { items } : {}) // Only include items if changed
             };
@@ -1178,7 +1193,15 @@ const Order = () => {
                                                 <span style={{ marginLeft: 5 }}>{langObj.escortService}</span>
                                             </label>
                                             <label style={{ display: "flex", alignItems: "center" }}>
-                                                <input type="checkbox" />
+                                                <input
+                                                    type="checkbox"
+                                                    checked={data.is_brk_takeout_service === 1}
+                                                    onChange={e => {
+                                                        setData(prev => ({
+                                                            ...prev,
+                                                            is_brk_takeout_service: e.target.checked ? 1 : 0
+                                                        }));
+                                                    }} />
                                                 <span style={{ marginLeft: 5 }}>{langObj.Takeout}</span>
                                             </label>
                                         </Box>
@@ -1792,7 +1815,15 @@ const Order = () => {
                                                 <span style={{ marginLeft: 5 }}>{langObj.escortService}</span>
                                             </label>
                                             <label style={{ display: "flex", alignItems: "center" }}>
-                                                <input type="checkbox" />
+                                                <input
+                                                    type="checkbox"
+                                                    checked={data.is_lunch_takeout_service === 1}
+                                                    onChange={e => {
+                                                        setData(prev => ({
+                                                            ...prev,
+                                                            is_lunch_takeout_service: e.target.checked ? 1 : 0
+                                                        }));
+                                                    }} />
                                                 <span style={{ marginLeft: 5 }}>{langObj.Takeout}</span>
                                             </label>
                                         </Box>
@@ -2403,7 +2434,15 @@ const Order = () => {
                                                 <span style={{ marginLeft: 5 }}>{langObj.escortService}</span>
                                             </label>
                                             <label style={{ display: "flex", alignItems: "center" }}>
-                                                <input type="checkbox" />
+                                                <input
+                                                    type="checkbox"
+                                                    checked={data.is_dinner_takeout_service === 1}
+                                                    onChange={e => {
+                                                        setData(prev => ({
+                                                            ...prev,
+                                                            is_dinner_takeout_service: e.target.checked ? 1 : 0
+                                                        }));
+                                                    }} />
                                                 <span style={{ marginLeft: 5 }}>{langObj.Takeout}</span>
                                             </label>
                                         </Box>
