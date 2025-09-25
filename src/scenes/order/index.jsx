@@ -407,8 +407,8 @@ const Order = () => {
 
             return {
                 date: data.date,
-                room_id,
-                is_for_guest: 1,
+                // room_id,
+                // is_for_guest: 1,
                 is_brk_tray_service: data.is_brk_tray_service,
                 is_lunch_tray_service: data.is_lunch_tray_service,
                 is_dinner_tray_service: data.is_dinner_tray_service,
