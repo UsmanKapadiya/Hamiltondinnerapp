@@ -1166,44 +1166,28 @@ const Order = () => {
                                     !kitchenSummery
                                 ) && (
                                         <Box mt={3} display="flex" gap={2}>
-                                            <label style={{ display: "flex", alignItems: "center" }}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={data.is_brk_tray_service === 1}
-                                                    onChange={e => {
-                                                        setData(prev => ({
-                                                            ...prev,
-                                                            is_brk_tray_service: e.target.checked ? 1 : 0
-                                                        }));
-                                                    }}
-                                                />
-                                                <span style={{ marginLeft: 5 }}>{langObj.trayService}</span>
-                                            </label>
-                                            <label style={{ display: "flex", alignItems: "center" }}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={data.is_brk_escort_service === 1}
-                                                    onChange={e => {
-                                                        setData(prev => ({
-                                                            ...prev,
-                                                            is_brk_escort_service: e.target.checked ? 1 : 0
-                                                        }));
-                                                    }}
-                                                />
-                                                <span style={{ marginLeft: 5 }}>{langObj.escortService}</span>
-                                            </label>
-                                            <label style={{ display: "flex", alignItems: "center" }}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={data.is_brk_takeout_service === 1}
-                                                    onChange={e => {
-                                                        setData(prev => ({
-                                                            ...prev,
-                                                            is_brk_takeout_service: e.target.checked ? 1 : 0
-                                                        }));
-                                                    }} />
-                                                <span style={{ marginLeft: 5 }}>{langObj.Takeout}</span>
-                                            </label>
+                                            {[
+                                                { key: "is_brk_tray_service", label: langObj.trayService },
+                                                { key: "is_brk_escort_service", label: langObj.escortService },
+                                                { key: "is_brk_takeout_service", label: langObj.Takeout }
+                                            ].map(opt => (
+                                                <label key={opt.key} style={{ display: "flex", alignItems: "center" }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={data[opt.key] === 1}
+                                                        onChange={() => {
+                                                            setData(prev => ({
+                                                                ...prev,
+                                                                is_brk_tray_service: 0,
+                                                                is_brk_escort_service: 0,
+                                                                is_brk_takeout_service: 0,
+                                                                [opt.key]: prev[opt.key] === 1 ? 0 : 1
+                                                            }));
+                                                        }}
+                                                    />
+                                                    <span style={{ marginLeft: 5 }}>{opt.label}</span>
+                                                </label>
+                                            ))}
                                         </Box>
                                     )}
                                 {showBreakFastGuideline && (
@@ -1788,44 +1772,28 @@ const Order = () => {
                                     !kitchenSummery
                                 ) && (
                                         <Box mt={3} display="flex" gap={3}>
-                                            <label style={{ display: "flex", alignItems: "center" }}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={data.is_lunch_tray_service === 1}
-                                                    onChange={e => {
-                                                        setData(prev => ({
-                                                            ...prev,
-                                                            is_lunch_tray_service: e.target.checked ? 1 : 0
-                                                        }));
-                                                    }}
-                                                />
-                                                <span style={{ marginLeft: 5 }}>{langObj.trayService}</span>
-                                            </label>
-                                            <label style={{ display: "flex", alignItems: "center" }}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={data.is_lunch_escort_service === 1}
-                                                    onChange={e => {
-                                                        setData(prev => ({
-                                                            ...prev,
-                                                            is_lunch_escort_service: e.target.checked ? 1 : 0
-                                                        }));
-                                                    }}
-                                                />
-                                                <span style={{ marginLeft: 5 }}>{langObj.escortService}</span>
-                                            </label>
-                                            <label style={{ display: "flex", alignItems: "center" }}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={data.is_lunch_takeout_service === 1}
-                                                    onChange={e => {
-                                                        setData(prev => ({
-                                                            ...prev,
-                                                            is_lunch_takeout_service: e.target.checked ? 1 : 0
-                                                        }));
-                                                    }} />
-                                                <span style={{ marginLeft: 5 }}>{langObj.Takeout}</span>
-                                            </label>
+                                            {[
+                                                { key: "is_lunch_tray_service", label: langObj.trayService },
+                                                { key: "is_lunch_escort_service", label: langObj.escortService },
+                                                { key: "is_lunch_takeout_service", label: langObj.Takeout }
+                                            ].map(opt => (
+                                                <label key={opt.key} style={{ display: "flex", alignItems: "center" }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={data[opt.key] === 1}
+                                                        onChange={() => {
+                                                            setData(prev => ({
+                                                                ...prev,
+                                                                is_lunch_tray_service: 0,
+                                                                is_lunch_escort_service: 0,
+                                                                is_lunch_takeout_service: 0,
+                                                                [opt.key]: prev[opt.key] === 1 ? 0 : 1
+                                                            }));
+                                                        }}
+                                                    />
+                                                    <span style={{ marginLeft: 5 }}>{opt.label}</span>
+                                                </label>
+                                            ))}
                                         </Box>
                                     )}
                                 {showLunchGuideline && (
@@ -2407,44 +2375,28 @@ const Order = () => {
                                     !kitchenSummery
                                 ) && (
                                         <Box mt={3} display="flex" gap={3}>
-                                            <label style={{ display: "flex", alignItems: "center" }}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={data.is_dinner_tray_service === 1}
-                                                    onChange={e => {
-                                                        setData(prev => ({
-                                                            ...prev,
-                                                            is_dinner_tray_service: e.target.checked ? 1 : 0
-                                                        }));
-                                                    }}
-                                                />
-                                                <span style={{ marginLeft: 5 }}>{langObj.trayService}</span>
-                                            </label>
-                                            <label style={{ display: "flex", alignItems: "center" }}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={data.is_dinner_escort_service === 1}
-                                                    onChange={e => {
-                                                        setData(prev => ({
-                                                            ...prev,
-                                                            is_dinner_escort_service: e.target.checked ? 1 : 0
-                                                        }));
-                                                    }}
-                                                />
-                                                <span style={{ marginLeft: 5 }}>{langObj.escortService}</span>
-                                            </label>
-                                            <label style={{ display: "flex", alignItems: "center" }}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={data.is_dinner_takeout_service === 1}
-                                                    onChange={e => {
-                                                        setData(prev => ({
-                                                            ...prev,
-                                                            is_dinner_takeout_service: e.target.checked ? 1 : 0
-                                                        }));
-                                                    }} />
-                                                <span style={{ marginLeft: 5 }}>{langObj.Takeout}</span>
-                                            </label>
+                                            {[
+                                                { key: "is_dinner_tray_service", label: langObj.trayService },
+                                                { key: "is_dinner_escort_service", label: langObj.escortService },
+                                                { key: "is_dinner_takeout_service", label: langObj.Takeout }
+                                            ].map(opt => (
+                                                <label key={opt.key} style={{ display: "flex", alignItems: "center" }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={data[opt.key] === 1}
+                                                        onChange={() => {
+                                                            setData(prev => ({
+                                                                ...prev,
+                                                                is_dinner_tray_service: 0,
+                                                                is_dinner_escort_service: 0,
+                                                                is_dinner_takeout_service: 0,
+                                                                [opt.key]: prev[opt.key] === 1 ? 0 : 1
+                                                            }));
+                                                        }}
+                                                    />
+                                                    <span style={{ marginLeft: 5 }}>{opt.label}</span>
+                                                </label>
+                                            ))}
                                         </Box>
                                     )}
 
