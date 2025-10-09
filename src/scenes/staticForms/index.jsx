@@ -306,7 +306,6 @@ const StaticForms = () => {
                     }
                     const response = await StaticFormServices.getFormById(payload);
                     if (response?.ResponseCode === '1') {
-                      console.log("here", response)
                       if (form_type_id === 1) {
                         navigate(`incidentForm-edit/${params.row.id}`, { state: { formData: response, id: params.row.id } })
                       }
@@ -314,7 +313,6 @@ const StaticForms = () => {
                         navigate(`moveInSummaryForm-edit/${params.row.id}`, { state: { formData: response, id: params.row.id } })
                       }
                     }
-                    console.log(response)
                     // Navigate to the incident form edit screen, passing the form data
                     // ;
                   } catch (error) {
@@ -777,6 +775,49 @@ const StaticForms = () => {
               gap: 1,
             }}
           >
+            {formist.find((f) => f.id === selectedMailFormId)?.is_follow_up_incomplete === 1 &&
+              formist.find((f) => f.id === selectedMailFormId)?.form_type_id === 1 && (
+                <CustomButton
+                  sx={{
+                    padding: "10px 32px",
+                    bgcolor: colors.blueAccent[50],
+                    color: colors.blueAccent[700],
+                    border: "none",
+                    borderRadius: 4,
+                    fontWeight: 600,
+                    fontSize: 16,
+                    cursor: "pointer",
+                    width: 'auto'
+                  }}
+                  onClick={async () => {
+                    const selectedForm = formist.find((f) => f.id === selectedMailFormId);
+                    const formTypeId = selectedForm?.form_type_id;
+
+                    try {
+                      const payload = { form_id: selectedMailFormId };
+                      const response = await StaticFormServices.getFormById(payload);
+
+                      if (response?.ResponseCode === '1') {
+                        setPdfModalOpen(false); // Close the PDF modal
+
+                        if (formTypeId === 1) {
+                          // Incident Form
+                          navigate(`incidentForm-edit/${selectedMailFormId}`, {
+                            state: { formData: response, id: selectedMailFormId }
+                          });
+                        } 
+                      } else {
+                        toast.error("Failed to fetch form data. Please try again.");
+                      }
+                    } catch (error) {
+                      toast.error("Failed to fetch form data. Please try again.");
+                    }
+                  }}
+                >
+                  Follow Up
+                </CustomButton>
+              )}
+
             {formist.find((f) => f.id === selectedMailFormId)?.form_type
               ?.allow_mail === 1 && (
                 <CustomButton
