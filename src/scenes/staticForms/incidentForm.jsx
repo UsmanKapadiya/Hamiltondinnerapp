@@ -270,19 +270,40 @@ const IncidentForm = () => {
         ...mapAmbulation(data.ambulation),
         ...mapInformedOfIncident(data.informed_of_incident),
         fall_assessment: data.fall_assessment ? data.fall_assessment.split(",") : [],
-        follow_up_assigned_to: incidentFormDetails?.follow_up_assigned_to || 1,
+        follow_up_assigned_to: data.follow_up_assigned_to || getDefaultFollowUpUser(),
         show_follow_up_details: formId ? true : (followUpFilled || incidentFormDetails?.show_follow_up_details || false),
         attachments: location.state.formData.attachments || [],
       });
       setLoading(false);
     } else {
       const timer = setTimeout(() => {
-        setIncidentFormDetails(location.state || {});
+        setIncidentFormDetails({
+          ...location.state,
+          follow_up_assigned_to: getDefaultFollowUpUser()
+        });
         setLoading(false);
       }, 400);
       return () => clearTimeout(timer);
     }
   }, [location.state]);
+
+
+  const getDefaultFollowUpUser = () => {
+    if (!userData?.user_list || !Array.isArray(userData.user_list)) {
+      return '';
+    }
+
+    const adminUser = userData.user_list.find(
+      user => user.role === 'admin' || user.role === 'superadmin' ||
+        user.name?.toLowerCase() === 'admin'
+    );
+
+    if (adminUser) {
+      return adminUser.id;
+    }
+
+    return userData.user_list.length > 0 ? userData.user_list[0].id : '';
+  };
 
 
   const initialValues = useMemo(() => ({
@@ -339,7 +360,7 @@ const IncidentForm = () => {
     completed_position: incidentFormDetails?.completed_position || "",
     completed_date: incidentFormDetails?.completed_date || "",
     completed_tm: incidentFormDetails?.completed_tm || "",
-    follow_up_assigned_to: incidentFormDetails?.follow_up_assigned_to || "",
+    follow_up_assigned_to: incidentFormDetails?.follow_up_assigned_to || getDefaultFollowUpUser(),
     followUp_issue: incidentFormDetails?.followUp_issue || '',
     followUp_findings: incidentFormDetails?.followUp_findings || '',
     followUp_possible_solutions: incidentFormDetails?.followUp_possible_solutions || '',
@@ -588,6 +609,7 @@ const IncidentForm = () => {
         : "",
       completed_tm: values.completed_tm || "",
 
+      follow_up_assigned_to: values.follow_up_assigned_to || "",
       followUp_issue: values.followUp_issue || "",
       followUp_findings: values?.followUp_findings || '',
       followUp_possible_solutions: values?.followUp_possible_solutions || '',
