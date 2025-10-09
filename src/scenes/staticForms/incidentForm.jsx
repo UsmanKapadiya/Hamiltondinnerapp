@@ -185,6 +185,18 @@ const validationSchema = yup.object({
     otherwise: (schema) => schema,
   }),
 
+  notified_other: yup.string(),
+  notified_other_date: yup.string().when('notified_other', {
+    is: (val) => !!val && val.trim() !== '',
+    then: (schema) => schema.required('Date is required when Other is notified'),
+    otherwise: (schema) => schema,
+  }),
+  notified_other_tm: yup.string().when('notified_other', {
+    is: (val) => !!val && val.trim() !== '',
+    then: (schema) => schema.required('Time is required when Other is notified'),
+    otherwise: (schema) => schema,
+  }),
+
   //completed 
   completed_by: yup.string().required("Completed By is required"),
   completed_position: yup.string().required("Completed Position is required"),
@@ -368,6 +380,8 @@ const IncidentForm = () => {
     notified_family_doctor_dt: incidentFormDetails?.notified_family_doctor_dt || "",
     notified_family_doctor_tm: incidentFormDetails?.notified_family_doctor_tm || "",
     notified_other: incidentFormDetails?.notified_other || "",
+    notified_other_date: incidentFormDetails?.notified_other_date || "",
+    notified_other_tm: incidentFormDetails?.notified_other_tm || "",
     notified_resident_responsible_party: incidentFormDetails?.notified_resident_responsible_party || "no",
     notified_resident_name: incidentFormDetails?.notified_resident_name || "",
     notified_resident_date: incidentFormDetails?.notified_resident_date || "",
@@ -496,6 +510,10 @@ const IncidentForm = () => {
       ? dayjs(`${values.completed_date} ${values.completed_tm}`, "YYYY-MM-DD hh:mm A")  // Changed
       : null;
 
+    const notifiedOtherDateTime = values.notified_other_date && values.notified_other_tm
+      ? dayjs(`${values.notified_other_date} ${values.notified_other_tm}`, "YYYY-MM-DD hh:mm A")
+      : null;
+
     const payload = {
       incident_involved: incidentInvolvedArr.join(","),
       inc_invl_staff: values.incident_involved?.includes("Staff") ? 1 : 0,
@@ -604,6 +622,15 @@ const IncidentForm = () => {
       notified_family_doctor_tm: values.notified_family_doctor_tm || "",
 
       notified_other: values.notified_other || "",
+      notified_other_date: notifiedOtherDateTime
+        ? dayjs(notifiedOtherDateTime).format("DD MMM YYYY hh:mm A")
+        : "",
+      notified_other_dt: notifiedOtherDateTime
+        ? dayjs(notifiedOtherDateTime).format("DD MMM YYYY")
+        : "",
+      notified_other_tm: values.notified_other_tm || "",
+
+
       notified_resident_responsible_party: values.notified_resident_responsible_party || "",
       notified_resident_name: values.notified_resident_name || "",
       notified_resident_date: notifiedResidentDateTime
@@ -1541,6 +1568,49 @@ const IncidentForm = () => {
                   onBlur={handleBlur}
                   sx={{ mb: 2 }}
                 />
+                <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Date"
+                      value={values.notified_other_date ? dayjs(values.notified_other_date) : null}
+                      onChange={(newValue) => {
+                        setFieldValue("notified_other_date", newValue ? newValue.format("YYYY-MM-DD") : "");
+                        if (newValue && !values.notified_other_tm) {
+                          setFieldValue("notified_other_tm", "12:00 PM");
+                        }
+                      }}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          variant: "filled",
+                          error: Boolean(errors.notified_other_date) && (touched.notified_other_date || submitCount > 0),
+                          helperText: Boolean(errors.notified_other_date) && (touched.notified_other_date || submitCount > 0) ? errors.notified_other_date : "",
+                        },
+                      }}
+                    />
+                    <TimePicker
+                      label="Time"
+                      ampm={true}
+                      value={
+                        values.notified_other_tm
+                          ? dayjs(values.notified_other_tm, values.notified_other_tm.includes("AM") || values.notified_other_tm.includes("PM") ? "hh:mm A" : "HH:mm")
+                          : null
+                      }
+                      onChange={(newValue) =>
+                        setFieldValue("notified_other_tm", newValue ? newValue.format("hh:mm A") : "")
+                      }
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          variant: "filled",
+                          error: Boolean(errors.notified_other_tm) && (touched.notified_other_tm || submitCount > 0),
+                          helperText: Boolean(errors.notified_other_tm) && (touched.notified_other_tm || submitCount > 0) ? errors.notified_other_tm : "",
+                        },
+                      }}
+                    />
+                  </LocalizationProvider>
+                </Box>
+
                 <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
                   Notified Resident's Responsible Party
                 </Box>
