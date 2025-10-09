@@ -307,7 +307,13 @@ const StaticForms = () => {
                     const response = await StaticFormServices.getFormById(payload);
                     if (response?.ResponseCode === '1') {
                       if (form_type_id === 1) {
-                        navigate(`incidentForm-edit/${params.row.id}`, { state: { formData: response, id: params.row.id } })
+                        navigate(`incidentForm-edit/${params.row.id}`, {
+                          state: {
+                            formData: response,
+                            id: params.row.id,
+                            scrollToFollowUp: params?.row?.is_follow_up_incomplete === 1 ? true : false,
+                          }
+                        })
                       }
                       else if (form_type_id === 3) {
                         navigate(`moveInSummaryForm-edit/${params.row.id}`, { state: { formData: response, id: params.row.id } })
