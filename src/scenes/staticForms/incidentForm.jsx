@@ -54,11 +54,11 @@ const conditionAtTimeOptions = [
 
 const fallAssessmentOptions = [
   { key: "fall_assess_mediChange", label: "Medication Change" },
-  { key: "fall_assess_cardMedi", label: "Caediac Medications" },
+  { key: "fall_assess_cardMedi", label: "Cardiac Medications" },
   { key: "fall_assess_visDef", label: "Visual Deficit" },
-  { key: "fall_assess_moodAltMedi", label: "Mood Altering Medicatior" },
+  { key: "fall_assess_moodAltMedi", label: "Mood Altering Medication" },
   { key: "fall_assess_relocation", label: "Relocation" },
-  { key: "fall_assess_tempIllness", label: "Temporary Ilness" }
+  { key: "fall_assess_tempIllness", label: "Temporary Illness" }
 ];
 
 const ambulationOptions = [
@@ -73,7 +73,7 @@ const ambulationOptions = [
 const fireOptions = [
   { key: "fire_alarm_pulled", label: "Alarm pulled" },
   { key: "fire_false_alarm", label: "False alarm" },
-  { key: "fire_extinguisher_used", label: "Exitinguisher used" },
+  { key: "fire_extinguisher_used", label: "Extinguisher used" },
   { key: "fire_personal_injury", label: "Personal injury" },
   { key: "fire_property_damage", label: "Resident or facility property damage" },
 ]
@@ -107,7 +107,7 @@ const validationSchema = yup.object({
   discovery_date: yup.string().required("Date Of Discovery is required"),
   discovery_tm: yup.string().required("Time Of Discovery is required"),
   discovery_location: yup.string().required("Location Of Discovery is required"),
-  discovered_by: yup.string().required("Discovery By is required"),
+  discovered_by: yup.string().required("Discovered By is required"),
 
   // type_of_incident
   type_of_incident: yup.array().of(yup.string()),
@@ -705,8 +705,8 @@ const IncidentForm = () => {
             <form onSubmit={handleSubmit}>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormGroup row>
-                  <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
-                    Incident Involved
+                  <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%", fontSize: "18px" }}>
+                    INCIDENT INVOLVED
                   </Box>
                   {incidentInvolvedData.map((option) => (
                     <Box key={option.key} sx={{ width: "50%" }}>
@@ -907,7 +907,7 @@ const IncidentForm = () => {
                 <TextField
                   fullWidth
                   variant="filled"
-                  label="Discovery By"
+                  label="Discovered By"
                   name="discovered_by"
                   value={values.discovered_by || ""}
                   onChange={handleChange}
@@ -972,7 +972,7 @@ const IncidentForm = () => {
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormGroup row>
                   <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
-                    Safety Devices In Use Before Occurrence
+                    Safety Devices In Use Before Occurance
                   </Box>
                   {[
                     { key: "safety_fob", label: "Fob was within reach" },
@@ -1338,8 +1338,13 @@ const IncidentForm = () => {
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormGroup row>
-                  <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
-                    Informed Of Incident
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: "100%", mb: 1 }}>
+                    <Box component="label" sx={{ fontWeight: 600 }}>
+                      Informed Of Incident
+                    </Box>
+                    <Box component="label" sx={{ fontWeight: 600, mr: 2 }}>
+                      INITIAL
+                    </Box>
                   </Box>
                   {InformedOfIncident.map((item) => (
                     <Box
@@ -1751,7 +1756,7 @@ const IncidentForm = () => {
                   <>
                     <Box sx={{ mb: 2, backgroundColor: '#e0e0e0', borderRadius: 1, py: 1 }}>
                       <Typography variant="h6" align="center" sx={{ fontWeight: 700, color: '#333' }}>
-                        FOLLOW UP DETAILS
+                        FOLLOW UP
                       </Typography>
                     </Box>
                     <TextField
@@ -1759,7 +1764,7 @@ const IncidentForm = () => {
                       multiline
                       minRows={3}
                       variant="filled"
-                      label="Issue (Problem)"
+                      label="ISSUE (Problem)"
                       name="followUp_issue"
                       value={values.followUp_issue || ''}
                       onChange={handleChange}
