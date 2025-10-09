@@ -13,7 +13,7 @@ import { Header } from "../../components";
 import { Formik } from "formik";
 import * as yup from "yup";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
 import { toast } from "react-toastify";
 import StaticFormServices from "../../services/staticFormServices";
@@ -197,6 +197,7 @@ const validationSchema = yup.object({
 const IncidentForm = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const followUpRef = useRef(null);
   const [incidentFormDetails, setIncidentFormDetails] = useState({});
   const [loading, setLoading] = useState(true);
   const [formId, setFormId] = useState();
@@ -254,6 +255,21 @@ const IncidentForm = () => {
 
   const mapInformedOfIncident = (rawString) =>
     mapOptions(rawString, InformedOfIncident, "Other", "informed_of_inc_other_text", "informed_of_incident");
+
+  useEffect(() => {
+    if (location.state?.scrollToFollowUp && followUpRef.current) {
+      const checkAndScroll = () => {
+        if (followUpRef.current) {
+          followUpRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      };
+
+      setTimeout(checkAndScroll, 500);
+    }
+  }, [location.state?.scrollToFollowUp, incidentFormDetails, loading]);
 
   useEffect(() => {
     setLoading(true);
@@ -1741,7 +1757,7 @@ const IncidentForm = () => {
                 </TextField>
 
               </Box>
-              <Box sx={{ gridColumn: "span 4", mt: 2 }}>
+              <Box sx={{ gridColumn: "span 4", mt: 2 }} ref={followUpRef}>
                 <FormControlLabel
                   control={
                     <Checkbox

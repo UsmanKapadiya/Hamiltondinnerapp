@@ -803,9 +803,9 @@ const StaticForms = () => {
                         if (formTypeId === 1) {
                           // Incident Form
                           navigate(`incidentForm-edit/${selectedMailFormId}`, {
-                            state: { formData: response, id: selectedMailFormId }
+                            state: { formData: response, id: selectedMailFormId, scrollToFollowUp: true }
                           });
-                        } 
+                        }
                       } else {
                         toast.error("Failed to fetch form data. Please try again.");
                       }
