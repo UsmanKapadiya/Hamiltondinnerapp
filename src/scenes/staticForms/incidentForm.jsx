@@ -441,22 +441,22 @@ const IncidentForm = () => {
     }
     // IncidentDateTime set
     const incidentDateTime = values.incident_date && values.incident_tm
-      ? dayjs(`${values.incident_date} ${values.incident_tm}`, "YYYY-MM-DD HH:mm")
+      ? dayjs(`${values.incident_date} ${values.incident_tm}`, "YYYY-MM-DD hh:mm A")  // Changed from "HH:mm"
       : null;
     const discoveryDateTime = values.discovery_date && values.discovery_tm
-      ? dayjs(`${values.discovery_date} ${values.discovery_tm}`, "YYYY-MM-DD HH:mm")
+      ? dayjs(`${values.discovery_date} ${values.discovery_tm}`, "YYYY-MM-DD hh:mm A")  // Changed
       : null;
 
     const notifiedFamilyDoctorDateTime = values.notified_family_doctor_date && values.notified_family_doctor_tm
-      ? dayjs(`${values.notified_family_doctor_date} ${values.notified_family_doctor_tm}`, "YYYY-MM-DD HH:mm")
+      ? dayjs(`${values.notified_family_doctor_date} ${values.notified_family_doctor_tm}`, "YYYY-MM-DD hh:mm A")  // Changed
       : null;
 
     const notifiedResidentDateTime = values.notified_resident_date && values.notified_resident_tm
-      ? dayjs(`${values.notified_resident_date} ${values.notified_resident_tm}`, "YYYY-MM-DD HH:mm")
+      ? dayjs(`${values.notified_resident_date} ${values.notified_resident_tm}`, "YYYY-MM-DD hh:mm A")  // Changed
       : null;
 
     const completedDateTime = values.completed_date && values.completed_tm
-      ? dayjs(`${values.completed_date} ${values.completed_tm}`, "YYYY-MM-DD HH:mm")
+      ? dayjs(`${values.completed_date} ${values.completed_tm}`, "YYYY-MM-DD hh:mm A")  // Changed
       : null;
 
     const payload = {
@@ -471,9 +471,7 @@ const IncidentForm = () => {
       incident_dt: incidentDateTime
         ? dayjs(incidentDateTime).format("DD MMM YYYY")
         : "",
-      incident_tm: values.incident_tm
-        ? dayjs(values.incident_tm, "HH:mm").format("hh:mm A")
-        : "",
+      incident_tm: values.incident_tm || "",
       incident_location: values.incident_location || "",
       witnessed_by: values.witnessed_by || "",
       discovery_date: discoveryDateTime
@@ -482,9 +480,7 @@ const IncidentForm = () => {
       discovery_dt: discoveryDateTime
         ? dayjs(discoveryDateTime).format("DD MMM YYYY")
         : "",
-      discovery_tm: values.discovery_tm
-        ? dayjs(values.discovery_tm, "HH:mm").format("hh:mm A")
-        : "",
+      discovery_tm: values.discovery_tm || "",
       discovery_location: values.discovery_location || "",
       discovered_by: values.discovered_by || "",
 
@@ -568,11 +564,9 @@ const IncidentForm = () => {
       notified_family_doctor_dt: notifiedFamilyDoctorDateTime
         ? dayjs(notifiedFamilyDoctorDateTime).format("DD MMM YYYY")
         : "",
-      notified_family_doctor_tm: values.notified_family_doctor_tm
-        ? dayjs(values.notified_family_doctor_tm, "HH:mm").format("hh:mm A")
-        : "",
-      notified_other: values.notified_other || "",
+      notified_family_doctor_tm: values.notified_family_doctor_tm || "",
 
+      notified_other: values.notified_other || "",
       notified_resident_responsible_party: values.notified_resident_responsible_party || "",
       notified_resident_name: values.notified_resident_name || "",
       notified_resident_date: notifiedResidentDateTime
@@ -581,9 +575,7 @@ const IncidentForm = () => {
       notified_resident_dt: notifiedResidentDateTime
         ? dayjs(notifiedResidentDateTime).format("DD MMM YYYY")
         : "",
-      notified_resident_tm: values.notified_resident_tm
-        ? dayjs(values.notified_resident_tm, "HH:mm").format("hh:mm A")
-        : "",
+      notified_resident_tm: values.notified_resident_tm || "",
 
       // Completed
       completed_by: values.completed_by || "",
@@ -594,9 +586,7 @@ const IncidentForm = () => {
       completed_dt: completedDateTime
         ? dayjs(completedDateTime).format("DD MMM YYYY")
         : "",
-      completed_tm: values.completed_tm
-        ? dayjs(values.completed_tm, "HH:mm").format("hh:mm A")
-        : "",
+      completed_tm: values.completed_tm || "",
 
       followUp_issue: values.followUp_issue || "",
       followUp_findings: values?.followUp_findings || '',
@@ -757,12 +747,10 @@ const IncidentForm = () => {
                           "incident_date",
                           newValue ? newValue.format("YYYY-MM-DD") : ""
                         );
-                        // If incident_tm is empty, set default to "12:00"
                         if (newValue && !values.incident_tm) {
-                          setFieldValue("incident_tm", "12:00");
+                          setFieldValue("incident_tm", "12:00 PM");
                         }
                       }}
-                      // minDate={dayjs()}
                       slotProps={{
                         textField: {
                           fullWidth: true,
@@ -775,7 +763,12 @@ const IncidentForm = () => {
                     />
                     <TimePicker
                       label="Time"
-                      value={values.incident_tm ? dayjs(values.incident_tm, "HH:mm") : null}
+                      ampm={true}
+                      value={
+                        values.incident_tm
+                          ? dayjs(values.incident_tm, values.incident_tm.includes("AM") || values.incident_tm.includes("PM") ? "hh:mm A" : "HH:mm")
+                          : null
+                      }
                       onChange={(newValue) =>
                         setFieldValue(
                           "incident_tm",
@@ -822,32 +815,7 @@ const IncidentForm = () => {
                   sx={{ flex: 1 }}
                 />
               </Box>
-              {/* <Box sx={{ gridColumn: "span 4", mt: 2 }}>
-                <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
-                  Date/Time Of Discovery
-                </Box>
-                <Box sx={{ width: "100%" }}>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="Date"
-                      value={values.discovery_date ? dayjs(values.discovery_date) : null}
-                      onChange={(newValue) =>
-                        setFieldValue("discovery_date", newValue ? newValue.format("YYYY-MM-DD") : "")
-                      }
-                      minDate={dayjs()}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          variant: "filled",
-                          error: touched.discovery_date && Boolean(errors.discovery_date),
-                          helperText: touched.discovery_date && errors.discovery_date,
-                          sx: { gridColumn: "span 1", mt: 1 }, // Add margin-top to separate from label
-                        },
-                      }}
-                    />
-                  </LocalizationProvider>
-                </Box>
-              </Box> */}
+
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
                   Date/Time Of Discovery
@@ -858,13 +826,11 @@ const IncidentForm = () => {
                       label="Date"
                       value={values.discovery_date ? dayjs(values.discovery_date) : null}
                       onChange={(newValue) => {
-                        setFieldValue("discovery_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                        setFieldValue("discovery_date", newValue ? newValue.format("YYYY-MM-DD") : "");
                         if (newValue && !values.discovery_tm) {
-                          setFieldValue("discovery_tm", "12:00");
+                          setFieldValue("discovery_tm", "12:00 PM");
                         }
-                      }
-                      }
-                      // minDate={dayjs()}
+                      }}
                       slotProps={{
                         textField: {
                           fullWidth: true,
@@ -877,11 +843,16 @@ const IncidentForm = () => {
                     />
                     <TimePicker
                       label="Time"
-                      value={values.discovery_tm ? dayjs(values.discovery_tm, "HH:mm") : null}
+                      ampm={true}
+                      value={
+                        values.discovery_tm
+                          ? dayjs(values.discovery_tm, values.discovery_tm.includes("AM") || values.discovery_tm.includes("PM") ? "hh:mm A" : "HH:mm")
+                          : null
+                      }
                       onChange={(newValue) =>
                         setFieldValue(
                           "discovery_tm",
-                          newValue ? newValue.format("HH:mm") : ""
+                          newValue ? newValue.format("hh:mm A") : ""
                         )
                       }
                       slotProps={{
@@ -897,6 +868,7 @@ const IncidentForm = () => {
                   </LocalizationProvider>
                 </Box>
               </Box>
+
               <Box sx={{ gridColumn: "span 4", mt: 2, display: "flex", gap: 2 }}>
                 <TextField
                   fullWidth
@@ -1479,10 +1451,9 @@ const IncidentForm = () => {
                       onChange={(newValue) => {
                         setFieldValue("notified_family_doctor_date", newValue ? newValue.format("YYYY-MM-DD") : "")
                         if (newValue && !values.notified_family_doctor_tm) {
-                          setFieldValue("notified_family_doctor_tm", "12:00");
+                          setFieldValue("notified_family_doctor_tm", "12:00 PM");
                         }
-                      }
-                      }
+                      }}
                       slotProps={{
                         textField: {
                           fullWidth: true,
@@ -1494,9 +1465,14 @@ const IncidentForm = () => {
                     />
                     <TimePicker
                       label="Time"
-                      value={values.notified_family_doctor_tm ? dayjs(values.notified_family_doctor_tm, "HH:mm") : null}
+                      ampm={true}
+                      value={
+                        values.notified_family_doctor_tm
+                          ? dayjs(values.notified_family_doctor_tm, values.notified_family_doctor_tm.includes("AM") || values.notified_family_doctor_tm.includes("PM") ? "hh:mm A" : "HH:mm")
+                          : null
+                      }
                       onChange={(newValue) =>
-                        setFieldValue("notified_family_doctor_tm", newValue ? newValue.format("HH:mm") : "")
+                        setFieldValue("notified_family_doctor_tm", newValue ? newValue.format("hh:mm A") : "")
                       }
                       slotProps={{
                         textField: {
@@ -1563,10 +1539,9 @@ const IncidentForm = () => {
                         onChange={(newValue) => {
                           setFieldValue("notified_resident_date", newValue ? newValue.format("YYYY-MM-DD") : "");
                           if (newValue && !values.notified_resident_tm) {
-                            setFieldValue("notified_resident_tm", "12:00");
+                            setFieldValue("notified_resident_tm", "12:00 PM");
                           }
-                        }
-                        }
+                        }}
                         slotProps={{
                           textField: {
                             fullWidth: true,
@@ -1581,9 +1556,14 @@ const IncidentForm = () => {
                       />
                       <TimePicker
                         label="Time"
-                        value={values.notified_resident_tm ? dayjs(values.notified_resident_tm, "HH:mm") : null}
+                        ampm={true}
+                        value={
+                          values.notified_resident_tm
+                            ? dayjs(values.notified_resident_tm, values.notified_resident_tm.includes("AM") || values.notified_resident_tm.includes("PM") ? "hh:mm A" : "HH:mm")
+                            : null
+                        }
                         onChange={(newValue) =>
-                          setFieldValue("notified_resident_tm", newValue ? newValue.format("HH:mm") : "")
+                          setFieldValue("notified_resident_tm", newValue ? newValue.format("hh:mm A") : "")  // Changed
                         }
                         slotProps={{
                           textField: {
@@ -1641,10 +1621,9 @@ const IncidentForm = () => {
                       onChange={(newValue) => {
                         setFieldValue("completed_date", newValue ? newValue.format("YYYY-MM-DD") : "")
                         if (newValue && !values.completed_tm) {
-                          setFieldValue("completed_tm", "12:00");
+                          setFieldValue("completed_tm", "12:00 PM");  // Changed
                         }
-                      }
-                      }
+                      }}
                       slotProps={{
                         textField: {
                           fullWidth: true,
@@ -1656,9 +1635,14 @@ const IncidentForm = () => {
                     />
                     <TimePicker
                       label="Time"
-                      value={values.completed_tm ? dayjs(values.completed_tm, "HH:mm") : null}
+                      ampm={true}
+                      value={
+                        values.completed_tm
+                          ? dayjs(values.completed_tm, values.completed_tm.includes("AM") || values.completed_tm.includes("PM") ? "hh:mm A" : "HH:mm")
+                          : null
+                      }
                       onChange={(newValue) =>
-                        setFieldValue("completed_tm", newValue ? newValue.format("HH:mm") : "")
+                        setFieldValue("completed_tm", newValue ? newValue.format("hh:mm A") : "")
                       }
                       slotProps={{
                         textField: {
