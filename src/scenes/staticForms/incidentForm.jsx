@@ -85,8 +85,8 @@ const InformedOfIncident = [
   { key: "informed_of_inc_other", label: "Other" },
 ]
 const notifiedResponsiblePartyOptions = [
-  { key: "yes", label: "Yes" },
-  { key: "no", label: "No" }
+  { key: "Yes", label: "Yes" },
+  { key: "No", label: "No" }
 ];// Then use this in your form:
 
 const validationSchema = yup.object({
@@ -368,7 +368,7 @@ const IncidentForm = () => {
     notified_family_doctor_dt: incidentFormDetails?.notified_family_doctor_dt || "",
     notified_family_doctor_tm: incidentFormDetails?.notified_family_doctor_tm || "",
     notified_other: incidentFormDetails?.notified_other || "",
-    notified_resident_responsible_party: incidentFormDetails?.notified_resident_responsible_party ?? "no",
+    notified_resident_responsible_party: incidentFormDetails?.notified_resident_responsible_party || "no",
     notified_resident_name: incidentFormDetails?.notified_resident_name || "",
     notified_resident_date: incidentFormDetails?.notified_resident_date || "",
     notified_resident_tm: incidentFormDetails?.notified_resident_tm || "",
@@ -1550,7 +1550,7 @@ const IncidentForm = () => {
                       key={option.key}
                       control={
                         <Radio
-                          checked={values.notified_resident_responsible_party === option.key}
+                          checked={String(values.notified_resident_responsible_party).toLowerCase() === option.key.toLowerCase()}
                           onChange={() => setFieldValue("notified_resident_responsible_party", option.key)}
                           value={option.key}
                           name="notified_resident_responsible_party"
@@ -1561,7 +1561,7 @@ const IncidentForm = () => {
                   ))}
                 </FormGroup>
                 {/* // --- Notified Resident Date --- */}
-                {values.notified_resident_responsible_party === "yes" && (
+                {values.notified_resident_responsible_party === "Yes" && (
                   <Box sx={{ width: "100%", mt: 2, display: "flex", gap: 2 }}>
                     <TextField
                       fullWidth
