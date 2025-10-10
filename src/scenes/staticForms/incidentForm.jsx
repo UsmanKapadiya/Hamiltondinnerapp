@@ -169,18 +169,18 @@ const validationSchema = yup.object({
   // notified_resident_responsibl
   notified_resident_responsible_party: yup.string(),
   notified_resident_name: yup.string().when('notified_resident_responsible_party', {
-    is: 'yes',
+    is: 'Yes',
     then: (schema) => schema.required('Notified Resident Name is required'),
     otherwise: (schema) => schema,
   }),
 
   notified_resident_date: yup.string().when('notified_resident_responsible_party', {
-    is: 'yes',
+    is: 'Yes',
     then: (schema) => schema.required('Notified Resident Date is required'),
     otherwise: (schema) => schema,
   }),
   notified_resident_tm: yup.string().when('notified_resident_responsible_party', {
-    is: 'yes',
+    is: 'Yes',
     then: (schema) => schema.required('Notified Resident Time is required'),
     otherwise: (schema) => schema,
   }),
@@ -1794,7 +1794,13 @@ const IncidentForm = () => {
                       control={
                         <Radio
                           checked={String(values.notified_resident_responsible_party).toLowerCase() === option.key.toLowerCase()}
-                          onChange={() => setFieldValue("notified_resident_responsible_party", option.key)}
+                          onChange={() => {
+                            setFieldValue("notified_resident_responsible_party", option.key);
+                            // Clear related fields when changing the selection
+                            setFieldValue("notified_resident_name", "");
+                            setFieldValue("notified_resident_date", "");
+                            setFieldValue("notified_resident_tm", "");
+                          }}
                           value={option.key}
                           name="notified_resident_responsible_party"
                         />
