@@ -285,7 +285,7 @@ const IncidentForm = () => {
 
       setTimeout(checkAndScroll, 500);
     }
-  }, [location.state?.scrollToFollowUp, incidentFormDetails, loading]);
+  }, [location.state?.scrollToFollowUp, loading]);
 
   useEffect(() => {
     setLoading(true);
