@@ -680,9 +680,48 @@ const IncidentForm = () => {
       data: JSON.stringify(rawStringData)
     };
     // console.log("finalPayload", finalPayload)
+    const formData = new FormData();
+    formData.append('form_type', 1);
+    if (formId) {
+      formData.append('form_id', formId);
+    } else {
+      formData.append('room_id', found?.id);
+    }
+    formData.append('follow_up_assigned_to', values?.follow_up_assigned_to);
+    formData.append('data', JSON.stringify(rawStringData));
+
+    // Handle attachments
+    if (Array.isArray(values.attachments) && values.attachments.length > 0) {
+      let fileIndex = 0;
+
+      values.attachments.forEach((file) => {
+        if (file instanceof File) {
+          // New file upload - append directly
+          formData.append(`file${fileIndex}`, file, file.name);
+          fileIndex++;
+        } else if (file.id) {
+          // Existing attachment from API - preserve by ID
+          formData.append(`existing_attachments[]`, file.id);
+        } else if (typeof file === 'string' && file.startsWith('data:')) {
+          // Handle base64 encoded files (if any)
+          const byteString = atob(file.split(',')[1]);
+          const mimeString = file.split(',')[0].split(':')[1].split(';')[0];
+          const ab = new ArrayBuffer(byteString.length);
+          const ia = new Uint8Array(ab);
+          for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+          }
+          const blob = new Blob([ab], { type: mimeString });
+          const extension = mimeString.split('/')[1];
+          formData.append(`file${fileIndex}`, blob, `attachment_${Date.now()}_${fileIndex}.${extension}`);
+          fileIndex++;
+        }
+      });
+    }
+
     try {
       if (formId) {
-        const response = await StaticFormServices.logFormUpdate(finalPayload);
+        const response = await StaticFormServices.logFormUpdate(formData);
         if (response?.ResponseCode === "1") {
           toast.success("Form Updated successfully.");
           setTimeout(() => {
@@ -690,7 +729,7 @@ const IncidentForm = () => {
           }, 1200);
         }
       } else {
-        const response = await StaticFormServices.logFormSubmit(finalPayload);
+        const response = await StaticFormServices.logFormSubmit(formData);
         if (response?.ResponseCode === "1") {
           toast.success(response?.ResponseText || "Form submitted successfully.");
           setTimeout(() => {
@@ -710,6 +749,38 @@ const IncidentForm = () => {
     setLoading(true);
     if (pendingSubmitValues && pendingSubmitActions) {
       await submitIncidentForm(pendingSubmitValues, pendingSubmitActions);
+    }
+  };
+
+  const handleAttachmentUpload = async (files) => {
+    if (!formId || !files || files.length === 0) return;
+
+    const uploadFormData = new FormData();
+    uploadFormData.append('form_id', formId);
+
+    files.forEach((file, index) => {
+      uploadFormData.append(`file${index}`, file, file.name);
+    });
+
+    try {
+      const response = await StaticFormServices.addFormAttachment(uploadFormData);
+      if (response?.ResponseCode === "1") {
+        toast.success("Attachments uploaded successfully.");
+
+        const uploadedAttachments = response.attachments || [];
+
+        setIncidentFormDetails(prev => ({
+          ...prev,
+          attachments: [...uploadedAttachments]
+        }));
+      } else {
+        toast.error("Failed to upload attachments.");
+      }
+    } catch (error) {
+      console.error("Error uploading attachments:", error);
+      toast.error("Error uploading attachments. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -1314,7 +1385,8 @@ const IncidentForm = () => {
                   />
                 </FormGroup>
               </Box>
-              <Box sx={{ gridColumn: "span 4", mt: 2 }}>
+
+              {/* <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormGroup row>
                   <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
                     ATTACHMENT
@@ -1333,33 +1405,84 @@ const IncidentForm = () => {
                       onChange={(event) => {
                         const files = Array.from(event.currentTarget.files);
                         const prev = values.attachments || [];
-                        setFieldValue("attachments", [...prev, ...files]);
+                        // Add new files at the beginning instead of end
+                        setFieldValue("attachments", [...files, ...prev]);
                       }}
                     />
                   </Button>
                   {Array.isArray(values.attachments) && values.attachments.length > 0 && (
                     <Box sx={{ width: '100%', mt: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                       {values.attachments.map((file, idx) => {
-                        const isImage = file.type.startsWith('image/');
-                        const isVideo = file.type.startsWith('video/');
+                        // Check if it's a File object (newly uploaded) or an object from API (existing)
+                        const isFileObject = file instanceof File;
+                        const isImage = isFileObject
+                          ? file.type.startsWith('image/')
+                          : file.type === 'image';
+                        const isVideo = isFileObject
+                          ? file.type.startsWith('video/')
+                          : file.type === 'video';
+
+                        // Get the appropriate URL
+                        const mediaUrl = isFileObject
+                          ? URL.createObjectURL(file)
+                          : file.path;
+
+                        const fileName = isFileObject ? file.name : file.name;
+
                         return (
                           <Box key={idx} sx={{ position: 'relative', display: 'inline-block' }}>
                             {isImage ? (
                               <img
-                                src={URL.createObjectURL(file)}
-                                alt={file.name}
-                                style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 4, border: '1px solid #ccc' }}
+                                src={mediaUrl}
+                                alt={fileName}
+                                style={{
+                                  width: 80,
+                                  height: 80,
+                                  objectFit: 'cover',
+                                  borderRadius: 4,
+                                  border: '1px solid #ccc'
+                                }}
                               />
                             ) : isVideo ? (
                               <video
-                                src={URL.createObjectURL(file)}
-                                style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 4, border: '1px solid #ccc' }}
+                                src={mediaUrl}
+                                style={{
+                                  width: 80,
+                                  height: 80,
+                                  objectFit: 'cover',
+                                  borderRadius: 4,
+                                  border: '1px solid #ccc'
+                                }}
                                 controls
                               />
-                            ) : null}
+                            ) : (
+                              <Box
+                                sx={{
+                                  width: 80,
+                                  height: 80,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  border: '1px solid #ccc',
+                                  borderRadius: 1,
+                                  bgcolor: '#f5f5f5'
+                                }}
+                              >
+                                <Typography variant="caption" sx={{ textAlign: 'center', p: 1 }}>
+                                  {file.file_extension || 'File'}
+                                </Typography>
+                              </Box>
+                            )}
                             <Button
                               size="small"
-                              sx={{ position: 'absolute', top: 0, right: 0, minWidth: 0, p: 0, bgcolor: 'rgba(255,255,255,0.7)' }}
+                              sx={{
+                                position: 'absolute',
+                                top: 0,
+                                right: 0,
+                                minWidth: 0,
+                                p: 0,
+                                bgcolor: 'rgba(255,255,255,0.7)'
+                              }}
                               onClick={() => {
                                 const newArr = values.attachments.filter((_, i) => i !== idx);
                                 setFieldValue('attachments', newArr);
@@ -1373,7 +1496,152 @@ const IncidentForm = () => {
                     </Box>
                   )}
                 </FormGroup>
+              </Box> */}
+              <Box sx={{ gridColumn: "span 4", mt: 2 }}>
+                <FormGroup row>
+                  <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                    ATTACHMENT
+                  </Box>
+                  <Button
+                    variant="contained"
+                    component="label"
+                    sx={{ mt: 1 }}
+                  >
+                    Upload Photo/Video
+                    <input
+                      type="file"
+                      accept="image/*,video/*"
+                      multiple
+                      hidden
+                      onChange={async (event) => {
+                        const files = Array.from(event.currentTarget.files);
+
+                        if (formId) {
+                          // If form exists, upload immediately to API
+                          await handleAttachmentUpload(files);
+                        } else {                          
+                          const prev = values.attachments || [];
+                          setFieldValue("attachments", [...files, ...prev]);
+                        }
+                        event.target.value = '';
+                      }}
+                    />
+                  </Button>
+                  {Array.isArray(values.attachments) && values.attachments.length > 0 && (
+                    <Box sx={{ width: '100%', mt: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                      {values.attachments.map((file, idx) => {
+                        const isFileObject = file instanceof File;
+                        const isImage = isFileObject
+                          ? file.type.startsWith('image/')
+                          : file.type === 'image';
+                        const isVideo = isFileObject
+                          ? file.type.startsWith('video/')
+                          : file.type === 'video';
+
+                        const mediaUrl = isFileObject
+                          ? URL.createObjectURL(file)
+                          : file.path;
+
+                        const fileName = isFileObject ? file.name : file.name;
+
+                        return (
+                          <Box key={idx} sx={{ position: 'relative', display: 'inline-block' }}>
+                            {isImage ? (
+                              <img
+                                src={mediaUrl}
+                                alt={fileName}
+                                style={{
+                                  width: 80,
+                                  height: 80,
+                                  objectFit: 'cover',
+                                  borderRadius: 4,
+                                  border: '1px solid #ccc'
+                                }}
+                              />
+                            ) : isVideo ? (
+                              <video
+                                src={mediaUrl}
+                                style={{
+                                  width: 80,
+                                  height: 80,
+                                  objectFit: 'cover',
+                                  borderRadius: 4,
+                                  border: '1px solid #ccc'
+                                }}
+                                controls
+                              />
+                            ) : (
+                              <Box
+                                sx={{
+                                  width: 80,
+                                  height: 80,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  border: '1px solid #ccc',
+                                  borderRadius: 1,
+                                  bgcolor: '#f5f5f5'
+                                }}
+                              >
+                                <Typography variant="caption" sx={{ textAlign: 'center', p: 1 }}>
+                                  {file.file_extension || 'File'}
+                                </Typography>
+                              </Box>
+                            )}
+                            <Button
+                              size="small"
+                              sx={{
+                                position: 'absolute',
+                                top: 0,
+                                right: 0,
+                                minWidth: 0,
+                                p: 0,
+                                bgcolor: 'rgba(255,255,255,0.7)'
+                              }}
+                              onClick={async () => {
+                                if (formId && file.id) {
+                                  // If form exists and file has ID, call delete API
+                                  try {
+                                    const response = await StaticFormServices.deleteFormAttachment({
+                                      form_id: formId,
+                                      attachment_id: file.id
+                                    });
+                                    if (response?.ResponseCode === "1") {
+                                      toast.success("Attachment deleted successfully.");
+
+                                      const newArr = values.attachments.filter((_, i) => i !== idx);
+                                      setFieldValue('attachments', newArr);
+
+                                      setIncidentFormDetails(prev => ({
+                                        ...prev,
+                                        attachments: newArr
+                                      }));
+                                    } else {
+                                      toast.error(response?.ResponseText || "Failed to delete attachment.");
+                                    }
+                                  } catch (error) {
+                                    console.error("Error deleting attachment:", error);
+                                    toast.error("Failed to delete attachment.");
+                                  } finally {
+                                    setLoading(false);
+                                  }
+                                } else {
+                                  // Just remove from state (for new uploads not yet saved)
+                                  const newArr = values.attachments.filter((_, i) => i !== idx);
+                                  setFieldValue('attachments', newArr);
+                                }
+                              }}
+                            >
+                              <span style={{ color: 'red', fontWeight: 'bold', fontSize: 18, lineHeight: 1 }}>×</span>
+                            </Button>
+                          </Box>
+                        );
+                      })}
+                    </Box>
+                  )}
+                </FormGroup>
               </Box>
+
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%", backgroundColor: 'darkgray' }}>
                   NOTIFICATION

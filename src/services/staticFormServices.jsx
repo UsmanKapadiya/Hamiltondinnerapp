@@ -11,11 +11,18 @@ const StaticFormServices = {
     return requests.post(`/complete-log`, data);
   },
   logFormSubmit: async (data) => {
-    return requests.post(`/general-form-submit-phase1`, data);
+    return requests.uploadPosts(`/general-form-submit-phase1`, data);
   },
   logFormUpdate: async (data) => {
-    return requests.post(`/edit-form-phase1`, data);
+    return requests.uploadPosts(`/edit-form-phase1`, data);
   },
+  addFormAttachment: async (formData) => {
+    return requests.uploadPosts(`/add-form-attachment-phase1`, formData);
+  },
+  deleteFormAttachment: async (data) => {
+    return requests.uploadPosts(`/delete-form-attachment-phase1`, data);
+  },
+
   getFormById: async (payload) => {
     return requests.post(`/form-details`, payload);
   },
