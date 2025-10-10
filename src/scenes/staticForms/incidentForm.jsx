@@ -1766,7 +1766,7 @@ const IncidentForm = () => {
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
-                  FAMILY DOCTOR
+                  Family Doctor
                 </Box>
                 <TextField
                   fullWidth
