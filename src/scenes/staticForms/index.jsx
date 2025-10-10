@@ -1,11 +1,11 @@
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import { Box, useTheme, FormControl, InputLabel, Select, MenuItem, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Autocomplete, CircularProgress, useMediaQuery, Tooltip } from "@mui/material";
-import { Header } from "../../components";
+import { Box, useTheme, FormControl, InputLabel, Select, MenuItem, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Autocomplete, useMediaQuery } from "@mui/material";
+import { Header, PdfModal } from "../../components";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
-import { CloseOutlined, ReceiptOutlined, ZoomInOutlined, ZoomOutOutlined } from "@mui/icons-material";
+import { ReceiptOutlined } from "@mui/icons-material";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import StaticFormServices from "../../services/staticFormServices";
@@ -25,12 +25,7 @@ const StaticForms = () => {
   const [markDialogOpen, setMarkDialogOpen] = useState(false);
   const [markReason, setMarkReason] = useState("");
   const [markRowId, setMarkRowId] = useState(null);
-  const [mailDialogOpen, setMailDialogOpen] = useState(false);
-  const [mailTo, setMailTo] = useState("");
-  const [mailSending, setMailSending] = useState(false);
   const [selectedMailFormId, setSelectedMailFormId] = useState("");
-  const [pdfLoading, setPdfLoading] = useState(true);
-  const [pdfError, setPdfError] = useState(false);
   const [completedNames, setCompletedNames] = useState(() => {
     const stored = localStorage.getItem("completedNames");
     return stored ? JSON.parse(stored) : [];
@@ -39,29 +34,6 @@ const StaticForms = () => {
     const userDatas = localStorage.getItem("userData");
     return userDatas ? JSON.parse(userDatas) : null;
   });
-  const [zoom, setZoom] = useState(1);
-
-  const handleZoomIn = () => setZoom((z) => Math.min(z + 0.2, 3));
-  const handleZoomOut = () => setZoom((z) => Math.max(z - 0.2, 0.5));
-
-  const iframeContainerStyle = {
-    width: "100%",
-    height: "100%",
-    overflow: "hidden",
-    position: "relative",
-    backgroundColor: "#fff",
-  };
-
-  const iframeStyle = {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    transform: `scale(${zoom})`,
-    transformOrigin: "top left",
-    border: "none",
-    width: `${100 / zoom}%`,
-    height: `${100 / zoom}%`,
-  };
 
   const handleAddNewClick = useCallback((formType) => {
     let route = "incidentForm-create";
@@ -149,31 +121,22 @@ const StaticForms = () => {
     }
   };
 
-  const handleCloseMailDialog = () => {
-    setMailDialogOpen(false);
-    setMailTo("");
-  };
-
-  const handleSendMail = async () => {
-    if (!mailTo) {
+  const handleSendMail = async (emailTo) => {
+    if (!emailTo) {
       toast.error("Email is required.");
       return;
     }
 
-    setMailSending(true);
     try {
-      let payload = { to_id: mailTo, form_id: selectedMailFormId };
+      let payload = { to_id: emailTo, form_id: selectedMailFormId };
       const response = await StaticFormServices.sendMail(payload);
       if (response?.ResponseCode === "1") {
-        toast.success(`Email sent to ${mailTo}`);
-        handleCloseMailDialog();
+        toast.success(`Email sent to ${emailTo}`);
       } else if (response?.Message) {
         toast.error(response.Message);
       }
     } catch (error) {
       toast.error("Failed to send email. Please try again.");
-    } finally {
-      setMailSending(false);
     }
   };
 
@@ -231,8 +194,6 @@ const StaticForms = () => {
                 const url = params.row.formLink;
                 const isPdf = url && url.toLowerCase().endsWith(".pdf");
                 if (isPdf) {
-                  setPdfLoading(true);
-                  setPdfError(false);
                   setPdfUrl(url);
                   setPdfModalOpen(true);
                 } else {
@@ -533,412 +494,43 @@ const StaticForms = () => {
           }}
         />
       </Box>
-      {/* <Dialog
+
+      {/* PDF Modal Component */}
+      <PdfModal
         open={pdfModalOpen}
         onClose={() => setPdfModalOpen(false)}
-        maxWidth="md"
-        fullWidth
-        sx={{ zIndex: 2000 }}
-        disableScrollLock
-      >
-        <DialogTitle>PDF Preview</DialogTitle>
-        <DialogContent
-          dividers
-          sx={{
-            height: '80vh',
-            p: 0,           // Remove all padding
-            m: 0,           // Remove all margin
-            backgroundColor: '#fff',
-          }}
-        >
-          <iframe
-            onLoad={() => {
-              setPdfLoading(false);
-              setPdfError(false);
-            }}
-            onError={() => {
-              setPdfLoading(false);
-              setPdfError(true);
-            }}
-            src={`https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true`}
-            title="PDF Preview"
-            width="100%"
-            height="100%"
-            style={{
-              display: pdfLoading ? 'none' : 'block',
-              border: 'none',
-              backgroundColor: '#fff',
-              margin: 0,      // Remove iframe margin
-              padding: 0,     // Remove iframe padding
-            }}
-          />
-        </DialogContent>
-        {!pdfLoading && !pdfError && (
-          <DialogActions>
-            {formist.find(f => f.id === selectedMailFormId)?.form_type?.allow_mail === 1 && (
-              <Button
-                variant="contained"
-                onClick={() => setMailDialogOpen(true)}
-                sx={{
-                  bgcolor: colors.greenAccent[700],
-                  color: "#fcfcfc",
-                  fontSize: isMdDevices ? "12px" : "10px",
-                  fontWeight: "bold",
-                  p: "6px 12px",
-                  transition: ".3s ease",
-                  ":hover": {
-                    bgcolor: colors.greenAccent[800],
-                  },
-                }}
-              >
-                Mail
-              </Button>
-            )}
-            {formist.find(f => f.id === selectedMailFormId)?.form_type?.allow_print === 1 && (
-              <Button
-                variant="contained"
-                onClick={() => {
-                  window.open(`https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true`, '_blank');
-                }}
-                sx={{
-                  bgcolor: colors.greenAccent[700],
-                  color: "#fcfcfc",
-                  fontSize: isMdDevices ? "12px" : "10px",
-                  fontWeight: "bold",
-                  p: "6px 12px",
-                  transition: ".3s ease",
-                  ":hover": {
-                    bgcolor: colors.greenAccent[800],
-                  },
-                }}
-              >
-                Print
-              </Button>
-            )}
-            <Button
-              variant="contained"
-              onClick={() => setPdfModalOpen(false)}
-              sx={{
-                bgcolor: colors.redAccent[700],
-                color: "#fcfcfc",
-                fontSize: isMdDevices ? "12px" : "10px",
-                fontWeight: "bold",
-                p: "6px 12px",
-                transition: ".3s ease",
-                ":hover": {
-                  bgcolor: colors.redAccent[800],
-                },
-              }}
-            >
-              Close
-            </Button>
-          </DialogActions>
-        )}
-      </Dialog> */}
-      <Dialog
-        open={pdfModalOpen}
-        onClose={() => setPdfModalOpen(false)}
-        maxWidth="lg"
-        fullWidth
-        sx={{ zIndex: 2000, bgcolor: "#fafafa" }}
-        disableScrollLock
-      >
-        {/* Top Toolbar */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            px: 2,
-            pt: 1,
-            pb: 0.5,
-            bgcolor: colors.primary[500],
-            color: "#fff",
-            userSelect: "none",
-          }}
-        >
-          <DialogTitle sx={{ color: "#fff", m: 0, p: 0, fontWeight: "bold", }}>
-            PDF Preview
-          </DialogTitle>
-          <Box>
-            <Tooltip title="Zoom Out">
-              <IconButton
-                size="small"
-                onClick={handleZoomOut}
-                disabled={zoom <= 0.5}
-                sx={{ color: "#fff" }}
-              >
-                <ZoomOutOutlined />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Zoom In">
-              <IconButton
-                size="small"
-                onClick={handleZoomIn}
-                disabled={zoom >= 3}
-                sx={{ color: "#fff" }}
-              >
-                <ZoomInOutlined />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Close">
-              <IconButton
-                size="small"
-                onClick={() => setPdfModalOpen(false)}
-                sx={{ color: "#fff" }}
-              >
-                <CloseOutlined />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        </Box>
+        pdfUrl={pdfUrl}
+        showPrintButton={formist.find((f) => f.id === selectedMailFormId)?.form_type?.allow_print === 1}
+        showMailButton={formist.find((f) => f.id === selectedMailFormId)?.form_type?.allow_mail === 1}
+        showFollowUpButton={
+          formist.find((f) => f.id === selectedMailFormId)?.is_follow_up_incomplete === 1 &&
+          formist.find((f) => f.id === selectedMailFormId)?.form_type_id === 1
+        }
+        onMail={handleSendMail}
+        onFollowUp={async () => {
+          const selectedForm = formist.find((f) => f.id === selectedMailFormId);
+          const formTypeId = selectedForm?.form_type_id;
 
-        {/* Content */}
-        <DialogContent
-          dividers
-          sx={{
-            position: "relative",
-            height: "80vh",
-            p: 0,
-            bgcolor: "#fff",
-            overflow: "hidden",
-            boxShadow: 3,
-            borderRadius: 1,
-          }}
-        >
-          {/* Loading spinner */}
-          {pdfLoading && (
-            <Box
-              sx={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                zIndex: 10,
-                bgcolor: "rgba(255,255,255,0.8)",
-                borderRadius: 2,
-                p: 3,
-                display: "flex",
-                alignItems: "center",
-                flexDirection: "column",
-              }}
-            >
-              <CircularProgress />
-              <Box mt={1} color="text.secondary">
-                Loading PDF...
-              </Box>
-            </Box>
-          )}
+          try {
+            const payload = { form_id: selectedMailFormId };
+            const response = await StaticFormServices.getFormById(payload);
 
-          {/* Error message */}
-          {pdfError && (
-            <Box
-              sx={{
-                height: "100%",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                color: "error.main",
-                fontWeight: "bold",
-                fontSize: "1.2rem",
-                p: 2,
-              }}
-            >
-              Failed to load PDF. Please try again later.
-            </Box>
-          )}
+            if (response?.ResponseCode === '1') {
+              setPdfModalOpen(false);
 
-          {/* PDF iframe */}
-          {!pdfError && (
-            <iframe
-              onLoad={() => {
-                setPdfLoading(false);
-                setPdfError(false);
-              }}
-              onError={() => {
-                setPdfLoading(false);
-                setPdfError(true);
-              }}
-              src={`https://docs.google.com/gview?url=${encodeURIComponent(
-                pdfUrl
-              )}&embedded=true`}
-              title="PDF Preview"
-              style={iframeStyle}
-              width="100%"
-              height="100%"
-            />
-          )}
-        </DialogContent>
-
-        {/* Actions */}
-        {!pdfLoading && !pdfError && (
-          <DialogActions
-            sx={{
-              px: 3,
-              py: 1.5,
-              bgcolor: colors.primary[500],
-              justifyContent: "flex-end",
-              gap: 1,
-            }}
-          >
-            {formist.find((f) => f.id === selectedMailFormId)?.is_follow_up_incomplete === 1 &&
-              formist.find((f) => f.id === selectedMailFormId)?.form_type_id === 1 && (
-                <CustomButton
-                  sx={{
-                    padding: "10px 32px",
-                    bgcolor: colors.blueAccent[50],
-                    color: colors.blueAccent[700],
-                    border: "none",
-                    borderRadius: 4,
-                    fontWeight: 600,
-                    fontSize: 16,
-                    cursor: "pointer",
-                    width: 'auto'
-                  }}
-                  onClick={async () => {
-                    const selectedForm = formist.find((f) => f.id === selectedMailFormId);
-                    const formTypeId = selectedForm?.form_type_id;
-
-                    try {
-                      const payload = { form_id: selectedMailFormId };
-                      const response = await StaticFormServices.getFormById(payload);
-
-                      if (response?.ResponseCode === '1') {
-                        setPdfModalOpen(false); // Close the PDF modal
-
-                        if (formTypeId === 1) {
-                          // Incident Form
-                          navigate(`incidentForm-edit/${selectedMailFormId}`, {
-                            state: { formData: response, id: selectedMailFormId, scrollToFollowUp: true }
-                          });
-                        }
-                      } else {
-                        toast.error("Failed to fetch form data. Please try again.");
-                      }
-                    } catch (error) {
-                      toast.error("Failed to fetch form data. Please try again.");
-                    }
-                  }}
-                >
-                  Follow Up
-                </CustomButton>
-              )}
-
-            {formist.find((f) => f.id === selectedMailFormId)?.form_type
-              ?.allow_mail === 1 && (
-                <CustomButton
-                  sx={{
-                    padding: "10px 32px",
-                    bgcolor: colors.blueAccent[50],
-                    color: colors.blueAccent[700],
-                    border: "none",
-                    borderRadius: 4,
-                    fontWeight: 600,
-                    fontSize: 16,
-                    cursor: "pointer",
-                    width: 'auto'
-                  }}
-                  onClick={() => setMailDialogOpen(true)}
-                >
-                  Mail
-                </CustomButton>
-              )}
-            {formist.find((f) => f.id === selectedMailFormId)?.form_type
-              ?.allow_print === 1 && (
-                <CustomButton
-                  sx={{
-                    padding: "10px 32px",
-                    bgcolor: colors.blueAccent[50],
-                    color: colors.blueAccent[700],
-                    border: "none",
-                    borderRadius: 4,
-                    fontWeight: 600,
-                    fontSize: 16,
-                    cursor: "pointer",
-                    width: 'auto'
-                  }}
-                  onClick={() => {
-                    // Open raw PDF for printing (better than Google viewer)
-                    window.open(pdfUrl, "_blank");
-                  }}
-                >
-                  Print
-                </CustomButton>
-              )}
-            <CustomButton
-              sx={{
-                padding: "10px 32px",
-                bgcolor: colors.blueAccent[700],
-                color: "#fcfcfc",
-                border: "none",
-                borderRadius: 4,
-                fontWeight: 600,
-                fontSize: 16,
-                cursor: "pointer",
-                width: 'auto'
-              }}
-              onClick={() => setPdfModalOpen(false)}
-            >
-              Close
-            </CustomButton>
-          </DialogActions>
-        )}
-      </Dialog>
-      <Dialog
-        open={mailDialogOpen}
-        onClose={handleCloseMailDialog}
-        maxWidth="sm"
-        fullWidth
-        sx={{ zIndex: 2100 }}
-      >
-        <DialogTitle>Send Email</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Enter Email Id"
-            type="email"
-            fullWidth
-            value={mailTo}
-            onChange={(e) => setMailTo(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <CustomButton
-            sx={{
-              padding: "10px 32px",
-              bgcolor: colors.blueAccent[50],
-              color: colors.blueAccent[700],
-              border: "none",
-              borderRadius: 4,
-              fontWeight: 600,
-              fontSize: 16,
-              cursor: "pointer",
-              width: 'auto'
-            }}
-            onClick={handleSendMail}
-            disabled={mailSending}
-          >
-            {mailSending ? "Sending..." : "Send"}
-          </CustomButton>
-          <CustomButton
-            sx={{
-              padding: "10px 32px",
-              bgcolor: colors.blueAccent[700],
-              color: "#fcfcfc",
-              border: "none",
-              borderRadius: 4,
-              fontWeight: 600,
-              fontSize: 16,
-              cursor: "pointer",
-              width: 'auto'
-            }}
-            onClick={handleCloseMailDialog}
-          >
-            Cancel
-          </CustomButton>
-        </DialogActions>
-      </Dialog>
+              if (formTypeId === 1) {
+                navigate(`incidentForm-edit/${selectedMailFormId}`, {
+                  state: { formData: response, id: selectedMailFormId, scrollToFollowUp: true }
+                });
+              }
+            } else {
+              toast.error("Failed to fetch form data. Please try again.");
+            }
+          } catch (error) {
+            toast.error("Failed to fetch form data. Please try again.");
+          }
+        }}
+      />
     </Box>
   );
 };

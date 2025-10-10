@@ -9,7 +9,7 @@ import {
   Radio,
   Typography
 } from "@mui/material";
-import { Header } from "../../components";
+import { Header, PdfModal } from "../../components";
 import { Formik } from "formik";
 import * as yup from "yup";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -24,7 +24,7 @@ import CustomButton from "../../components/CustomButton";
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions'
+import DialogActions from '@mui/material/DialogActions';
 
 const incidentInvolvedData = [
   { key: "inc_invl_resident", label: "Resident" },
@@ -224,6 +224,10 @@ const IncidentForm = () => {
   const [showFollowUpConfirm, setShowFollowUpConfirm] = useState(false);
   const [pendingSubmitValues, setPendingSubmitValues] = useState(null);
   const [pendingSubmitActions, setPendingSubmitActions] = useState(null);
+  const [pdfModalOpen, setPdfModalOpen] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState("");
+  const [selectedFormId, setSelectedFormId] = useState(null);
+  const [isFollowUpIncomplete, setIsFollowUpIncomplete] = useState(false);
 
   // Generic mapping function to reduce redundancy
   function mapOptions(rawString, options, otherLabel = "Other", otherTextKey = "other_text", arrKey = "arr") {
@@ -740,17 +744,47 @@ const IncidentForm = () => {
         const response = await StaticFormServices.logFormUpdate(formData);
         if (response?.ResponseCode === "1") {
           toast.success("Form Updated successfully.");
-          setTimeout(() => {
-            navigate("/staticForms");
-          }, 1200);
+          // Open PDF modal if formLink is available
+          if (response?.new_form_link) {
+            setSelectedFormId(formId);
+            const url = response.new_form_link;
+            // Store whether follow-up is incomplete for the PDF modal
+            setIsFollowUpIncomplete(response?.isFollowUpIncomplete === 1);
+            const isPdf = url && url.toLowerCase().endsWith(".pdf");
+            if (isPdf) {
+              setPdfUrl(url);
+              setPdfModalOpen(true);
+            } else {
+              window.open(url, "_blank");
+            }
+          } else {
+            setTimeout(() => {
+              navigate("/staticForms");
+            }, 1200);
+          }
         }
       } else {
         const response = await StaticFormServices.logFormSubmit(formData);
         if (response?.ResponseCode === "1") {
           toast.success(response?.ResponseText || "Form submitted successfully.");
-          setTimeout(() => {
-            navigate("/staticForms");
-          }, 1200);
+          // Open PDF modal if formLink is available
+          if (response?.formLink) {
+            setSelectedFormId(response?.form_id || null);
+            const url = response.formLink;
+            // Store whether follow-up is incomplete for the PDF modal
+            setIsFollowUpIncomplete(response?.isFollowUpIncomplete === 1);
+            const isPdf = url && url.toLowerCase().endsWith(".pdf");
+            if (isPdf) {
+              setPdfUrl(url);
+              setPdfModalOpen(true);
+            } else {
+              window.open(url, "_blank");
+            }
+          } else {
+            setTimeout(() => {
+              navigate("/staticForms");
+            }, 1200);
+          }
         }
       }
     } catch (error) {
@@ -765,6 +799,17 @@ const IncidentForm = () => {
     setLoading(true);
     if (pendingSubmitValues && pendingSubmitActions) {
       await submitIncidentForm(pendingSubmitValues, pendingSubmitActions);
+    }
+  };
+
+  const handleFollowUpClick = () => {
+    // Close the PDF modal and navigate to edit the form's follow-up section
+    setPdfModalOpen(false);
+    if (selectedFormId && followUpRef.current) {
+      // Scroll to follow-up section
+      setTimeout(() => {
+        followUpRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
     }
   };
 
@@ -800,6 +845,25 @@ const IncidentForm = () => {
     }
   };
 
+   const handleSendMail = async (emailTo) => {
+      if (!emailTo) {
+        toast.error("Email is required.");
+        return;
+      }
+  
+      try {
+        let payload = { to_id: emailTo, form_id: formId };
+        const response = await StaticFormServices.sendMail(payload);
+        if (response?.ResponseCode === "1") {
+          toast.success(`Email sent to ${emailTo}`);
+        } else if (response?.Message) {
+          toast.error(response.Message);
+        }
+      } catch (error) {
+        toast.error("Failed to send email. Please try again.");
+      }
+    };
+  
   return (
     <Box m="20px">
       <Header
@@ -2137,6 +2201,23 @@ const IncidentForm = () => {
           )}
         </Formik>
       )}
+
+      {/* PDF Modal Component */}
+      <PdfModal
+        open={pdfModalOpen}
+        onClose={() => setPdfModalOpen(false)}
+        onCloseComplete={() => {
+          setPdfModalOpen(false);
+          navigate("/staticForms");
+        }}
+        pdfUrl={pdfUrl}
+        onMail={handleSendMail}
+        showPrintButton={userData?.form_types?.find((f) => f.id === 1)?.allow_print === 1}
+        showMailButton={userData?.form_types?.find((f) => f.id === 1)?.allow_mail === 1 ? true : false}
+        showFollowUpButton={isFollowUpIncomplete}
+        onFollowUp={handleFollowUpClick}
+        onPrint={() => window.open(pdfUrl, "_blank")}
+      />
     </Box>
   );
 };
