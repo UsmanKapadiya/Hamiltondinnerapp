@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
     Box,
     TextField,
@@ -16,6 +16,8 @@ import {
 } from "@mui/icons-material";
 import logo from "../../assets/images/logo.png";
 import CustomButton from "../../components/CustomButton";
+import { useLocalStorage } from "../../hooks";
+import { sanitizeInput } from "../../utils/validation";
 
 const RoomEnter = () => {
     const theme = useTheme();
@@ -25,17 +27,15 @@ const RoomEnter = () => {
     const [errors] = useState({ roomNo: "" });
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const [userData] = useState(() => {
-        const userDatas = localStorage.getItem("userData");
-        return userDatas ? JSON.parse(userDatas) : null;
-    });
+    const [userData] = useLocalStorage("userData", null);
 
-    const handleChange = (e) => {
+    const handleChange = useCallback((e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-    };
+        const sanitizedValue = sanitizeInput(value);
+        setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
+    }, []);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
         const roomNo = formData?.roomNo?.toString();
         const rooms = userData?.rooms || [];
@@ -45,19 +45,18 @@ const RoomEnter = () => {
         } else {
             toast.error("Room number not found!");
         }
-    };
+    }, [formData, userData, navigate]);
 
-    const handleLogout = () => {
+    const handleLogout = useCallback(() => {
         toast.success("Logged out!");
         setLoading(true);
         setTimeout(() => {
             setLoading(false);
             localStorage.removeItem("authToken");
             localStorage.removeItem("userData");
-            navigate("/");
-            window.location.reload();
+            navigate("/", { replace: true });
         }, 1000);
-    }
+    }, [navigate]);
     return (
         <Box
             display="flex"

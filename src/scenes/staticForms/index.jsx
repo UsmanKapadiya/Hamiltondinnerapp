@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import StaticFormServices from "../../services/staticFormServices";
 import { toast } from "react-toastify";
 import CustomButton from '../../components/CustomButton';
+import { useLocalStorage } from "../../hooks";
 
 const StaticForms = () => {
   const theme = useTheme();
@@ -31,18 +32,15 @@ const StaticForms = () => {
   const [selectedMailFormId, setSelectedMailFormId] = useState("");
   const [pdfLoading, setPdfLoading] = useState(true);
   const [pdfError, setPdfError] = useState(false);
-  const [completedNames, setCompletedNames] = useState(() => {
-    const stored = localStorage.getItem("completedNames");
-    return stored ? JSON.parse(stored) : [];
-  });
-  const [userData] = useState(() => {
-    const userDatas = localStorage.getItem("userData");
-    return userDatas ? JSON.parse(userDatas) : null;
-  });
+  
+  // Use custom hooks for persistent state
+  const [completedNames, setCompletedNames] = useLocalStorage("completedNames", []);
+  const [userData] = useLocalStorage("userData", null);
+  
   const [zoom, setZoom] = useState(1);
 
-  const handleZoomIn = () => setZoom((z) => Math.min(z + 0.2, 3));
-  const handleZoomOut = () => setZoom((z) => Math.max(z - 0.2, 0.5));
+  const handleZoomIn = useCallback(() => setZoom((z) => Math.min(z + 0.2, 3)), []);
+  const handleZoomOut = useCallback(() => setZoom((z) => Math.max(z - 0.2, 0.5)), []);
 
   const iframeContainerStyle = {
     width: "100%",

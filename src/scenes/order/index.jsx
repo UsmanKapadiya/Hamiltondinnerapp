@@ -4,7 +4,7 @@ import {
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { Header } from "../../components";
 import { tokens } from "../../theme";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
@@ -16,12 +16,11 @@ import { ArrowForwardIosOutlined, EditOutlined, EmojiPeopleOutlined } from "@mui
 import en from "../../locales/Localizable_en"
 import cn from "../../locales/Localizable_cn"
 import 'dayjs/locale/zh-cn';
+import { useLocalStorage, useLazyApi } from "../../hooks";
+import { formatDate, isToday, isPast, isAfterHour } from "../../utils/dateHelpers";
+import config from "../../config";
 
-let breakFastEndTime = 10;
-let lunchEndTime = 15;
-let dinnerEndTime = 24;
-// const MAX_MEAL_QTY = 2;
-
+const { breakfastEndHour, lunchEndHour, dinnerEndHour } = config.mealTimes;
 
 const Order = () => {
 
@@ -32,21 +31,66 @@ const Order = () => {
     const roomNo = location.state?.roomNo;
     const [langObj, setLangObj] = useState(en);
     const [date, setDate] = useState(dayjs());
-    const [loading, setLoading] = useState(false);
     const [data, setData] = useState({});
     const [mealData, setMealData] = useState([]);
-    const isToday = date.isSame(dayjs(), 'day');
-    const isPast = date.isBefore(dayjs(), 'day');
-    const isAfter10AM = isToday && (dayjs().hour() > breakFastEndTime || (dayjs().hour() === breakFastEndTime && dayjs().minute() > 0));
-    const isAfter3PM = isToday && (dayjs().hour() > lunchEndTime || (dayjs().hour() === lunchEndTime && dayjs().minute() > 0));
-    const isAfter12PM = isToday && (dayjs().hour() > dinnerEndTime || (dayjs().hour() === dinnerEndTime && dayjs().minute() > 0));
     const [mealSelections, setMealSelections] = useState([]);
     const [MAX_MEAL_QTY, setMAX_MEAL_QTY] = useState(1)
     const [kitchenSummery, setKitchenSummery] = useState(false);
-    const [userData] = useState(() => {
-        const userDatas = localStorage.getItem("userData");
-        return userDatas ? JSON.parse(userDatas) : null;
-    });
+    
+    // Use custom hooks
+    const [userData] = useLocalStorage("userData", null);
+    
+    // Use date helpers for time checks
+    const isTodayDate = useMemo(() => isToday(date), [date]);
+    const isPastDate = useMemo(() => isPast(date), [date]);
+    const isAfter10AM = useMemo(() => isTodayDate && isAfterHour(breakfastEndHour), [isTodayDate]);
+    const isAfter3PM = useMemo(() => isTodayDate && isAfterHour(lunchEndHour), [isTodayDate]);
+    const isAfter12PM = useMemo(() => isTodayDate && isAfterHour(dinnerEndHour), [isTodayDate]);
+    
+    // Kitchen users should bypass time restrictions
+    const isKitchenUser = userData?.role === "kitchen";
+    
+    // Use lazy API for menu fetching
+    const { execute: fetchMenu, loading } = useLazyApi(
+        (roomId, date) => OrderServices.getMenuData(roomId, date),
+        {
+            onSuccess: (response) => {
+                const menuData = {
+                    breakfast: response.breakfast,
+                    lunch: response?.lunch,
+                    dinner: response?.dinner,
+                    is_brk_escort_service: response?.is_brk_escort_service,
+                    is_brk_tray_service: response?.is_brk_tray_service,
+                    is_brk_takeout_service: response?.is_brk_takeout_service,
+                    is_lunch_escort_service: response?.is_lunch_escort_service,
+                    is_lunch_tray_service: response?.is_lunch_tray_service,
+                    is_lunch_takeout_service: response?.is_lunch_takeout_service,
+                    is_dinner_escort_service: response?.is_dinner_escort_service,
+                    is_dinner_tray_service: response?.is_dinner_tray_service,
+                    is_dinner_takeout_service: response?.is_dinner_takeout_service
+                };
+                
+                const meal = { ...menuData, date: formatDate(date) };
+                
+                setMealData(prev => {
+                    const foundIndex = prev.findIndex(item => dayjs(item.date).isSame(dayjs(meal.date), 'day'));
+                    let updated;
+                    if (foundIndex !== -1) {
+                        updated = [...prev];
+                        updated[foundIndex] = transformMealData(meal);
+                    } else {
+                        updated = [...prev, transformMealData(meal)];
+                    }
+                    return updated;
+                });
+                setData(transformMealData(menuData));
+            },
+            onError: (error) => {
+                console.error("Error fetching menu list:", error);
+                toast.error("Failed to load menu data");
+            }
+        }
+    );
 
     useEffect(() => {
         const userData = localStorage.getItem("userData");
@@ -62,33 +106,34 @@ const Order = () => {
         }
     }, []);
 
-    const getDefaultTabIndex = () => {
+    const getDefaultTabIndex = useCallback(() => {
         const now = dayjs();
-        if (now.hour() > lunchEndTime || (now.hour() === lunchEndTime && now.minute() > 0)) {
+        if (now.hour() > lunchEndHour || (now.hour() === lunchEndHour && now.minute() > 0)) {
             return 2; // Dinner
-        } else if (now.hour() > breakFastEndTime || (now.hour() === breakFastEndTime && now.minute() > 0)) {
+        } else if (now.hour() > breakfastEndHour || (now.hour() === breakfastEndHour && now.minute() > 0)) {
             return 1; // Lunch
         }
         return 0; // Breakfast
-    };
+    }, []);
 
     const [tabIndex, setTabIndex] = useState(getDefaultTabIndex());
 
     useEffect(() => {
-        let selectedData = userData?.rooms.find((x) => x.name === roomNo);
-        setMAX_MEAL_QTY(selectedData?.occupancy)
-    }, [roomNo])
+        // Kitchen users should have a higher max quantity (e.g., 99)
+        if (userData?.role === "kitchen") {
+            setMAX_MEAL_QTY(99);
+        } else {
+            let selectedData = userData?.rooms.find((x) => x.name === roomNo);
+            setMAX_MEAL_QTY(selectedData?.occupancy || config.defaults.maxMealQuantity);
+        }
+    }, [roomNo, userData])
 
     useEffect(() => {
-
-        //console.log(mealSelections)
-        let obj = mealSelections?.find((x) => x.date === date.format("YYYY-MM-DD"));
-        //console.log(obj)
+        let obj = mealSelections?.find((x) => x.date === formatDate(date));
         if (obj === undefined) {
-            fetchMenuDetails(date.format("YYYY-MM-DD"));
+            fetchMenuDetails(formatDate(date));
         }
-    }, [date]);
-
+    }, [date, mealSelections]);
 
     useEffect(() => {
         if (location.state?.Kitchen_summery) {
@@ -96,45 +141,16 @@ const Order = () => {
         }
     }, [location.state]);
 
-    const fetchMenuDetails = async (date) => {
-        try {
-            setLoading(true);
-            let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
-            const response = await OrderServices.getMenuData(selectedObj ? selectedObj?.id : userData?.room_id, date);
-            let data = {
-                breakfast: response.breakfast,
-                lunch: response?.lunch,
-                dinner: response?.dinner,
-                is_brk_escort_service: response?.is_brk_escort_service,
-                is_brk_tray_service: response?.is_brk_tray_service,
-                is_brk_takeout_service: response?.is_brk_takeout_service,
-                is_lunch_escort_service: response?.is_lunch_escort_service,
-                is_lunch_tray_service: response?.is_lunch_tray_service,
-                is_lunch_takeout_service: response?.is_lunch_takeout_service,
-                is_dinner_escort_service: response?.is_dinner_escort_service,
-                is_dinner_tray_service: response?.is_dinner_tray_service,
-                is_dinner_takeout_service: response?.is_dinner_takeout_service
-            };
-            let meal = { ...data, date }; // Add date as a property
-            // console.log("meal", meal);
-            setMealData(prev => {
-                const foundIndex = prev.findIndex(item => dayjs(item.date).isSame(dayjs(meal.date), 'day'));
-                let updated;
-                if (foundIndex !== -1) {
-                    updated = [...prev];
-                    updated[foundIndex] = transformMealData(meal);
-                } else {
-                    updated = [...prev, transformMealData(meal)];
-                }
-                return updated;
-            });
-            setData(transformMealData(data));
-        } catch (error) {
-            console.error("Error fetching menu list:", error);
-        } finally {
-            setLoading(false);
+    const fetchMenuDetails = useCallback(async (dateStr) => {
+        // Kitchen users should pass roomId as 0
+        if (userData?.role === "kitchen") {
+            await fetchMenu(0, dateStr);
+            return;
         }
-    };
+        
+        let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
+        await fetchMenu(selectedObj ? selectedObj?.id : userData?.room_id, dateStr);
+    }, [userData, roomNo, fetchMenu]);
 
 
     function selectFirstOption(options) {
@@ -758,7 +774,9 @@ const Order = () => {
                                                                             (prev.breakfastCategories[catIdx]?.alternativeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
                                                                         let newEntree = [...prev.breakfastCategories[catIdx].entreeItems];
                                                                         let newAlternative = [...(prev.breakfastCategories[catIdx].alternativeItems || [])];
-                                                                        if (totalQty >= MAX_MEAL_QTY) {
+                                                                        
+                                                                        // For kitchen users, skip the total qty limit enforcement
+                                                                        if (userData?.role !== "kitchen" && totalQty >= MAX_MEAL_QTY) {
                                                                             let removed = false;
                                                                             newAlternative = newAlternative.map((alt) => {
                                                                                 if (!removed && alt.qty > 0) {
@@ -1362,7 +1380,9 @@ const Order = () => {
                                                                             (prev.lunchCategories[catIdx]?.alternativeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
                                                                         let newEntree = [...prev.lunchCategories[catIdx].entreeItems];
                                                                         let newAlternative = [...(prev.lunchCategories[catIdx].alternativeItems || [])];
-                                                                        if (totalQty >= MAX_MEAL_QTY) {
+                                                                        
+                                                                        // For kitchen users, skip the total qty limit enforcement
+                                                                        if (userData?.role !== "kitchen" && totalQty >= MAX_MEAL_QTY) {
                                                                             let removed = false;
                                                                             newAlternative = newAlternative.map((alt) => {
                                                                                 if (!removed && alt.qty > 0) {
@@ -1959,13 +1979,16 @@ const Order = () => {
                                                         {!kitchenSummery && (
                                                             <button
                                                                 onClick={() => {
+                                                                    console.log("call")
                                                                     setData(prev => {
                                                                         const totalQty =
                                                                             (prev.dinnerCategories[catIdx]?.entreeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
                                                                             (prev.dinnerCategories[catIdx]?.alternativeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
                                                                         let newEntree = [...prev.dinnerCategories[catIdx].entreeItems];
                                                                         let newAlternative = [...(prev.dinnerCategories[catIdx].alternativeItems || [])];
-                                                                        if (totalQty >= MAX_MEAL_QTY) {
+                                                                        
+                                                                        // For kitchen users, skip the total qty limit enforcement
+                                                                        if (userData?.role !== "kitchen" && totalQty >= MAX_MEAL_QTY) {
                                                                             let removed = false;
                                                                             newAlternative = newAlternative.map((alt) => {
                                                                                 if (!removed && alt.qty > 0) {

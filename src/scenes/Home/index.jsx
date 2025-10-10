@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Box, Typography, useTheme, useMediaQuery, IconButton } from "@mui/material";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -6,32 +6,42 @@ import { tokens } from "../../theme";
 import { DynamicFormOutlined, LogoutOutlined, RestaurantMenuOutlined, SummarizeRounded } from "@mui/icons-material";
 import logo from "../../assets/images/logo.png";
 import CustomButton from "../../components/CustomButton";
+import { useLocalStorage } from "../../hooks";
 
 const Home = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const isMdDevices = useMediaQuery("(min-width: 724px)");
     const [loading, setLoading] = useState(false);
-    const [data] = useState(() => {
-        const userData = localStorage.getItem("userData");
-        return userData ? JSON.parse(userData) : null;
-    });
+    const [userData] = useLocalStorage("userData", null);
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
+    const handleLogout = useCallback((e) => {
         e.preventDefault();
 
-        toast.success("Logged out!");
         setLoading(true);
+        toast.success("Logged out!");
+
         setTimeout(() => {
-            setLoading(false);
             localStorage.removeItem("authToken");
             localStorage.removeItem("userData");
-            navigate("/");
-            window.location.reload()
+            setLoading(false);
+            navigate("/", { replace: true });
         }, 1000);
-    };
+    }, [navigate]);
 
+    const handleNavigation = useCallback((path, state = {}) => {
+        navigate(path, { state });
+    }, [navigate]);
+
+    const showDining = useMemo(() => userData?.show_dining === "1", [userData]);
+    const showIncident = useMemo(() => userData?.show_incident === "1" && userData?.role !== "kitchen", [userData]);
+    const isKitchen = useMemo(() => userData?.role === "kitchen", [userData]);
+    const userRole = useMemo(() => {
+        if (userData?.role === "admin") return "Admin";
+        return userData?.role || "Guest";
+    }, [userData]);
+    
     return (
         <Box
             display="flex"
@@ -65,7 +75,6 @@ const Home = () => {
                     position: "relative",
                 }}
             >
-                {/* Top right align */}
                 <Box
                     sx={{
                         position: "absolute",
@@ -75,13 +84,13 @@ const Home = () => {
                     }}
                 >
                     <Typography variant="caption" sx={{ textAlign: "right" }}>
-                        Logged in as {data?.role === "admin" ? "Admin" : data?.role}
+                        Logged in as {userRole}
                     </Typography>
                 </Box>
 
                 <Box
                     component="form"
-                    onSubmit={handleSubmit}
+                    onSubmit={handleLogout}
                     sx={{
                         display: "flex",
                         flexDirection: "column",
@@ -93,7 +102,6 @@ const Home = () => {
                         margin: "0 auto",
                     }}
                 >
-                    {/* Logo */}
                     <img
                         src={logo}
                         alt="Logo"
@@ -108,10 +116,10 @@ const Home = () => {
                         gap={5}
                         sx={{ marginTop: 7, marginBottom: 7 }}
                     >
-                        {data?.show_dining == 1 && (
+                        {showDining && (
                             <Box display="flex" flexDirection="column" alignItems="center">
                                 <IconButton
-                                    onClick={() => { navigate("/room"); }}
+                                    onClick={() => handleNavigation("/room")}
                                     sx={{
                                         color: colors.blueAccent[700],
                                         transition: "color 0.3s",
@@ -119,6 +127,7 @@ const Home = () => {
                                             color: colors.blueAccent[800],
                                         },
                                     }}
+                                    aria-label="Go to Dining"
                                 >
                                     <RestaurantMenuOutlined sx={{ fontSize: 40 }} />
                                 </IconButton>
@@ -127,10 +136,10 @@ const Home = () => {
                                 </Typography>
                             </Box>
                         )}
-                        {data?.show_incident == 1 && data?.role !== "kitchen" && (
+                        {showIncident && (
                             <Box display="flex" flexDirection="column" alignItems="center">
                                 <IconButton
-                                    onClick={() => { navigate("/staticForms") }}
+                                    onClick={() => handleNavigation("/staticForms")}
                                     sx={{
                                         color: colors.blueAccent[700],
                                         transition: "color 0.3s",
@@ -138,6 +147,7 @@ const Home = () => {
                                             color: colors.blueAccent[800],
                                         },
                                     }}
+                                    aria-label="Go to Incident Forms"
                                 >
                                     <DynamicFormOutlined sx={{ fontSize: 40 }} />
                                 </IconButton>
@@ -146,10 +156,10 @@ const Home = () => {
                                 </Typography>
                             </Box>
                         )}
-                        {data?.role === "kitchen" && (
+                        {isKitchen && (
                             <Box display="flex" flexDirection="column" alignItems="center">
                                 <IconButton
-                                    onClick={() => { navigate("/order", { state: { Kitchen_summery: true } }) }}
+                                    onClick={() => handleNavigation("/order", { Kitchen_summery: true })}
                                     sx={{
                                         color: colors.blueAccent[700],
                                         transition: "color 0.3s",
@@ -157,6 +167,7 @@ const Home = () => {
                                             color: colors.blueAccent[800],
                                         },
                                     }}
+                                    aria-label="Go to Summary"
                                 >
                                     <SummarizeRounded sx={{ fontSize: 40 }} />
                                 </IconButton>
@@ -170,7 +181,7 @@ const Home = () => {
                         <CustomButton
                             type="submit"
                             disabled={loading}
-                            startIcon={<LogoutOutlined />}                        
+                            startIcon={<LogoutOutlined />}
                             sx={{
                                 bgcolor: colors.blueAccent[50],
                                 color: colors.blueAccent[700],

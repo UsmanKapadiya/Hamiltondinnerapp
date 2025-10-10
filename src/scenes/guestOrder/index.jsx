@@ -6,7 +6,7 @@ import {
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { Header } from "../../components";
 import { tokens } from "../../theme";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
@@ -17,11 +17,11 @@ import CustomButton from "../../components/CustomButton";
 import en from "../../locales/Localizable_en";
 import cn from "../../locales/Localizable_cn";
 import 'dayjs/locale/zh-cn';
+import { useLocalStorage } from "../../hooks";
+import { isToday, isPast, isAfterHour } from "../../utils/dateHelpers";
+import config from "../../config";
 
-let breakFastEndTime = 10;
-let lunchEndTime = 15;
-let dinnerEndTime = 24;
-
+const { breakfastEndHour, lunchEndHour, dinnerEndHour } = config.mealTimes;
 
 const GuestOrder = () => {
 
@@ -35,43 +35,38 @@ const GuestOrder = () => {
     const [data, setData] = useState({});
     const [mealData, setMealData] = useState({});
 
-    const getDefaultTabIndex = () => {
+    const getDefaultTabIndex = useCallback(() => {
         const now = dayjs();
-        if (now.hour() > lunchEndTime || (now.hour() === lunchEndTime && now.minute() > 0)) {
+        if (now.hour() > lunchEndHour || (now.hour() === lunchEndHour && now.minute() > 0)) {
             return 2; // Dinner
-        } else if (now.hour() > breakFastEndTime || (now.hour() === breakFastEndTime && now.minute() > 0)) {
+        } else if (now.hour() > breakfastEndHour || (now.hour() === breakfastEndHour && now.minute() > 0)) {
             return 1; // Lunch
         }
         return 0; // Breakfast
-    };
+    }, []);
+    
     const [tabIndex, setTabIndex] = useState(getDefaultTabIndex());
-    const isToday = date.isSame(dayjs(), 'day');
-    const isPast = date.isBefore(dayjs(), 'day');
-    const isAfter10AM = isToday && (dayjs().hour() > breakFastEndTime || (dayjs().hour() === breakFastEndTime && dayjs().minute() > 0));
-    const isAfter3PM = isToday && (dayjs().hour() > lunchEndTime || (dayjs().hour() === lunchEndTime && dayjs().minute() > 0));
-    const isAfter12PM = isToday && (dayjs().hour() > dinnerEndTime || (dayjs().hour() === dinnerEndTime && dayjs().minute() > 0));
+    
+    // Use date helpers and memoization
+    const isTodayDate = useMemo(() => isToday(date), [date]);
+    const isPastDate = useMemo(() => isPast(date), [date]);
+    const isAfter10AM = useMemo(() => isTodayDate && isAfterHour(breakfastEndHour), [isTodayDate]);
+    const isAfter3PM = useMemo(() => isTodayDate && isAfterHour(lunchEndHour), [isTodayDate]);
+    const isAfter12PM = useMemo(() => isTodayDate && isAfterHour(dinnerEndHour), [isTodayDate]);
 
-    const [userData] = useState(() => {
-        const userDatas = localStorage.getItem("userData");
-        return userDatas ? JSON.parse(userDatas) : null;
-    });
+    const [userData] = useLocalStorage("userData", null);
     const [guestCount, setGuestCount] = useState(1);
     const [alertOpen, setAlertOpen] = useState(false);
     const [langObj, setLangObj] = useState(en);
 
     useEffect(() => {
-        const userData = localStorage.getItem("userData");
         if (userData) {
-            const { language } = JSON.parse(userData);
-            if (language === 1) {
-                setLangObj(cn);
-            } else {
-                setLangObj(en);
-            }
+            const { language } = userData;
+            setLangObj(language === 1 ? cn : en);
         } else {
             setLangObj(en);
         }
-    }, []);
+    }, [userData]);
 
     const handleIncrement = () => {
         setGuestCount(prev => {
@@ -147,7 +142,7 @@ const GuestOrder = () => {
                 date: date.format("YYYY-MM-DD"),
                 room_id: selectedObj ? selectedObj?.id : userData?.room_id
             }
-            const response = await OrderServices.guestOrderListData(payload);
+            const response = await OrderServices.getGuestOrderList(payload);
             //console.log(response)
             let data = {
                 breakfast: response.breakfast,
