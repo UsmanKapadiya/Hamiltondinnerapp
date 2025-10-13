@@ -18,8 +18,18 @@ import en from "../../locales/Localizable_en";
 import cn from "../../locales/Localizable_cn";
 import 'dayjs/locale/zh-cn';
 import { useLocalStorage } from "../../hooks";
-import { isToday, isPast, isAfterHour } from "../../utils/dateHelpers";
+import { 
+  isToday, 
+  isPast, 
+  isAfterHour,
+  getLanguageObject,
+  getRoomId,
+  calculateTotalMealQuantity,
+  resetAllMealQuantities,
+  transformCompleteMealData
+} from "../../utils";
 import config from "../../config";
+import _ from 'lodash';
 
 const { breakfastEndHour, lunchEndHour, dinnerEndHour } = config.mealTimes;
 
@@ -59,13 +69,9 @@ const GuestOrder = () => {
     const [alertOpen, setAlertOpen] = useState(false);
     const [langObj, setLangObj] = useState(en);
 
+    // Set language based on user preference
     useEffect(() => {
-        if (userData) {
-            const { language } = userData;
-            setLangObj(language === 1 ? cn : en);
-        } else {
-            setLangObj(en);
-        }
+        setLangObj(getLanguageObject(userData, en, cn));
     }, [userData]);
 
     const handleIncrement = () => {
@@ -78,17 +84,8 @@ const GuestOrder = () => {
         });
     };
     const handleDecrement = () => {
-        const totalQty = [
-            ...(data.breakfastCategories || []).flatMap(cat =>
-                [...(cat.entreeItems || []), ...(cat.alternativeItems || [])]
-            ),
-            ...(data.lunchCategories || []).flatMap(cat =>
-                [...(cat.entreeItems || []), ...(cat.alternativeItems || [])]
-            ),
-            ...(data.dinnerCategories || []).flatMap(cat =>
-                [...(cat.entreeItems || []), ...(cat.alternativeItems || [])]
-            ),
-        ].reduce((sum, item) => sum + (item.qty || 0), 0);
+        // Use helper to calculate total quantity efficiently
+        const totalQty = calculateTotalMealQuantity(data);
 
         setGuestCount(prev => {
             if (prev > 1) {
@@ -104,24 +101,8 @@ const GuestOrder = () => {
 
     const handleAlertContinue = () => {
         setAlertOpen(false);
-        setData(data => ({
-            ...data,
-            breakfastCategories: (data.breakfastCategories || []).map(cat => ({
-                ...cat,
-                entreeItems: (cat.entreeItems || []).map(item => ({ ...item, qty: 0 })),
-                alternativeItems: (cat.alternativeItems || []).map(item => ({ ...item, qty: 0 }))
-            })),
-            lunchCategories: (data.lunchCategories || []).map(cat => ({
-                ...cat,
-                entreeItems: (cat.entreeItems || []).map(item => ({ ...item, qty: 0 })),
-                alternativeItems: (cat.alternativeItems || []).map(item => ({ ...item, qty: 0 }))
-            })),
-            dinnerCategories: (data.dinnerCategories || []).map(cat => ({
-                ...cat,
-                entreeItems: (cat.entreeItems || []).map(item => ({ ...item, qty: 0 })),
-                alternativeItems: (cat.alternativeItems || []).map(item => ({ ...item, qty: 0 }))
-            }))
-        }));
+        // Use helper to reset all quantities
+        setData(resetAllMealQuantities(data));
         setGuestCount(prev => (prev > 1 ? prev - 1 : 1));
     };
 
@@ -137,27 +118,21 @@ const GuestOrder = () => {
     const fetchMenuDetails = async () => {
         try {
             setLoading(true);
-            let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
+            const roomId = getRoomId(userData, roomNo);
             const payload = {
                 date: date.format("YYYY-MM-DD"),
-                room_id: selectedObj ? selectedObj?.id : userData?.room_id
-            }
-            const response = await OrderServices.getGuestOrderList(payload);
-            //console.log(response)
-            let data = {
-                breakfast: response.breakfast,
-                lunch: response?.lunch,
-                dinner: response?.dinner,
-                is_dinner_tray_service: response?.is_dinner_tray_service,
-                is_brk_tray_service: response?.is_brk_tray_service,
-                is_lunch_tray_service: response?.is_lunch_tray_service
+                room_id: roomId
             };
+            
+            const response = await OrderServices.getGuestOrderList(payload);
+            const transformedData = transformCompleteMealData(response);
 
-            setGuestCount(response?.occupancy)
-            setMealData(transformMealData(data));
-            setData(transformMealData(data));
+            setGuestCount(_.get(response, 'occupancy', 1));
+            setMealData(transformedData);
+            setData(transformedData);
         } catch (error) {
             console.error("Error fetching menu list:", error);
+            toast.error("Failed to load guest order data");
         } finally {
             setLoading(false);
         }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import _ from 'lodash';
 
 /**
  * Custom hook for local storage with state synchronization
@@ -16,7 +17,7 @@ export const useLocalStorage = (key, initialValue) => {
 
   const setValue = (value) => {
     try {
-      const valueToStore = value instanceof Function ? value(storedValue) : value;
+      const valueToStore = _.isFunction(value) ? value(storedValue) : value;
       setStoredValue(valueToStore);
       window.localStorage.setItem(key, JSON.stringify(valueToStore));
     } catch (error) {
@@ -38,17 +39,20 @@ export const useLocalStorage = (key, initialValue) => {
 
 /**
  * Hook for debouncing values (useful for search inputs)
+ * Using Lodash debounce for better performance
  */
 export const useDebounce = (value, delay = 500) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
+    const debouncedSetter = _.debounce((val) => {
+      setDebouncedValue(val);
     }, delay);
+    
+    debouncedSetter(value);
 
     return () => {
-      clearTimeout(handler);
+      debouncedSetter.cancel();
     };
   }, [value, delay]);
 
@@ -95,7 +99,7 @@ export const usePrevious = (value) => {
   const [previous, setPrevious] = useState(null);
 
   useEffect(() => {
-    if (value !== current) {
+    if (!_.isEqual(value, current)) {
       setPrevious(current);
       setCurrent(value);
     }
@@ -103,3 +107,19 @@ export const usePrevious = (value) => {
 
   return previous;
 };
+
+/**
+ * Hook for throttled callback
+ */
+export const useThrottle = (callback, delay = 500) => {
+  const throttledCallback = _.throttle(callback, delay);
+  
+  useEffect(() => {
+    return () => {
+      throttledCallback.cancel();
+    };
+  }, [throttledCallback]);
+  
+  return throttledCallback;
+};
+
