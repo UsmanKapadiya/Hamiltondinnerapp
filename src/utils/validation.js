@@ -1,9 +1,11 @@
 /**
  * Input validation and sanitization utilities
+ * Only contains actively used helper functions
  */
 
 /**
  * Sanitize string input to prevent XSS attacks
+ * Used in: login/index.jsx, roomLogin/index.jsx
  */
 export const sanitizeInput = (input) => {
   if (typeof input !== 'string') return input;
@@ -17,25 +19,8 @@ export const sanitizeInput = (input) => {
 };
 
 /**
- * Validate email format
- */
-export const validateEmail = (email) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
-
-/**
- * Validate password strength
- */
-export const validatePassword = (password) => {
-  if (!password || password.length < 6) {
-    return { isValid: false, message: 'Password must be at least 6 characters' };
-  }
-  return { isValid: true, message: '' };
-};
-
-/**
  * Validate room number format
+ * Used internally by validateLoginForm
  */
 export const validateRoomNumber = (roomNo) => {
   if (!roomNo || roomNo.trim().length === 0) {
@@ -46,6 +31,7 @@ export const validateRoomNumber = (roomNo) => {
 
 /**
  * Validate required field
+ * Used internally by validateLoginForm
  */
 export const validateRequired = (value, fieldName = 'Field') => {
   if (!value || (typeof value === 'string' && value.trim().length === 0)) {
@@ -55,36 +41,8 @@ export const validateRequired = (value, fieldName = 'Field') => {
 };
 
 /**
- * Validate number within range
- */
-export const validateNumberRange = (value, min, max, fieldName = 'Value') => {
-  const num = Number(value);
-  if (isNaN(num)) {
-    return { isValid: false, message: `${fieldName} must be a number` };
-  }
-  if (num < min || num > max) {
-    return { isValid: false, message: `${fieldName} must be between ${min} and ${max}` };
-  }
-  return { isValid: true, message: '' };
-};
-
-/**
- * Sanitize and validate form data
- */
-export const sanitizeFormData = (formData) => {
-  const sanitized = {};
-  for (const [key, value] of Object.entries(formData)) {
-    if (typeof value === 'string') {
-      sanitized[key] = sanitizeInput(value);
-    } else {
-      sanitized[key] = value;
-    }
-  }
-  return sanitized;
-};
-
-/**
  * Validate login form
+ * Used in: login/index.jsx
  */
 export const validateLoginForm = (formData) => {
   const errors = {};

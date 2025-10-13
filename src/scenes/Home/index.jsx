@@ -7,6 +7,7 @@ import { DynamicFormOutlined, LogoutOutlined, RestaurantMenuOutlined, SummarizeR
 import logo from "../../assets/images/logo.png";
 import CustomButton from "../../components/CustomButton";
 import { useLocalStorage } from "../../hooks";
+import { capitalize } from "../../utils/helpers";
 
 const Home = () => {
     const theme = useTheme();
@@ -46,7 +47,8 @@ const Home = () => {
     const isKitchen = useMemo(() => userData?.role === "kitchen", [userData]);
     const userRole = useMemo(() => {
         if (userData?.role === "admin") return "Admin";
-        return userData?.role || "Guest";
+        console.log(capitalize(userData?.role || "guest"));
+        return capitalize(userData?.role || "guest");
     }, [userData]);
     
     return (
