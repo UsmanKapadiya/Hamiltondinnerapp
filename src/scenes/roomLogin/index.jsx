@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
     Box,
     TextField,
@@ -28,6 +28,14 @@ const RoomEnter = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const [userData] = useLocalStorage("userData", null);
+
+    // Check authentication status
+    useEffect(() => {
+        const authToken = localStorage.getItem("authToken");
+        if (!authToken) {
+            navigate("/", { replace: true });
+        }
+    }, [navigate]);
 
     const handleChange = useCallback((e) => {
         const { name, value } = e.target;

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { Box, Typography, useTheme, useMediaQuery, IconButton } from "@mui/material";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +15,13 @@ const Home = () => {
     const [loading, setLoading] = useState(false);
     const [userData] = useLocalStorage("userData", null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const authToken = localStorage.getItem("authToken");
+        if (!authToken) {
+            navigate("/", { replace: true });
+        }
+    }, [navigate]);
 
     const handleLogout = useCallback((e) => {
         e.preventDefault();
