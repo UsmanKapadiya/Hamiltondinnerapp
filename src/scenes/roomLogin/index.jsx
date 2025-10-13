@@ -26,16 +26,18 @@ const RoomEnter = () => {
     const [formData, setFormData] = useState({ roomNo: "" });
     const [errors] = useState({ roomNo: "" });
     const [loading, setLoading] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
     const navigate = useNavigate();
     const [userData] = useLocalStorage("userData", null);
 
     // Check authentication status
     useEffect(() => {
+        if (isLoggingOut) return;        
         const authToken = localStorage.getItem("authToken");
         if (!authToken) {
             navigate("/", { replace: true });
         }
-    }, [navigate]);
+    }, [navigate, isLoggingOut]);
 
     const handleChange = useCallback((e) => {
         const { name, value } = e.target;
@@ -58,6 +60,7 @@ const RoomEnter = () => {
     const handleLogout = useCallback(() => {
         toast.success("Logged out!");
         setLoading(true);
+        setIsLoggingOut(true);
         setTimeout(() => {
             setLoading(false);
             localStorage.removeItem("authToken");
