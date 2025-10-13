@@ -757,7 +757,7 @@ const Order = () => {
                                                                     }))
                                                                 }
                                                                 style={{ marginRight: 8 }}
-                                                                disabled={item.qty === 0 || isAfter10AM || isPast}
+                                                                disabled={item.qty === 0 || (!isKitchenUser && (isAfter10AM || isPastDate))}
                                                             >
                                                                 -
                                                             </button>
@@ -844,7 +844,7 @@ const Order = () => {
                                                                     });
                                                                 }}
                                                                 style={{ marginLeft: 8 }}
-                                                                disabled={item.qty >= MAX_MEAL_QTY || isAfter10AM || isPast}
+                                                                disabled={item.qty >= MAX_MEAL_QTY || (!isKitchenUser && (isAfter10AM || isPastDate))}
                                                             >
                                                                 +
                                                             </button>
@@ -994,7 +994,7 @@ const Order = () => {
                                                                     }))
                                                                 }
                                                                 style={{ marginRight: 8 }}
-                                                                disabled={item.qty === 0 || isAfter10AM || isPast}
+                                                                disabled={item.qty === 0 || (!isKitchenUser && (isAfter10AM || isPastDate))}
                                                             >
                                                                 -
                                                             </button>
@@ -1079,7 +1079,7 @@ const Order = () => {
                                                                     });
                                                                 }}
                                                                 style={{ marginLeft: 8 }}
-                                                                disabled={item.qty >= MAX_MEAL_QTY || isAfter10AM || isPast}
+                                                                disabled={item.qty >= MAX_MEAL_QTY || (!isKitchenUser && (isAfter10AM || isPastDate))}
                                                             >
                                                                 +
                                                             </button>
@@ -1273,7 +1273,7 @@ const Order = () => {
                                                     cursor: "pointer",
                                                     width: 'auto'
                                                 }}
-                                                disabled={isAfter10AM || isPast}
+                                                disabled={!isKitchenUser && (isAfter10AM || isPastDate)}
                                                 onClick={() => {
                                                     submitData(data, date)
                                                 }}
@@ -1363,7 +1363,7 @@ const Order = () => {
                                                                     }))
                                                                 }
                                                                 style={{ marginRight: 8 }}
-                                                                disabled={item.qty === 0 || isAfter3PM || isPast}
+                                                                disabled={item.qty === 0 || (!isKitchenUser && (isAfter3PM || isPastDate))}
                                                             >
                                                                 -
                                                             </button>
@@ -1450,7 +1450,7 @@ const Order = () => {
                                                                     });
                                                                 }}
                                                                 style={{ marginLeft: 8 }}
-                                                                disabled={item.qty >= MAX_MEAL_QTY || isAfter3PM || isPast}
+                                                                disabled={item.qty >= MAX_MEAL_QTY || (!isKitchenUser && (isAfter3PM || isPastDate))}
                                                             >
                                                                 +
                                                             </button>
@@ -1600,7 +1600,7 @@ const Order = () => {
                                                                     }))
                                                                 }
                                                                 style={{ marginRight: 8 }}
-                                                                disabled={item.qty === 0 || isAfter3PM || isPast}
+                                                                disabled={item.qty === 0 || (!isKitchenUser && (isAfter3PM || isPastDate))}
                                                             >
                                                                 -
                                                             </button>
@@ -1685,7 +1685,7 @@ const Order = () => {
                                                                     });
                                                                 }}
                                                                 style={{ marginLeft: 8 }}
-                                                                disabled={item.qty >= MAX_MEAL_QTY || isAfter3PM || isPast}
+                                                                disabled={item.qty >= MAX_MEAL_QTY || (!isKitchenUser && (isAfter3PM || isPastDate))}
                                                             >
                                                                 +
                                                             </button>
@@ -1879,7 +1879,7 @@ const Order = () => {
                                                     cursor: "pointer",
                                                     width: 'auto'
                                                 }}
-                                                disabled={isAfter3PM || isPast}
+                                                disabled={!isKitchenUser && (isAfter3PM || isPastDate)}
                                                 onClick={() => {
                                                     submitData(data, date)
                                                 }}
@@ -1968,7 +1968,7 @@ const Order = () => {
                                                                     }))
                                                                 }
                                                                 style={{ marginRight: 8 }}
-                                                                disabled={item.qty === 0 || isAfter12PM || isPast}
+                                                                disabled={item.qty === 0 || (!isKitchenUser && (isAfter12PM || isPastDate))}
                                                             >
                                                                 -
                                                             </button>
@@ -2056,7 +2056,7 @@ const Order = () => {
                                                                     });
                                                                 }}
                                                                 style={{ marginLeft: 8 }}
-                                                                disabled={item.qty >= MAX_MEAL_QTY || isAfter12PM || isPast}
+                                                                disabled={item.qty >= MAX_MEAL_QTY || (!isKitchenUser && (isAfter12PM || isPastDate))}
                                                             >
                                                                 +
                                                             </button>
@@ -2206,7 +2206,7 @@ const Order = () => {
                                                                     }))
                                                                 }
                                                                 style={{ marginRight: 8 }}
-                                                                disabled={item.qty === 0 || isAfter12PM || isPast}
+                                                                disabled={item.qty === 0 || (!isKitchenUser && (isAfter12PM || isPastDate))}
                                                             >
                                                                 -
                                                             </button>
@@ -2291,7 +2291,7 @@ const Order = () => {
                                                                     });
                                                                 }}
                                                                 style={{ marginLeft: 8 }}
-                                                                disabled={item.qty >= MAX_MEAL_QTY || isAfter12PM || isPast}
+                                                                disabled={item.qty >= MAX_MEAL_QTY || (!isKitchenUser && (isAfter12PM || isPastDate))}
                                                             >
                                                                 +
                                                             </button>
@@ -2488,7 +2488,7 @@ const Order = () => {
                                                     cursor: "pointer",
                                                     width: 'auto'
                                                 }}
-                                                disabled={isAfter12PM || isPast}
+                                                disabled={!isKitchenUser && (isAfter12PM || isPastDate)}
                                                 onClick={() => {
                                                     submitData(data, date)
                                                 }}
