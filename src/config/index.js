@@ -50,4 +50,7 @@ export const config = {
   },
 };
 
+// Export incident form configuration
+export * from './incidentFormConfig';
+
 export default config;

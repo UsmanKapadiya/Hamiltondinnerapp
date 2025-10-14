@@ -7,3 +7,6 @@ export * from './helpers';
 export * from './mealDataTransformers';
 export * from './userHelpers';
 export * from './dataProcessors';
+
+// Form-specific utilities
+export * from './incidentFormHelpers';

@@ -7,87 +7,42 @@ import {
   Checkbox,
   MenuItem,
   Radio,
-  Typography
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from "@mui/material";
-import { Header } from "../../components";
+import { DatePicker, TimePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Formik } from "formik";
 import * as yup from "yup";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
-import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
 import { toast } from "react-toastify";
-import StaticFormServices from "../../services/staticFormServices";
-import { DatePicker, TimePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
+import _ from "lodash";
+import { Header } from "../../components";
+import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
 import CustomButton from "../../components/CustomButton";
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions'
+import StaticFormServices from "../../services/staticFormServices";
 
-const incidentInvolvedData = [
-  { key: "inc_invl_resident", label: "Resident" },
-  { key: "inc_invl_staff", label: "Staff" },
-  { key: "inc_invl_visitor", label: "Visitor" },
-  { key: "inc_invl_other", label: "Other" }
-]
-const typeOfIncidentOptions = [
-  { key: "type_of_inc_fall", label: "Fall" },
-  { key: "type_of_inc_fire", label: "Fire" },
-  { key: "type_of_inc_security", label: "Security" },
-  { key: "type_of_inc_elopement", label: "Elopement" },
-  { key: "type_of_inc_death", label: "Death" },
-  { key: "type_of_inc_resAbase", label: "Resident Abase" },
-  { key: "type_of_inc_treatment", label: "Treatment" },
-  { key: "type_of_inc_lossOfProp", label: "Loss of Property" },
-  { key: "type_of_inc_choking", label: "Choking" },
-  { key: "type_of_inc_aggresiveBeh", label: "Aggressive Behavior" },
-  { key: "type_of_inc_other", label: "Other" }
-];
-const conditionAtTimeOptions = [
-  { key: "condition_at_inc_oriented", label: "Oriented" },
-  { key: "condition_at_inc_disOriented", label: "Disoriented" },
-  { key: "condition_at_inc_sedated", label: "Sedated" },
-  { key: "condition_at_inc_other", label: "Other (Specify)" }
-];
+// Import form configuration constants
+import {
+  incidentInvolvedData,
+  typeOfIncidentOptions,
+  conditionAtTimeOptions,
+  fallAssessmentOptions,
+  ambulationOptions,
+  fireOptions,
+  InformedOfIncident,
+  notifiedResponsiblePartyOptions,
+  safetyDeviceOptions,
+  yesNoNAOptions,
+  yesNoOptions,
+} from "../../config/incidentFormConfig";
 
-const fallAssessmentOptions = [
-  { key: "fall_assess_mediChange", label: "Medication Change" },
-  { key: "fall_assess_cardMedi", label: "Cardiac Medications" },
-  { key: "fall_assess_visDef", label: "Visual Deficit" },
-  { key: "fall_assess_moodAltMedi", label: "Mood Altering Medication" },
-  { key: "fall_assess_relocation", label: "Relocation" },
-  { key: "fall_assess_tempIllness", label: "Temporary Illness" }
-];
-
-const ambulationOptions = [
-  { key: "ambulation_unlimited", label: "Unlimited" },
-  { key: "ambulation_limited", label: "Limited" },
-  { key: "ambulation_reqAssist", label: "Required assistance" },
-  { key: "ambulation_wheelChair", label: "Wheelchair" },
-  { key: "ambulation_walker", label: "Walker" },
-  { key: "ambulation_other", label: "Other (Specify)" }
-];
-
-const fireOptions = [
-  { key: "fire_alarm_pulled", label: "Alarm pulled" },
-  { key: "fire_false_alarm", label: "False alarm" },
-  { key: "fire_extinguisher_used", label: "Extinguisher used" },
-  { key: "fire_personal_injury", label: "Personal injury" },
-  { key: "fire_property_damage", label: "Resident or facility property damage" },
-]
-
-const InformedOfIncident = [
-  { key: "informed_of_inc_AGM", label: "Assistant General Manager" },
-  { key: "informed_of_inc_GM", label: "General Manager" },
-  { key: "informed_of_inc_RMC", label: "Risk Management Committee" },
-  { key: "informed_of_inc_other", label: "Other" },
-]
-const notifiedResponsiblePartyOptions = [
-  { key: "Yes", label: "Yes" },
-  { key: "No", label: "No" }
-];// Then use this in your form:
+// ==================== VALIDATION SCHEMA ====================
 
 const validationSchema = yup.object({
   // Incident Involved
@@ -206,67 +161,116 @@ const validationSchema = yup.object({
   follow_up_assigned_to: yup.string().required("Assign Follow Up to is required"),
 });
 
+// ==================== UTILITY FUNCTIONS ====================
+
+/**
+ * Generic mapping function to transform comma-separated strings into arrays
+ * Handles "Other" option with custom text input
+ * @param {string} rawString - Comma-separated string from API
+ * @param {Array} options - Array of option objects with key and label
+ * @param {string} otherLabel - Label for the "Other" option
+ * @param {string} otherTextKey - Key name for other text field
+ * @param {string} arrKey - Key name for the array field
+ * @returns {Object} Object with array of selected values and other text
+ */
+const mapOptions = (rawString, options, otherLabel = "Other", otherTextKey = "other_text", arrKey = "arr") => {
+  if (!rawString) {
+    return {
+      [arrKey]: [],
+      [otherTextKey]: "",
+    };
+  }
+  
+  const values = rawString.split(",").map(v => v.trim());
+  const labels = options.map(opt => opt.label);
+  const resultArr = [];
+  let otherText = "";
+
+  values.forEach(val => {
+    if (labels.includes(val)) {
+      resultArr.push(val);
+    } else if (val) {
+      resultArr.push(otherLabel);
+      otherText = val;
+    }
+  });
+
+  return {
+    [arrKey]: _.uniq(resultArr), // Remove duplicates using lodash
+    [otherTextKey]: otherText,
+  };
+};
+
+/**
+ * Get user data from localStorage with error handling
+ * @returns {Object|null} User data object or null
+ */
+const getUserData = () => {
+  try {
+    const userDatas = localStorage.getItem("userData");
+    return userDatas ? JSON.parse(userDatas) : null;
+  } catch (error) {
+    console.error("Error parsing user data:", error);
+    return null;
+  }
+};
+
+
 const IncidentForm = () => {
+  // ==================== HOOKS ====================
   const location = useLocation();
   const navigate = useNavigate();
   const followUpRef = useRef(null);
+  
+  // ==================== STATE ====================
   const [incidentFormDetails, setIncidentFormDetails] = useState({});
   const [loading, setLoading] = useState(true);
   const [formId, setFormId] = useState();
-  const [userData] = useState(() => {
-    const userDatas = localStorage.getItem("userData");
-    return userDatas ? JSON.parse(userDatas) : null;
-  });
-  const canEditFollowUp = ["admin", "superadmin"].includes(userData?.role);
-  const canUpdateFollowUp = canEditFollowUp || userData?.user_id === location?.state?.formData?.follow_up_user?.id;
+  const [userData] = useState(getUserData);
   const [canEditFollowUpFields, setCanEditFollowUpFields] = useState(false);
-
   const [showFollowUpConfirm, setShowFollowUpConfirm] = useState(false);
   const [pendingSubmitValues, setPendingSubmitValues] = useState(null);
   const [pendingSubmitActions, setPendingSubmitActions] = useState(null);
 
-  // Generic mapping function to reduce redundancy
-  function mapOptions(rawString, options, otherLabel = "Other", otherTextKey = "other_text", arrKey = "arr") {
-    if (!rawString) {
-      return {
-        [arrKey]: [],
-        [otherTextKey]: "",
-      };
-    }
-    const values = rawString.split(",").map(v => v.trim());
-    const labels = options.map(opt => opt.label);
-    const resultArr = [];
-    let otherText = "";
+  // ==================== COMPUTED VALUES ====================
+  const canEditFollowUp = useMemo(() => 
+    _.includes(["admin", "superadmin"], userData?.role),
+    [userData?.role]
+  );
+  
+  const canUpdateFollowUp = useMemo(() => 
+    canEditFollowUp || userData?.user_id === location?.state?.formData?.follow_up_user?.id,
+    [canEditFollowUp, userData?.user_id, location?.state?.formData?.follow_up_user?.id]
+  );
 
-    values.forEach(val => {
-      if (labels.includes(val)) {
-        resultArr.push(val);
-      } else if (val) {
-        resultArr.push(otherLabel);
-        otherText = val;
-      }
-    });
+  // ==================== MAPPING FUNCTIONS ====================
+  /**
+   * Map API response strings to form field arrays
+   */
+  const mapIncidentInvolved = useCallback((rawString) =>
+    mapOptions(rawString, incidentInvolvedData, "Other", "inc_invl_other_text", "incident_involved"),
+    []
+  );
 
-    return {
-      [arrKey]: resultArr,
-      [otherTextKey]: otherText,
-    };
-  }
+  const mapTypeOfIncident = useCallback((rawString) =>
+    mapOptions(rawString, typeOfIncidentOptions, "Other", "type_of_inc_other_text", "type_of_incident"),
+    []
+  );
 
-  const mapIncidentInvolved = (rawString) =>
-    mapOptions(rawString, incidentInvolvedData, "Other", "inc_invl_other_text", "incident_involved");
+  const mapConditionAtIncident = useCallback((rawString) =>
+    mapOptions(rawString, conditionAtTimeOptions, "Other (Specify)", "condition_at_inc_other_text", "condition_at_incident"),
+    []
+  );
 
-  const mapTypeOfIncident = (rawString) =>
-    mapOptions(rawString, typeOfIncidentOptions, "Other", "type_of_inc_other_text", "type_of_incident");
+  const mapAmbulation = useCallback((rawString) =>
+    mapOptions(rawString, ambulationOptions, "Other (Specify)", "ambulation_other_text", "ambulation"),
+    []
+  );
 
-  const mapConditionAtIncident = (rawString) =>
-    mapOptions(rawString, conditionAtTimeOptions, "Other (Specify)", "condition_at_inc_other_text", "condition_at_incident");
-
-  const mapAmbulation = (rawString) =>
-    mapOptions(rawString, ambulationOptions, "Other (Specify)", "ambulation_other_text", "ambulation");
-
-  const mapInformedOfIncident = (rawString) =>
-    mapOptions(rawString, InformedOfIncident, "Other", "informed_of_inc_other_text", "informed_of_incident");
+  const mapInformedOfIncident = useCallback((rawString) =>
+    mapOptions(rawString, InformedOfIncident, "Other", "informed_of_inc_other_text", "informed_of_incident"),
+    []
+  );
 
   useEffect(() => {
     if (location.state?.scrollToFollowUp && followUpRef.current) {
@@ -430,72 +434,63 @@ const IncidentForm = () => {
     [initialValues, navigate]
   );
 
+  /**
+   * Submit incident form data to API
+   * Processes arrays, handles file uploads, and manages form state
+   * @param {Object} values - Form values from Formik
+   * @param {Object} actions - Formik actions
+   */
   const submitIncidentForm = async (values, actions) => {
-    let incidentInvolvedArr = [];
-    (values.incident_involved || []).forEach(val => {
-      if (val !== "Other") {
-        incidentInvolvedArr.push(val);
-      }
-    });
-    if (values.incident_involved?.includes("Other") && values.inc_invl_other_text) {
-      incidentInvolvedArr.push(values.inc_invl_other_text);
-    }
+    setLoading(true);
+    
+    // ==================== PROCESS INCIDENT INVOLVED ====================
+    const incidentInvolvedArr = _.compact([
+      ..._.filter(values.incident_involved, val => val !== "Other"),
+      ...(values.incident_involved?.includes("Other") && values.inc_invl_other_text 
+        ? [values.inc_invl_other_text] 
+        : [])
+    ]);
 
-    // Type Of Incident
-    let typeOfIncidentArr = [];
-    let otherTypeValue = "";
-    (values.type_of_incident || []).forEach(type => {
-      if (type === "Other" && values.type_of_inc_other_text) {
-        otherTypeValue = values.type_of_inc_other_text;
-      } else if (type !== "Other") {
-        typeOfIncidentArr.push(type);
-      }
-    });
-    if (otherTypeValue) {
-      typeOfIncidentArr.push(otherTypeValue);
-    }
+    // ==================== PROCESS TYPE OF INCIDENT ====================
+    const typeOfIncidentArr = _.compact([
+      ..._.filter(values.type_of_incident, type => type !== "Other"),
+      ...(values.type_of_incident?.includes("Other") && values.type_of_inc_other_text 
+        ? [values.type_of_inc_other_text] 
+        : [])
+    ]);
 
-    // Condition At Time of Incident
-    let conditionAtIncidentArr = (values.condition_at_incident || []).filter(
-      (item) => item !== "Other (Specify)"
-    );
-    if (
-      values.condition_at_incident?.includes("Other (Specify)") &&
-      values.condition_at_inc_other_text
-    ) {
-      conditionAtIncidentArr.push(values.condition_at_inc_other_text);
-    }
+    // ==================== PROCESS CONDITION AT INCIDENT ====================
+    const conditionAtIncidentArr = _.compact([
+      ..._.filter(values.condition_at_incident, item => item !== "Other (Specify)"),
+      ...(values.condition_at_incident?.includes("Other (Specify)") && values.condition_at_inc_other_text 
+        ? [values.condition_at_inc_other_text] 
+        : [])
+    ]);
     const conditionAtIncidentStr = conditionAtIncidentArr.join(",");
 
-    // Build ambulation string for payload
-    let ambulationArr = (values.ambulation || []).filter(item => item !== "Other (Specify)");
-    if (
-      values.ambulation?.includes("Other (Specify)") &&
-      values.ambulation_other_text
-    ) {
-      ambulationArr.push(values.ambulation_other_text);
-    }
-    const ambulationStr = ambulationArr.length > 0 ? ambulationArr.join(",") : "";
+    // ==================== PROCESS AMBULATION ====================
+    const ambulationArr = _.compact([
+      ..._.filter(values.ambulation, item => item !== "Other (Specify)"),
+      ...(values.ambulation?.includes("Other (Specify)") && values.ambulation_other_text 
+        ? [values.ambulation_other_text] 
+        : [])
+    ]);
+    const ambulationStr = _.isEmpty(ambulationArr) ? "" : ambulationArr.join(",");
 
-    // informedOfIncident
-    let informedOfIncidentArr = [];
-    let otherValue = "";
-    (values.informed_of_incident || []).forEach(label => {
-      if (label === "Other" && values.informed_of_inc_other_text) {
-        otherValue = values.informed_of_inc_other_text;
-      } else {
-        informedOfIncidentArr.push(label);
-      }
-    });
-    if (otherValue) {
-      informedOfIncidentArr.push(otherValue);
-    }
-    // IncidentDateTime set
+    // ==================== PROCESS INFORMED OF INCIDENT ====================
+    const informedOfIncidentArr = _.compact([
+      ..._.filter(values.informed_of_incident, label => label !== "Other"),
+      ...(values.informed_of_incident?.includes("Other") && values.informed_of_inc_other_text 
+        ? [values.informed_of_inc_other_text] 
+        : [])
+    ]);
+    
+    // ==================== PROCESS DATE/TIME FIELDS ====================
     const incidentDateTime = values.incident_date && values.incident_tm
-      ? dayjs(`${values.incident_date} ${values.incident_tm}`, "YYYY-MM-DD hh:mm A")  // Changed from "HH:mm"
+      ? dayjs(`${values.incident_date} ${values.incident_tm}`, "YYYY-MM-DD hh:mm A")
       : null;
     const discoveryDateTime = values.discovery_date && values.discovery_tm
-      ? dayjs(`${values.discovery_date} ${values.discovery_tm}`, "YYYY-MM-DD hh:mm A")  // Changed
+      ? dayjs(`${values.discovery_date} ${values.discovery_tm}`, "YYYY-MM-DD hh:mm A")
       : null;
 
     const notifiedFamilyDoctorDateTime = values.notified_family_doctor_date && values.notified_family_doctor_tm
@@ -672,13 +667,7 @@ const IncidentForm = () => {
     const found = userData.rooms.find(r =>
       String(r.name).toLowerCase() === String(values?.room_number).toLowerCase()
     );
-    const finalPayload = {
-      form_type: 1,
-      ...(formId && { form_id: formId }),
-      ...(!formId && { room_id: found?.id }),
-      follow_up_assigned_to: values?.follow_up_assigned_to,
-      data: JSON.stringify(rawStringData)
-    };
+   
     // console.log("finalPayload", finalPayload)
     const formData = new FormData();
     formData.append('form_type', 1);
@@ -1086,13 +1075,9 @@ const IncidentForm = () => {
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormGroup row>
                   <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
-                    Safety Devices In Use Before Occurance
+                    Safety Devices In Use Before Occurrence
                   </Box>
-                  {[
-                    { key: "safety_fob", label: "Fob was within reach" },
-                    { key: "safety_callbell", label: "Call bell within reach" },
-                    { key: "safety_caution", label: "Caution signs in place" },
-                  ].map((item) => (
+                  {safetyDeviceOptions.map((item) => (
                     <Box key={item.key} sx={{ display: "flex", alignItems: "center", width: "100%", mb: 1 }}>
                       <Box sx={{ flex: 1 }}>{item.label}</Box>
                       <Box sx={{ display: "flex", gap: 2 }}>
