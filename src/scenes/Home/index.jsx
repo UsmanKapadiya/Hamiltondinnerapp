@@ -17,13 +17,6 @@ const Home = () => {
     const [userData] = useLocalStorage("userData", null);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const authToken = localStorage.getItem("authToken");
-        if (!authToken) {
-            navigate("/", { replace: true });
-        }
-    }, [navigate]);
-
     const handleLogout = useCallback((e) => {
         e.preventDefault();
 
