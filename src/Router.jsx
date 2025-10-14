@@ -16,11 +16,6 @@ const IncidentForm = lazy(() => import("./scenes/staticForms/incidentForm"));
 const LogForm = lazy(() => import("./scenes/staticForms/logForm"));
 const MoveInSummeryForm = lazy(() => import("./scenes/staticForms/MoveInSummeryForm"));
 
-/**
- * Protected Route Component
- * Redirects to login if user is not authenticated
- * Preserves the attempted route for redirect after login
- */
 const ProtectedRoute = ({ children }) => {
   const location = useLocation();
   const isAuthenticated = !!localStorage.getItem("authToken");
@@ -33,10 +28,17 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-/**
- * Main App Router
- * Handles all application routing with lazy loading and protected routes
- */
+const LoginRoute = () => {
+  const isAuthenticated = !!localStorage.getItem("authToken");
+  
+  if (isAuthenticated) {
+    return <Navigate to="/home" replace />;
+  }
+  
+  return <Login />;
+};
+
+
 const AppRouter = () => {
   return (
     <Router>
@@ -45,11 +47,7 @@ const AppRouter = () => {
           {/* Public Routes */}
           <Route
             path="/"
-            element={
-              localStorage.getItem("authToken")
-                ? <Navigate to="/home" replace />
-                : <Login />
-            }
+            element={<LoginRoute />}
           />
           
           {/* Protected Routes */}
