@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import { DatePicker, TimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { Header, PdfModal } from "../../components";
 import { Formik } from "formik";
 import * as yup from "yup";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -22,7 +23,6 @@ import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
 import _ from "lodash";
-import { Header } from "../../components";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
 import CustomButton from "../../components/CustomButton";
 import StaticFormServices from "../../services/staticFormServices";
@@ -124,18 +124,18 @@ const validationSchema = yup.object({
   // notified_resident_responsibl
   notified_resident_responsible_party: yup.string(),
   notified_resident_name: yup.string().when('notified_resident_responsible_party', {
-    is: 'yes',
+    is: 'Yes',
     then: (schema) => schema.required('Notified Resident Name is required'),
     otherwise: (schema) => schema,
   }),
 
   notified_resident_date: yup.string().when('notified_resident_responsible_party', {
-    is: 'yes',
+    is: 'Yes',
     then: (schema) => schema.required('Notified Resident Date is required'),
     otherwise: (schema) => schema,
   }),
   notified_resident_tm: yup.string().when('notified_resident_responsible_party', {
-    is: 'yes',
+    is: 'Yes',
     then: (schema) => schema.required('Notified Resident Time is required'),
     otherwise: (schema) => schema,
   }),
@@ -231,6 +231,10 @@ const IncidentForm = () => {
   const [showFollowUpConfirm, setShowFollowUpConfirm] = useState(false);
   const [pendingSubmitValues, setPendingSubmitValues] = useState(null);
   const [pendingSubmitActions, setPendingSubmitActions] = useState(null);
+  const [pdfModalOpen, setPdfModalOpen] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState("");
+  const [selectedFormId, setSelectedFormId] = useState(null);
+  const [isFollowUpIncomplete, setIsFollowUpIncomplete] = useState(false);
 
   // ==================== COMPUTED VALUES ====================
   const canEditFollowUp = useMemo(() => 
@@ -285,7 +289,7 @@ const IncidentForm = () => {
 
       setTimeout(checkAndScroll, 500);
     }
-  }, [location.state?.scrollToFollowUp, incidentFormDetails, loading]);
+  }, [location.state?.scrollToFollowUp, loading]);
 
   useEffect(() => {
     setLoading(true);
@@ -294,8 +298,19 @@ const IncidentForm = () => {
       setFormId(location.state?.id);
       const followUpFilled = ["followUp_issue", "followUp_findings", "followUp_possible_solutions", "followUp_action_plan", "followUp_examine_result"]
         .some(key => !!data[key]);
-      setIncidentFormDetails({
+      
+      const transformedData = {
         ...data,
+        incident_date: data.incident_dt ? dayjs(data.incident_dt, "DD MMM YYYY").format("YYYY-MM-DD") : (data.incident_date || ""),
+        discovery_date: data.discovery_dt ? dayjs(data.discovery_dt, "DD MMM YYYY").format("YYYY-MM-DD") : (data.discovery_date || ""),
+        notified_family_doctor_date: data.notified_family_doctor_dt ? dayjs(data.notified_family_doctor_dt, "DD MMM YYYY").format("YYYY-MM-DD") : (data.notified_family_doctor_date || ""),
+        notified_other_date: data.notified_other_dt ? dayjs(data.notified_other_dt, "DD MMM YYYY").format("YYYY-MM-DD") : (data.notified_other_date || ""),
+        notified_resident_date: data.notified_resident_dt ? dayjs(data.notified_resident_dt, "DD MMM YYYY").format("YYYY-MM-DD") : (data.notified_resident_date || ""),
+        completed_date: data.completed_dt ? dayjs(data.completed_dt, "DD MMM YYYY").format("YYYY-MM-DD") : (data.completed_date || ""),
+      };
+      
+      setIncidentFormDetails({
+        ...transformedData,
         ...mapIncidentInvolved(data.incident_involved),
         ...mapTypeOfIncident(data.type_of_incident),
         ...mapConditionAtIncident(data.condition_at_incident),
@@ -344,10 +359,12 @@ const IncidentForm = () => {
     incident_involved: incidentFormDetails?.incident_involved || [],
     inc_invl_other_text: incidentFormDetails?.inc_invl_other_text || "",
     incident_date: incidentFormDetails?.incident_date || "",
+    incident_dt: incidentFormDetails?.incident_dt || "",
     incident_tm: incidentFormDetails?.incident_tm || "",
     incident_location: incidentFormDetails?.incident_location || "",
     witnessed_by: incidentFormDetails?.witnessed_by || "",
     discovery_date: incidentFormDetails?.discovery_date || "",
+    discovery_dt: incidentFormDetails?.discovery_dt || "",
     discovery_tm: incidentFormDetails?.discovery_tm || "",
     discovery_location: incidentFormDetails?.discovery_location || "",
     discovered_by: incidentFormDetails?.discovered_by || "",
@@ -385,14 +402,17 @@ const IncidentForm = () => {
     notified_family_doctor_tm: incidentFormDetails?.notified_family_doctor_tm || "",
     notified_other: incidentFormDetails?.notified_other || "",
     notified_other_date: incidentFormDetails?.notified_other_date || "",
+    notified_other_dt: incidentFormDetails?.notified_other_dt || "",
     notified_other_tm: incidentFormDetails?.notified_other_tm || "",
     notified_resident_responsible_party: incidentFormDetails?.notified_resident_responsible_party || "no",
     notified_resident_name: incidentFormDetails?.notified_resident_name || "",
     notified_resident_date: incidentFormDetails?.notified_resident_date || "",
+    notified_resident_dt: incidentFormDetails?.notified_resident_dt || "",
     notified_resident_tm: incidentFormDetails?.notified_resident_tm || "",
     completed_by: incidentFormDetails?.completed_by || "",
     completed_position: incidentFormDetails?.completed_position || "",
     completed_date: incidentFormDetails?.completed_date || "",
+    completed_dt: incidentFormDetails?.completed_dt || "",
     completed_tm: incidentFormDetails?.completed_tm || "",
     follow_up_assigned_to: incidentFormDetails?.follow_up_assigned_to || getDefaultFollowUpUser(),
     followUp_issue: incidentFormDetails?.followUp_issue || '',
@@ -487,22 +507,22 @@ const IncidentForm = () => {
     
     // ==================== PROCESS DATE/TIME FIELDS ====================
     const incidentDateTime = values.incident_date && values.incident_tm
-      ? dayjs(`${values.incident_date} ${values.incident_tm}`, "YYYY-MM-DD hh:mm A")
+      ? dayjs(`${values.incident_date} ${values.incident_tm}`, "YYYY-MM-DD HH:mm")
       : null;
     const discoveryDateTime = values.discovery_date && values.discovery_tm
       ? dayjs(`${values.discovery_date} ${values.discovery_tm}`, "YYYY-MM-DD hh:mm A")
       : null;
 
     const notifiedFamilyDoctorDateTime = values.notified_family_doctor_date && values.notified_family_doctor_tm
-      ? dayjs(`${values.notified_family_doctor_date} ${values.notified_family_doctor_tm}`, "YYYY-MM-DD hh:mm A")  // Changed
+      ? dayjs(`${values.notified_family_doctor_date} ${values.notified_family_doctor_tm}`, "YYYY-MM-DD hh:mm A")
       : null;
 
     const notifiedResidentDateTime = values.notified_resident_date && values.notified_resident_tm
-      ? dayjs(`${values.notified_resident_date} ${values.notified_resident_tm}`, "YYYY-MM-DD hh:mm A")  // Changed
+      ? dayjs(`${values.notified_resident_date} ${values.notified_resident_tm}`, "YYYY-MM-DD hh:mm A")
       : null;
 
     const completedDateTime = values.completed_date && values.completed_tm
-      ? dayjs(`${values.completed_date} ${values.completed_tm}`, "YYYY-MM-DD hh:mm A")  // Changed
+      ? dayjs(`${values.completed_date} ${values.completed_tm}`, "YYYY-MM-DD hh:mm A")
       : null;
 
     const notifiedOtherDateTime = values.notified_other_date && values.notified_other_tm
@@ -713,17 +733,47 @@ const IncidentForm = () => {
         const response = await StaticFormServices.logFormUpdate(formData);
         if (response?.ResponseCode === "1") {
           toast.success("Form Updated successfully.");
-          setTimeout(() => {
-            navigate("/staticForms");
-          }, 1200);
+          // Open PDF modal if formLink is available
+          if (response?.new_form_link) {
+            setSelectedFormId(formId);
+            const url = response.new_form_link;
+            // Store whether follow-up is incomplete for the PDF modal
+            setIsFollowUpIncomplete(response?.isFollowUpIncomplete === 1);
+            const isPdf = url && url.toLowerCase().endsWith(".pdf");
+            if (isPdf) {
+              setPdfUrl(url);
+              setPdfModalOpen(true);
+            } else {
+              window.open(url, "_blank");
+            }
+          } else {
+            setTimeout(() => {
+              navigate("/staticForms");
+            }, 1200);
+          }
         }
       } else {
         const response = await StaticFormServices.logFormSubmit(formData);
         if (response?.ResponseCode === "1") {
           toast.success(response?.ResponseText || "Form submitted successfully.");
-          setTimeout(() => {
-            navigate("/staticForms");
-          }, 1200);
+          // Open PDF modal if formLink is available
+          if (response?.formLink) {
+            setSelectedFormId(response?.form_id || null);
+            const url = response.formLink;
+            // Store whether follow-up is incomplete for the PDF modal
+            setIsFollowUpIncomplete(response?.isFollowUpIncomplete === 1);
+            const isPdf = url && url.toLowerCase().endsWith(".pdf");
+            if (isPdf) {
+              setPdfUrl(url);
+              setPdfModalOpen(true);
+            } else {
+              window.open(url, "_blank");
+            }
+          } else {
+            setTimeout(() => {
+              navigate("/staticForms");
+            }, 1200);
+          }
         }
       }
     } catch (error) {
@@ -738,6 +788,17 @@ const IncidentForm = () => {
     setLoading(true);
     if (pendingSubmitValues && pendingSubmitActions) {
       await submitIncidentForm(pendingSubmitValues, pendingSubmitActions);
+    }
+  };
+
+  const handleFollowUpClick = () => {
+    // Close the PDF modal and navigate to edit the form's follow-up section
+    setPdfModalOpen(false);
+    if (selectedFormId && followUpRef.current) {
+      // Scroll to follow-up section
+      setTimeout(() => {
+        followUpRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
     }
   };
 
@@ -773,6 +834,25 @@ const IncidentForm = () => {
     }
   };
 
+   const handleSendMail = async (emailTo) => {
+      if (!emailTo) {
+        toast.error("Email is required.");
+        return;
+      }
+  
+      try {
+        let payload = { to_id: emailTo, form_id: formId };
+        const response = await StaticFormServices.sendMail(payload);
+        if (response?.ResponseCode === "1") {
+          toast.success(`Email sent to ${emailTo}`);
+        } else if (response?.Message) {
+          toast.error(response.Message);
+        }
+      } catch (error) {
+        toast.error("Failed to send email. Please try again.");
+      }
+    };
+  
   return (
     <Box m="20px">
       <Header
@@ -873,7 +953,7 @@ const IncidentForm = () => {
                           newValue ? newValue.format("YYYY-MM-DD") : ""
                         );
                         if (newValue && !values.incident_tm) {
-                          setFieldValue("incident_tm", "12:00 PM");
+                          setFieldValue("incident_tm", "12:00");
                         }
                       }}
                       slotProps={{
@@ -891,7 +971,7 @@ const IncidentForm = () => {
                       ampm={true}
                       value={
                         values.incident_tm
-                          ? dayjs(values.incident_tm, values.incident_tm.includes("AM") || values.incident_tm.includes("PM") ? "hh:mm A" : "HH:mm")
+                          ? dayjs(values.incident_tm, values.incident_tm.includes("AM") || values.incident_tm.includes("PM") ? "HH:mm A" : "HH:mm")
                           : null
                       }
                       onChange={(newValue) =>
@@ -971,13 +1051,13 @@ const IncidentForm = () => {
                       ampm={true}
                       value={
                         values.discovery_tm
-                          ? dayjs(values.discovery_tm, values.discovery_tm.includes("AM") || values.discovery_tm.includes("PM") ? "hh:mm A" : "HH:mm")
+                          ? dayjs(values.discovery_tm, values.discovery_tm.includes("AM") || values.discovery_tm.includes("PM") ? "HH:mm A" : "HH:mm")
                           : null
                       }
                       onChange={(newValue) =>
                         setFieldValue(
                           "discovery_tm",
-                          newValue ? newValue.format("hh:mm A") : ""
+                          newValue ? newValue.format("HH:mm A") : ""
                         )
                       }
                       slotProps={{
@@ -1370,118 +1450,7 @@ const IncidentForm = () => {
                   />
                 </FormGroup>
               </Box>
-
-              {/* <Box sx={{ gridColumn: "span 4", mt: 2 }}>
-                <FormGroup row>
-                  <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
-                    ATTACHMENT
-                  </Box>
-                  <Button
-                    variant="contained"
-                    component="label"
-                    sx={{ mt: 1 }}
-                  >
-                    Upload Photo/Video
-                    <input
-                      type="file"
-                      accept="image/*,video/*"
-                      multiple
-                      hidden
-                      onChange={(event) => {
-                        const files = Array.from(event.currentTarget.files);
-                        const prev = values.attachments || [];
-                        // Add new files at the beginning instead of end
-                        setFieldValue("attachments", [...files, ...prev]);
-                      }}
-                    />
-                  </Button>
-                  {Array.isArray(values.attachments) && values.attachments.length > 0 && (
-                    <Box sx={{ width: '100%', mt: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                      {values.attachments.map((file, idx) => {
-                        // Check if it's a File object (newly uploaded) or an object from API (existing)
-                        const isFileObject = file instanceof File;
-                        const isImage = isFileObject
-                          ? file.type.startsWith('image/')
-                          : file.type === 'image';
-                        const isVideo = isFileObject
-                          ? file.type.startsWith('video/')
-                          : file.type === 'video';
-
-                        // Get the appropriate URL
-                        const mediaUrl = isFileObject
-                          ? URL.createObjectURL(file)
-                          : file.path;
-
-                        const fileName = isFileObject ? file.name : file.name;
-
-                        return (
-                          <Box key={idx} sx={{ position: 'relative', display: 'inline-block' }}>
-                            {isImage ? (
-                              <img
-                                src={mediaUrl}
-                                alt={fileName}
-                                style={{
-                                  width: 80,
-                                  height: 80,
-                                  objectFit: 'cover',
-                                  borderRadius: 4,
-                                  border: '1px solid #ccc'
-                                }}
-                              />
-                            ) : isVideo ? (
-                              <video
-                                src={mediaUrl}
-                                style={{
-                                  width: 80,
-                                  height: 80,
-                                  objectFit: 'cover',
-                                  borderRadius: 4,
-                                  border: '1px solid #ccc'
-                                }}
-                                controls
-                              />
-                            ) : (
-                              <Box
-                                sx={{
-                                  width: 80,
-                                  height: 80,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  border: '1px solid #ccc',
-                                  borderRadius: 1,
-                                  bgcolor: '#f5f5f5'
-                                }}
-                              >
-                                <Typography variant="caption" sx={{ textAlign: 'center', p: 1 }}>
-                                  {file.file_extension || 'File'}
-                                </Typography>
-                              </Box>
-                            )}
-                            <Button
-                              size="small"
-                              sx={{
-                                position: 'absolute',
-                                top: 0,
-                                right: 0,
-                                minWidth: 0,
-                                p: 0,
-                                bgcolor: 'rgba(255,255,255,0.7)'
-                              }}
-                              onClick={() => {
-                                const newArr = values.attachments.filter((_, i) => i !== idx);
-                                setFieldValue('attachments', newArr);
-                              }}
-                            >
-                              <span style={{ color: 'red', fontWeight: 'bold', fontSize: 18, lineHeight: 1 }}>×</span>
-                            </Button>
-                          </Box>
-                        );
-                      })}
-                    </Box>
-                  )}
-                </FormGroup>
-              </Box> */}
+              
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormGroup row>
                   <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
@@ -1751,7 +1720,7 @@ const IncidentForm = () => {
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
-                  FAMILY DOCTOR
+                  Family Doctor
                 </Box>
                 <TextField
                   fullWidth
@@ -1791,11 +1760,11 @@ const IncidentForm = () => {
                       ampm={true}
                       value={
                         values.notified_family_doctor_tm
-                          ? dayjs(values.notified_family_doctor_tm, values.notified_family_doctor_tm.includes("AM") || values.notified_family_doctor_tm.includes("PM") ? "hh:mm A" : "HH:mm")
+                          ? dayjs(values.notified_family_doctor_tm, values.notified_family_doctor_tm.includes("AM") || values.notified_family_doctor_tm.includes("PM") ? "HH:mm A" : "HH:mm")
                           : null
                       }
                       onChange={(newValue) =>
-                        setFieldValue("notified_family_doctor_tm", newValue ? newValue.format("hh:mm A") : "")
+                        setFieldValue("notified_family_doctor_tm", newValue ? newValue.format("HH:mm A") : "")
                       }
                       slotProps={{
                         textField: {
@@ -1846,11 +1815,11 @@ const IncidentForm = () => {
                       ampm={true}
                       value={
                         values.notified_other_tm
-                          ? dayjs(values.notified_other_tm, values.notified_other_tm.includes("AM") || values.notified_other_tm.includes("PM") ? "hh:mm A" : "HH:mm")
+                          ? dayjs(values.notified_other_tm, values.notified_other_tm.includes("AM") || values.notified_other_tm.includes("PM") ? "HH:mm A" : "HH:mm")
                           : null
                       }
                       onChange={(newValue) =>
-                        setFieldValue("notified_other_tm", newValue ? newValue.format("hh:mm A") : "")
+                        setFieldValue("notified_other_tm", newValue ? newValue.format("HH:mm A") : "")
                       }
                       slotProps={{
                         textField: {
@@ -1874,7 +1843,13 @@ const IncidentForm = () => {
                       control={
                         <Radio
                           checked={String(values.notified_resident_responsible_party).toLowerCase() === option.key.toLowerCase()}
-                          onChange={() => setFieldValue("notified_resident_responsible_party", option.key)}
+                          onChange={() => {
+                            setFieldValue("notified_resident_responsible_party", option.key);
+                            // Clear related fields when changing the selection
+                            setFieldValue("notified_resident_name", "");
+                            setFieldValue("notified_resident_date", "");
+                            setFieldValue("notified_resident_tm", "");
+                          }}
                           value={option.key}
                           name="notified_resident_responsible_party"
                         />
@@ -1925,11 +1900,11 @@ const IncidentForm = () => {
                         ampm={true}
                         value={
                           values.notified_resident_tm
-                            ? dayjs(values.notified_resident_tm, values.notified_resident_tm.includes("AM") || values.notified_resident_tm.includes("PM") ? "hh:mm A" : "HH:mm")
+                            ? dayjs(values.notified_resident_tm, values.notified_resident_tm.includes("AM") || values.notified_resident_tm.includes("PM") ? "HH:mm A" : "HH:mm")
                             : null
                         }
                         onChange={(newValue) =>
-                          setFieldValue("notified_resident_tm", newValue ? newValue.format("hh:mm A") : "")  // Changed
+                          setFieldValue("notified_resident_tm", newValue ? newValue.format("HH:mm A") : "")  // Changed
                         }
                         slotProps={{
                           textField: {
@@ -1987,7 +1962,7 @@ const IncidentForm = () => {
                       onChange={(newValue) => {
                         setFieldValue("completed_date", newValue ? newValue.format("YYYY-MM-DD") : "")
                         if (newValue && !values.completed_tm) {
-                          setFieldValue("completed_tm", "12:00 PM");  // Changed
+                          setFieldValue("completed_tm", "12:00 PM");
                         }
                       }}
                       slotProps={{
@@ -2004,11 +1979,11 @@ const IncidentForm = () => {
                       ampm={true}
                       value={
                         values.completed_tm
-                          ? dayjs(values.completed_tm, values.completed_tm.includes("AM") || values.completed_tm.includes("PM") ? "hh:mm A" : "HH:mm")
+                          ? dayjs(values.completed_tm, values.completed_tm.includes("AM") || values.completed_tm.includes("PM") ? "HH:mm A" : "HH:mm")
                           : null
                       }
                       onChange={(newValue) =>
-                        setFieldValue("completed_tm", newValue ? newValue.format("hh:mm A") : "")
+                        setFieldValue("completed_tm", newValue ? newValue.format("HH:mm A") : "")
                       }
                       slotProps={{
                         textField: {
@@ -2211,6 +2186,23 @@ const IncidentForm = () => {
           )}
         </Formik>
       )}
+
+      {/* PDF Modal Component */}
+      <PdfModal
+        open={pdfModalOpen}
+        onClose={() => setPdfModalOpen(false)}
+        onCloseComplete={() => {
+          setPdfModalOpen(false);
+          navigate("/staticForms");
+        }}
+        pdfUrl={pdfUrl}
+        onMail={handleSendMail}
+        showPrintButton={userData?.form_types?.find((f) => f.id === 1)?.allow_print === 1}
+        showMailButton={userData?.form_types?.find((f) => f.id === 1)?.allow_mail === 1 ? true : false}
+        showFollowUpButton={isFollowUpIncomplete}
+        onFollowUp={handleFollowUpClick}
+        onPrint={() => window.open(pdfUrl, "_blank")}
+      />
     </Box>
   );
 };
