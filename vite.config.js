@@ -3,11 +3,16 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: './',
+  base: '/',
   build: {
     chunkSizeWarningLimit: 2500,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      }
+    }
   },
   server: {
-            port: 3000,
-        },
+    port: 3000,
+  },
 })
