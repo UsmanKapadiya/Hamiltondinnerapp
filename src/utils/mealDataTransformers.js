@@ -121,7 +121,18 @@ export const transformCompleteMealData = (mealData) => {
     dinnerCategories: dinner,
     breakfastServices: extractServiceFlags(mealData, 'brk'),
     lunchServices: extractServiceFlags(mealData, 'lunch'),
-    dinnerServices: extractServiceFlags(mealData, 'dinner')
+    dinnerServices: extractServiceFlags(mealData, 'dinner'),
+    is_brk_tray_service: _.get(mealData, 'is_brk_tray_service', 0),
+    is_brk_escort_service: _.get(mealData, 'is_brk_escort_service', 0),
+    is_brk_takeout_service: _.get(mealData, 'is_brk_takeout_service', 0),
+    is_lunch_tray_service: _.get(mealData, 'is_lunch_tray_service', 0),
+    is_lunch_escort_service: _.get(mealData, 'is_lunch_escort_service', 0),
+    is_lunch_takeout_service: _.get(mealData, 'is_lunch_takeout_service', 0),
+    is_dinner_tray_service: _.get(mealData, 'is_dinner_tray_service', 0),
+    is_dinner_escort_service: _.get(mealData, 'is_dinner_escort_service', 0),
+    is_dinner_takeout_service: _.get(mealData, 'is_dinner_takeout_service', 0),
+    special_instruction: _.get(mealData, 'special_instruction', ''),
+    last_menu_date: _.get(mealData, 'last_menu_date', null)
   };
 };
 
