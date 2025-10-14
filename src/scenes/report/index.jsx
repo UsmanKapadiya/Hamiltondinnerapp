@@ -18,7 +18,7 @@ import {
   getReportRoomNumbers,
   findRoomReportData
 } from "../../utils";
-import _ from 'lodash';
+import { get, map } from 'lodash';
 
 const Report = () => {
     const navigate = useNavigate();
@@ -200,29 +200,29 @@ const Report = () => {
                                             Total
                                         </TableCell>
                                         {/* Breakfast Totals */}
-                                        {_.map(_.get(data, 'breakfast_item_list', []), (_, i) => (
+                                        {map(get(data, 'breakfast_item_list', []), (item, i) => (
                                             <TableCell key={`btot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)', color: 'red' }}>
-                                                {calculateReportColumnTotal(_.get(data, 'report_breakfast_list', []), i)}
+                                                {calculateReportColumnTotal(get(data, 'report_breakfast_list', []), i)}
                                             </TableCell>
                                         ))}
 
                                         {/* Lunch Totals */}
-                                        {_.map(_.get(data, 'lunch_item_list', []), (_, i) => (
+                                        {map(get(data, 'lunch_item_list', []), (item, i) => (
                                             <TableCell key={`ltot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)', color: 'red' }}>
-                                                {calculateReportColumnTotal(_.get(data, 'report_lunch_list', []), i)}
+                                                {calculateReportColumnTotal(get(data, 'report_lunch_list', []), i)}
                                             </TableCell>
                                         ))}
 
                                         {/* Dinner Totals */}
-                                        {_.map(_.get(data, 'dinner_item_list', []), (_, i) => (
+                                        {map(get(data, 'dinner_item_list', []), (item, i) => (
                                             <TableCell key={`dtot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)', color: 'red' }}>
-                                                {calculateReportColumnTotal(_.get(data, 'report_dinner_list', []), i)}
+                                                {calculateReportColumnTotal(get(data, 'report_dinner_list', []), i)}
                                             </TableCell>
                                         ))}
                                     </TableRow>
                                 )}
                                 {/* Data displayed - Room by Room */}
-                                {_.map(getReportRoomNumbers(data), roomNo => {
+                                {map(getReportRoomNumbers(data), roomNo => {
                                     const roomData = findRoomReportData(data, roomNo);
                                     return (
                                         <TableRow key={roomNo}>
@@ -230,19 +230,19 @@ const Report = () => {
                                                 {roomNo}
                                             </TableCell>
                                             {/* Breakfast quantities */}
-                                            {_.map(roomData.breakfast.quantity, (qty, i) => (
+                                            {map(roomData.breakfast.quantity, (qty, i) => (
                                                 <TableCell key={`b-${i}`} align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
                                                     {qty}
                                                 </TableCell>
                                             ))}
                                             {/* Lunch quantities */}
-                                            {_.map(roomData.lunch.quantity, (qty, i) => (
+                                            {map(roomData.lunch.quantity, (qty, i) => (
                                                 <TableCell key={`l-${i}`} align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
                                                     {qty}
                                                 </TableCell>
                                             ))}
                                             {/* Dinner quantities */}
-                                            {_.map(roomData.dinner.quantity, (qty, i) => (
+                                            {map(roomData.dinner.quantity, (qty, i) => (
                                                 <TableCell key={`d-${i}`} align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
                                                     {qty}
                                                 </TableCell>
