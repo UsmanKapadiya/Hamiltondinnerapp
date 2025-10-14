@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import StaticFormServices from "../../services/staticFormServices";
 import { toast } from "react-toastify";
 import CustomButton from '../../components/CustomButton';
+import { useLocalStorage } from "../../hooks";
 
 const StaticForms = () => {
   const theme = useTheme();

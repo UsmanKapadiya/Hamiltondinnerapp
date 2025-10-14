@@ -12,6 +12,13 @@ import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
 import OrderServices from "../../services/orderServices";
+import { 
+  isReportEmpty,
+  calculateReportColumnTotal,
+  getReportRoomNumbers,
+  findRoomReportData
+} from "../../utils";
+import { get, map } from 'lodash';
 
 const Report = () => {
     const navigate = useNavigate();
@@ -177,11 +184,7 @@ const Report = () => {
                             </TableHead>
 
                             <TableBody>
-                                {(
-                                    (!data?.report_breakfast_list || data.report_breakfast_list.length === 0) &&
-                                    (!data?.report_lunch_list || data.report_lunch_list.length === 0) &&
-                                    (!data?.report_dinner_list || data.report_dinner_list.length === 0)
-                                ) ? (
+                                {isReportEmpty(data) ? (
                                     <TableRow>
                                         <TableCell
                                             align="center"
@@ -196,58 +199,50 @@ const Report = () => {
                                         <TableCell align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)' }}>
                                             Total
                                         </TableCell>
-                                        {/* Breakfast  */}
-                                        {data?.breakfast_item_list?.map((_, i) => {
-                                            const total = data?.report_breakfast_list?.reduce((sum, row) => sum + (row.quantity[i] || 0), 0);
-                                            return (
-                                                <TableCell key={`btot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)',color:'red' }}>
-                                                    {total}
-                                                </TableCell>
-                                            );
-                                        })}
+                                        {/* Breakfast Totals */}
+                                        {map(get(data, 'breakfast_item_list', []), (item, i) => (
+                                            <TableCell key={`btot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)', color: 'red' }}>
+                                                {calculateReportColumnTotal(get(data, 'report_breakfast_list', []), i)}
+                                            </TableCell>
+                                        ))}
 
-                                        {data?.lunch_item_list?.map((_, i) => {
-                                            const total = data?.report_lunch_list?.reduce((sum, row) => sum + (row.quantity[i] || 0), 0);
-                                            return (
-                                                <TableCell key={`ltot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)',color:'red' }}>
-                                                    {total} 
-                                                </TableCell>
-                                            );
-                                        })}
+                                        {/* Lunch Totals */}
+                                        {map(get(data, 'lunch_item_list', []), (item, i) => (
+                                            <TableCell key={`ltot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)', color: 'red' }}>
+                                                {calculateReportColumnTotal(get(data, 'report_lunch_list', []), i)}
+                                            </TableCell>
+                                        ))}
 
-                                        {data?.dinner_item_list?.map((_, i) => {
-                                            const total = data?.report_dinner_list?.reduce((sum, row) => sum + (row.quantity[i] || 0), 0);
-                                            return (
-                                                <TableCell key={`dtot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)',color:'red' }}>
-                                                    {total} 
-                                                </TableCell>
-                                            );
-                                        })}
+                                        {/* Dinner Totals */}
+                                        {map(get(data, 'dinner_item_list', []), (item, i) => (
+                                            <TableCell key={`dtot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)', color: 'red' }}>
+                                                {calculateReportColumnTotal(get(data, 'report_dinner_list', []), i)}
+                                            </TableCell>
+                                        ))}
                                     </TableRow>
                                 )}
-                                {/* Data displayed*/}
-                                {data?.report_breakfast_list?.map((breakfastRow, idx) => {
-                                    const lunchRow = data?.report_lunch_list?.find(l => l.room_no === breakfastRow.room_no) || { quantity: [] };
-                                    const dinnerRow = data?.report_dinner_list?.find(d => d.room_no === breakfastRow.room_no) || { quantity: [] };
+                                {/* Data displayed - Room by Room */}
+                                {map(getReportRoomNumbers(data), roomNo => {
+                                    const roomData = findRoomReportData(data, roomNo);
                                     return (
-                                        <TableRow key={breakfastRow.room_no}>
+                                        <TableRow key={roomNo}>
                                             <TableCell align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
-                                                {breakfastRow.room_no}
+                                                {roomNo}
                                             </TableCell>
                                             {/* Breakfast quantities */}
-                                            {breakfastRow.quantity.map((qty, i) => (
+                                            {map(roomData.breakfast.quantity, (qty, i) => (
                                                 <TableCell key={`b-${i}`} align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
                                                     {qty}
                                                 </TableCell>
                                             ))}
                                             {/* Lunch quantities */}
-                                            {lunchRow.quantity.map((qty, i) => (
+                                            {map(roomData.lunch.quantity, (qty, i) => (
                                                 <TableCell key={`l-${i}`} align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
                                                     {qty}
                                                 </TableCell>
                                             ))}
                                             {/* Dinner quantities */}
-                                            {dinnerRow.quantity.map((qty, i) => (
+                                            {map(roomData.dinner.quantity, (qty, i) => (
                                                 <TableCell key={`d-${i}`} align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
                                                     {qty}
                                                 </TableCell>

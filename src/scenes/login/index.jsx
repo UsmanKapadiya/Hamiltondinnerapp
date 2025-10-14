@@ -1,103 +1,129 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Box, TextField, Button, Typography, useTheme, useMediaQuery, FormControlLabel, Checkbox } from "@mui/material";
-// import shipImage from "../../assets/images/ship.jpg";
-// import AuthServices from "../../services/authServices";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { use } from "react";
 import { tokens } from "../../theme";
-import { DownloadOutlined, LoginOutlined } from "@mui/icons-material";
+import { LoginOutlined } from "@mui/icons-material";
 import logo from "../../assets/images/logo.png";
 import CustomButton from "../../components/CustomButton";
 import AuthServices from "../../services/authServices";
+import { useLazyApi } from "../../hooks";
+import { validateLoginForm, sanitizeInput } from "../../utils/validation";
+
 const Login = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const isMdDevices = useMediaQuery("(min-width: 724px)");
   const [formData, setFormData] = useState({ roomNo: "", password: "" });
-  const [errors, setErrors] = useState({ roomNo: "", password: "" });
-  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
+  // Use custom hook for API call
+  const { execute: loginUser, loading } = useLazyApi(
+    ({ roomNo, password }) => AuthServices.login({ roomNo, password }),
+    {
+      onSuccess: (response) => {
+        if (response.ResponseCode === "1") {
+          handleLoginSuccess(response);
+        } else {
+          toast.error(response.ResponseText || "Login failed. Please try again.");
+        }
+      },
+      onError: (error) => {
+        const errorMessage = error.response?.data?.error || 
+                           error.response?.data?.ResponseText ||
+                           "An unexpected error occurred. Please try again.";
+        toast.error(errorMessage);
+      }
+    }
+  );
+
+  const handleLoginSuccess = useCallback((response) => {
+    const { 
+      authentication_token, 
+      role, 
+      user_id, 
+      show_dining, 
+      show_incident, 
+      language, 
+      guideline, 
+      guideline_cn, 
+      room_id, 
+      rooms, 
+      form_types, 
+      user_list,
+      breakfast_guideline,
+      breakfast_guideline_cn,
+      lunch_guideline,
+      lunch_guideline_cn,
+      dinner_guideline,
+      dinner_guideline_cn
+    } = response;
+
+    const langCode = language === 1 ? "cn" : "en";
+    
+    const userData = {
+      role,
+      user_id,
+      show_dining,
+      show_incident,
+      language,
+      langCode,
+      guideline,
+      guideline_cn,
+      room_id,
+      rooms,
+      form_types,
+      user_list,
+      breakfast_guideline,
+      breakfast_guideline_cn,
+      lunch_guideline,
+      lunch_guideline_cn,
+      dinner_guideline,
+      dinner_guideline_cn
+    };
+
+    localStorage.setItem("authToken", authentication_token);
+    localStorage.setItem("userData", JSON.stringify(userData));
+    
+    toast.success(response.ResponseText || "Successfully Login");
+    
+    setTimeout(() => {
+      if (role === "user") {
+        navigate("/order", { state: { roomNo: formData?.roomNo } });
+      } else {
+        navigate("/home");
+      }
+    }, 1000);
+  }, [navigate, formData.roomNo]);
+
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
+    const sanitizedValue = sanitizeInput(value);
+    
+    setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
+    
+    // Clear error for this field when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: "" }));
+    }
+  }, [errors]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
-    // navigate("/home");
-    // console.log("navigate", formData)
-    const newErrors = {};
-    if (!formData.roomNo) newErrors.roomNo = "Room No is required";
-    if (!formData.password) newErrors.password = "Password is required";
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-
+    // Validate form
+    const validation = validateLoginForm(formData);
+    
+    if (!validation.isValid) {
+      setErrors(validation.errors);
       return;
     }
 
-    try {
-      setLoading(true);
-      let response = await AuthServices.login({ roomNo: formData?.roomNo, password: formData?.password });
-
-      if (response.ResponseCode === "1") {
-        const { authentication_token, role, user_id, show_dining, show_incident, language, guideline, guideline_cn, room_id, rooms, form_types, user_list,
-          breakfast_guideline,
-          breakfast_guideline_cn,
-          lunch_guideline,
-          lunch_guideline_cn,
-          dinner_guideline,
-          dinner_guideline_cn
-        } = response;
-        let langCode = "en";
-        if (language === 1) {
-          langCode = "cn";
-        }
-        let userData = {
-          role,
-          user_id,
-          show_dining,
-          show_incident,
-          language,
-          langCode: langCode,
-          guideline,
-          guideline_cn,
-          room_id,
-          rooms,
-          form_types,
-          user_list,
-          breakfast_guideline,
-          breakfast_guideline_cn,
-          lunch_guideline,
-          lunch_guideline_cn,
-          dinner_guideline,
-          dinner_guideline_cn
-        };
-        localStorage.setItem("authToken", authentication_token);
-        localStorage.setItem("userData", JSON.stringify(userData));
-        toast.success(response.ResponseText || "Successfully Login");
-        setTimeout(() => {
-          if (role === "user") {
-            navigate("/order", { state: { roomNo: formData?.roomNo } });
-          } else {
-            navigate("/home");
-          }
-        }, 1000);
-      } else {
-        toast.error(response.ResponseText || "Login failed. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error processing login:", error);
-      const errorMessage =
-        error.response?.data?.error || "An unexpected error occurred. Please try again.";
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-
-  };
+    // Clear errors and submit
+    setErrors({});
+    await loginUser(formData);
+  }, [formData, loginUser]);
 
   return (
     <Box
@@ -126,7 +152,7 @@ const Login = () => {
         alignItems="center"
         justifyContent="center"
         sx={{
-          backgroundColor: "white",//#022b63
+          backgroundColor: "white",
           height: "100vh",
           width: "100%",
         }}
@@ -145,8 +171,6 @@ const Login = () => {
             margin: "0 auto",
           }}
         >
-          {/* Top side logo set */}
-          {/* Logo */}
           <img
             src={logo}
             alt="Logo"
@@ -173,6 +197,8 @@ const Login = () => {
             helperText={errors.roomNo}
             fullWidth
             margin="normal"
+            autoComplete="username"
+            disabled={loading}
           />
           <TextField
             label="Password"
@@ -184,6 +210,8 @@ const Login = () => {
             helperText={errors.password}
             fullWidth
             margin="normal"
+            autoComplete="current-password"
+            disabled={loading}
           />
           <Box>
             <CustomButton
@@ -213,7 +241,7 @@ const Login = () => {
           </Box>
         </Box>
       </Box>
-    </Box >
+    </Box>
   );
 };
 

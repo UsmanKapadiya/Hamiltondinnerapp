@@ -6,7 +6,7 @@ import {
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { Header } from "../../components";
 import { tokens } from "../../theme";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
@@ -17,11 +17,21 @@ import CustomButton from "../../components/CustomButton";
 import en from "../../locales/Localizable_en";
 import cn from "../../locales/Localizable_cn";
 import 'dayjs/locale/zh-cn';
+import { useLocalStorage } from "../../hooks";
+import { 
+  isToday, 
+  isPast, 
+  isAfterHour,
+  getLanguageObject,
+  getRoomId,
+  calculateTotalMealQuantity,
+  resetAllMealQuantities,
+  transformCompleteMealData
+} from "../../utils";
+import config from "../../config";
+import _ from 'lodash';
 
-let breakFastEndTime = 10;
-let lunchEndTime = 15;
-let dinnerEndTime = 24;
-
+const { breakfastEndHour, lunchEndHour, dinnerEndHour } = config.mealTimes;
 
 const GuestOrder = () => {
 
@@ -35,43 +45,34 @@ const GuestOrder = () => {
     const [data, setData] = useState({});
     const [mealData, setMealData] = useState({});
 
-    const getDefaultTabIndex = () => {
+    const getDefaultTabIndex = useCallback(() => {
         const now = dayjs();
-        if (now.hour() > lunchEndTime || (now.hour() === lunchEndTime && now.minute() > 0)) {
+        if (now.hour() > lunchEndHour || (now.hour() === lunchEndHour && now.minute() > 0)) {
             return 2; // Dinner
-        } else if (now.hour() > breakFastEndTime || (now.hour() === breakFastEndTime && now.minute() > 0)) {
+        } else if (now.hour() > breakfastEndHour || (now.hour() === breakfastEndHour && now.minute() > 0)) {
             return 1; // Lunch
         }
         return 0; // Breakfast
-    };
+    }, []);
+    
     const [tabIndex, setTabIndex] = useState(getDefaultTabIndex());
-    const isToday = date.isSame(dayjs(), 'day');
-    const isPast = date.isBefore(dayjs(), 'day');
-    const isAfter10AM = isToday && (dayjs().hour() > breakFastEndTime || (dayjs().hour() === breakFastEndTime && dayjs().minute() > 0));
-    const isAfter3PM = isToday && (dayjs().hour() > lunchEndTime || (dayjs().hour() === lunchEndTime && dayjs().minute() > 0));
-    const isAfter12PM = isToday && (dayjs().hour() > dinnerEndTime || (dayjs().hour() === dinnerEndTime && dayjs().minute() > 0));
+    
+    // Use date helpers and memoization
+    const isTodayDate = useMemo(() => isToday(date), [date]);
+    const isPastDate = useMemo(() => isPast(date), [date]);
+    const isAfter10AM = useMemo(() => isTodayDate && isAfterHour(breakfastEndHour), [isTodayDate]);
+    const isAfter3PM = useMemo(() => isTodayDate && isAfterHour(lunchEndHour), [isTodayDate]);
+    const isAfter12PM = useMemo(() => isTodayDate && isAfterHour(dinnerEndHour), [isTodayDate]);
 
-    const [userData] = useState(() => {
-        const userDatas = localStorage.getItem("userData");
-        return userDatas ? JSON.parse(userDatas) : null;
-    });
+    const [userData] = useLocalStorage("userData", null);
     const [guestCount, setGuestCount] = useState(1);
     const [alertOpen, setAlertOpen] = useState(false);
     const [langObj, setLangObj] = useState(en);
 
+    // Set language based on user preference
     useEffect(() => {
-        const userData = localStorage.getItem("userData");
-        if (userData) {
-            const { language } = JSON.parse(userData);
-            if (language === 1) {
-                setLangObj(cn);
-            } else {
-                setLangObj(en);
-            }
-        } else {
-            setLangObj(en);
-        }
-    }, []);
+        setLangObj(getLanguageObject(userData, en, cn));
+    }, [userData]);
 
     const handleIncrement = () => {
         setGuestCount(prev => {
@@ -83,17 +84,8 @@ const GuestOrder = () => {
         });
     };
     const handleDecrement = () => {
-        const totalQty = [
-            ...(data.breakfastCategories || []).flatMap(cat =>
-                [...(cat.entreeItems || []), ...(cat.alternativeItems || [])]
-            ),
-            ...(data.lunchCategories || []).flatMap(cat =>
-                [...(cat.entreeItems || []), ...(cat.alternativeItems || [])]
-            ),
-            ...(data.dinnerCategories || []).flatMap(cat =>
-                [...(cat.entreeItems || []), ...(cat.alternativeItems || [])]
-            ),
-        ].reduce((sum, item) => sum + (item.qty || 0), 0);
+        // Use helper to calculate total quantity efficiently
+        const totalQty = calculateTotalMealQuantity(data);
 
         setGuestCount(prev => {
             if (prev > 1) {
@@ -109,24 +101,8 @@ const GuestOrder = () => {
 
     const handleAlertContinue = () => {
         setAlertOpen(false);
-        setData(data => ({
-            ...data,
-            breakfastCategories: (data.breakfastCategories || []).map(cat => ({
-                ...cat,
-                entreeItems: (cat.entreeItems || []).map(item => ({ ...item, qty: 0 })),
-                alternativeItems: (cat.alternativeItems || []).map(item => ({ ...item, qty: 0 }))
-            })),
-            lunchCategories: (data.lunchCategories || []).map(cat => ({
-                ...cat,
-                entreeItems: (cat.entreeItems || []).map(item => ({ ...item, qty: 0 })),
-                alternativeItems: (cat.alternativeItems || []).map(item => ({ ...item, qty: 0 }))
-            })),
-            dinnerCategories: (data.dinnerCategories || []).map(cat => ({
-                ...cat,
-                entreeItems: (cat.entreeItems || []).map(item => ({ ...item, qty: 0 })),
-                alternativeItems: (cat.alternativeItems || []).map(item => ({ ...item, qty: 0 }))
-            }))
-        }));
+        // Use helper to reset all quantities
+        setData(resetAllMealQuantities(data));
         setGuestCount(prev => (prev > 1 ? prev - 1 : 1));
     };
 
@@ -142,27 +118,21 @@ const GuestOrder = () => {
     const fetchMenuDetails = async () => {
         try {
             setLoading(true);
-            let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
+            const roomId = getRoomId(userData, roomNo);
             const payload = {
                 date: date.format("YYYY-MM-DD"),
-                room_id: selectedObj ? selectedObj?.id : userData?.room_id
-            }
-            const response = await OrderServices.guestOrderListData(payload);
-            //console.log(response)
-            let data = {
-                breakfast: response.breakfast,
-                lunch: response?.lunch,
-                dinner: response?.dinner,
-                is_dinner_tray_service: response?.is_dinner_tray_service,
-                is_brk_tray_service: response?.is_brk_tray_service,
-                is_lunch_tray_service: response?.is_lunch_tray_service
+                room_id: roomId
             };
+            
+            const response = await OrderServices.getGuestOrderList(payload);
+            const transformedData = transformCompleteMealData(response);
 
-            setGuestCount(response?.occupancy)
-            setMealData(transformMealData(data));
-            setData(transformMealData(data));
+            setGuestCount(_.get(response, 'occupancy', 1));
+            setMealData(transformedData);
+            setData(transformedData);
         } catch (error) {
             console.error("Error fetching menu list:", error);
+            toast.error("Failed to load guest order data");
         } finally {
             setLoading(false);
         }
@@ -788,7 +758,7 @@ const GuestOrder = () => {
                                     variant="outlined"
                                     sx={{ minWidth: 36, mx: 1 }}
                                     onClick={handleDecrement}
-                                    disabled={isPast}
+                                    disabled={isPastDate}
                                 >
                                     -
                                 </Button>
@@ -797,7 +767,7 @@ const GuestOrder = () => {
                                     variant="outlined"
                                     sx={{ minWidth: 36, mx: 1 }}
                                     onClick={handleIncrement}
-                                    disabled={isPast}
+                                    disabled={isPastDate}
                                 >
                                     +
                                 </Button>
@@ -900,7 +870,7 @@ const GuestOrder = () => {
                                                                         }))
                                                                     }
                                                                     style={{ marginRight: 8 }}
-                                                                    disabled={item.qty === 0 || isAfter10AM || isPast}
+                                                                    disabled={item.qty === 0 || isAfter10AM || isPastDate}
                                                                 >
                                                                     -
                                                                 </button>
@@ -986,7 +956,7 @@ const GuestOrder = () => {
                                                                     disabled={
                                                                         item.qty >= guestCount ||
                                                                         isAfter10AM ||
-                                                                        isPast
+                                                                        isPastDate
                                                                     }
                                                                 >
                                                                     +
@@ -1135,7 +1105,7 @@ const GuestOrder = () => {
                                                                         }))
                                                                     }
                                                                     style={{ marginRight: 8 }}
-                                                                    disabled={item.qty === 0 || isAfter10AM || isPast}
+                                                                    disabled={item.qty === 0 || isAfter10AM || isPastDate}
                                                                 >
                                                                     -
                                                                 </button>
@@ -1221,7 +1191,7 @@ const GuestOrder = () => {
                                                                     disabled={
                                                                         item.qty >= guestCount ||
                                                                         isAfter10AM ||
-                                                                        isPast
+                                                                        isPastDate
                                                                     }
                                                                 >
                                                                     +
@@ -1377,7 +1347,7 @@ const GuestOrder = () => {
                                                             cursor: "pointer",
                                                             width: 'auto'
                                                         }}
-                                                        disabled={isAfter10AM || isPast}
+                                                        disabled={isAfter10AM || isPastDate}
                                                         onClick={() => {
                                                             submitData(data, date)
                                                         }}
@@ -1470,7 +1440,7 @@ const GuestOrder = () => {
                                                                         }))
                                                                     }
                                                                     style={{ marginRight: 8 }}
-                                                                    disabled={item.qty === 0 || isAfter3PM || isPast}
+                                                                    disabled={item.qty === 0 || isAfter3PM || isPastDate}
                                                                 >
                                                                     -
                                                                 </button>
@@ -1553,7 +1523,7 @@ const GuestOrder = () => {
                                                                         });
                                                                     }}
                                                                     style={{ marginLeft: 8 }}
-                                                                    disabled={item.qty >= guestCount || isAfter3PM || isPast}
+                                                                    disabled={item.qty >= guestCount || isAfter3PM || isPastDate}
                                                                 >
                                                                     +
                                                                 </button>
@@ -1701,7 +1671,7 @@ const GuestOrder = () => {
                                                                         }))
                                                                     }
                                                                     style={{ marginRight: 8 }}
-                                                                    disabled={item.qty === 0 || isAfter3PM || isPast}
+                                                                    disabled={item.qty === 0 || isAfter3PM || isPastDate}
                                                                 >
                                                                     -
                                                                 </button>
@@ -1784,7 +1754,7 @@ const GuestOrder = () => {
                                                                         });
                                                                     }}
                                                                     style={{ marginLeft: 8 }}
-                                                                    disabled={item.qty >= guestCount || isAfter3PM || isPast}
+                                                                    disabled={item.qty >= guestCount || isAfter3PM || isPastDate}
                                                                 >
                                                                     +
                                                                 </button>
@@ -1942,7 +1912,7 @@ const GuestOrder = () => {
                                                             cursor: "pointer",
                                                             width: 'auto'
                                                         }}
-                                                        disabled={isAfter3PM || isPast}
+                                                        disabled={isAfter3PM || isPastDate}
                                                         onClick={() => {
                                                             submitData(data, date)
                                                         }}
@@ -2034,7 +2004,7 @@ const GuestOrder = () => {
                                                                         }))
                                                                     }
                                                                     style={{ marginRight: 8 }}
-                                                                    disabled={item.qty === 0 || isAfter12PM || isPast}
+                                                                    disabled={item.qty === 0 || isAfter12PM || isPastDate}
                                                                 >
                                                                     -
                                                                 </button>
@@ -2117,7 +2087,7 @@ const GuestOrder = () => {
                                                                         });
                                                                     }}
                                                                     style={{ marginLeft: 8 }}
-                                                                    disabled={item.qty >= guestCount || isAfter12PM || isPast}
+                                                                    disabled={item.qty >= guestCount || isAfter12PM || isPastDate}
                                                                 >
                                                                     +
                                                                 </button>
@@ -2266,7 +2236,7 @@ const GuestOrder = () => {
                                                                         }))
                                                                     }
                                                                     style={{ marginRight: 8 }}
-                                                                    disabled={item.qty === 0 || isAfter12PM || isPast}
+                                                                    disabled={item.qty === 0 || isAfter12PM || isPastDate}
                                                                 >
                                                                     -
                                                                 </button>
@@ -2351,7 +2321,7 @@ const GuestOrder = () => {
                                                                         });
                                                                     }}
                                                                     style={{ marginLeft: 8 }}
-                                                                    disabled={item.qty >= guestCount || isAfter12PM || isPast}
+                                                                    disabled={item.qty >= guestCount || isAfter12PM || isPastDate}
                                                                 >
                                                                     +
                                                                 </button>
@@ -2508,7 +2478,7 @@ const GuestOrder = () => {
                                                             cursor: "pointer",
                                                             width: 'auto'
                                                         }}
-                                                        disabled={isAfter12PM || isPast}
+                                                        disabled={isAfter12PM || isPastDate}
                                                         onClick={() => {
                                                             submitData(data, date)
                                                         }}

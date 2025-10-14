@@ -2,7 +2,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 
 const instance = axios.create({
-  baseURL: `http://hamiltondinnerapp.staging.intelligrp.com/api/`,
+  baseURL: import.meta.env.VITE_API_BASE_URL || `http://hamiltondinnerapp.staging.intelligrp.com/api/`,
   timeout: 50000,
   headers: {
     Accept: 'application/json',
@@ -14,14 +14,24 @@ const instance = axios.create({
 instance.interceptors.request.use(
   function (config) {
     let token;
+    
+    // Try to get token from cookies first
     if (Cookies.get('authToken')) {
-      token = JSON.parse(Cookies.get('authToken')).token;
+      try {
+        const cookieData = JSON.parse(Cookies.get('authToken'));
+        token = cookieData.token;
+      } catch (e) {
+        console.error('Failed to parse cookie token:', e);
+      }
     }
-    // Use cookie token if available, otherwise fallback to localStorage
+    
+    // Fallback to localStorage
     const authToken = token || localStorage.getItem('authToken');
+    
     if (authToken && !config.headers['Authorization']) {
       config.headers['Authorization'] = `${authToken}`;
     }
+    
     return config;
   },
   function (error) {
@@ -29,30 +39,58 @@ instance.interceptors.request.use(
   }
 );
 
-
 // Response Interceptor
 instance.interceptors.response.use(
-  (response) => response, // If response is successful, return it
+  (response) => response,
   (error) => {
+    // Handle 401 Unauthorized
     if (error.response && error.response.status === 401) {
-      // Clear authentication data (cookies/localStorage)
+      // Clear authentication data
       localStorage.removeItem('authToken');
       localStorage.removeItem('userData');
-      Cookies.remove('userToken'); // Ensure the correct cookie key is removed
+      Cookies.remove('authToken');
+      Cookies.remove('userToken');
 
-      window.location.href = '/login'; // Redirect to the login page
+      // Redirect to login
+      window.location.href = '/';
     }
+    
+    // Handle network errors
+    if (!error.response) {
+      error.message = 'Network error. Please check your internet connection.';
+    }
+    
     return Promise.reject(error);
   }
 );
 
 const responseBody = (response) => response.data;
 
+/**
+ * Retry logic for failed requests
+ */
+const retryRequest = async (fn, retries = 2, delay = 1000) => {
+  try {
+    return await fn();
+  } catch (error) {
+    if (retries > 0 && (!error.response || error.response.status >= 500)) {
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return retryRequest(fn, retries - 1, delay * 2);
+    }
+    throw error;
+  }
+};
+
 const requests = {
   get: (url, params, headers) =>
-    instance.get(url, { params, headers }).then(responseBody),
+    retryRequest(() => 
+      instance.get(url, { params, headers }).then(responseBody)
+    ),
 
-  post: (url, body) => instance.post(url, body).then(responseBody),
+  post: (url, body) => 
+    retryRequest(() => 
+      instance.post(url, body).then(responseBody)
+    ),
 
   uploadPosts: (url, body) =>
     instance.post(url, body, {
@@ -62,7 +100,7 @@ const requests = {
     }).then(responseBody),
     
   uploadPut: (url, body) =>
-    instance.post(url, body, {
+    instance.put(url, body, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -77,9 +115,15 @@ const requests = {
     }).then(responseBody);
   },
 
-  put: (url, body) => instance.put(url, body).then(responseBody),
+  put: (url, body) => 
+    retryRequest(() => 
+      instance.put(url, body).then(responseBody)
+    ),
 
-  patch: (url, body) => instance.patch(url, body).then(responseBody),
+  patch: (url, body) => 
+    retryRequest(() => 
+      instance.patch(url, body).then(responseBody)
+    ),
 
   delete: (url, body) =>
     instance.delete(url, { data: body }).then(responseBody),

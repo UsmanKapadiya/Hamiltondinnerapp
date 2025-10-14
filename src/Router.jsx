@@ -1,60 +1,92 @@
-import React from "react";
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import React, { lazy, Suspense } from "react";
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import App from "./App";
-import StaticForms from "./scenes/staticForms";
-import StaticFormCreate from "./scenes/staticForms/incidentForm";
-import Login from "./scenes/login";
-import Home from "./scenes/Home";
-import RoomEnter from "./scenes/roomLogin";
-import Report from "./scenes/report";
-import Order from "./scenes/order";
-import GuestOrder from "./scenes/guestOrder";
-import ChargesReport from "./scenes/charges";
-import IncidentForm from "./scenes/staticForms/incidentForm";
-import LogForm from "./scenes/staticForms/logForm";
-import MoveInSummeryForm from "./scenes/staticForms/MoveInSummeryForm";
+import CustomLoadingOverlay from "./components/CustomLoadingOverlay";
+
+// Lazy load components for better performance
+const Login = lazy(() => import("./scenes/login"));
+const Home = lazy(() => import("./scenes/Home"));
+const RoomEnter = lazy(() => import("./scenes/roomLogin"));
+const Report = lazy(() => import("./scenes/report"));
+const Order = lazy(() => import("./scenes/order"));
+const GuestOrder = lazy(() => import("./scenes/guestOrder"));
+const ChargesReport = lazy(() => import("./scenes/charges"));
+const StaticForms = lazy(() => import("./scenes/staticForms"));
+const IncidentForm = lazy(() => import("./scenes/staticForms/incidentForm"));
+const LogForm = lazy(() => import("./scenes/staticForms/logForm"));
+const MoveInSummeryForm = lazy(() => import("./scenes/staticForms/MoveInSummeryForm"));
 
 const ProtectedRoute = ({ children }) => {
+  const location = useLocation();
   const isAuthenticated = !!localStorage.getItem("authToken");
-  return isAuthenticated ? children : <Navigate to="/" />; //children;
+  
+  if (!isAuthenticated) {
+    // Redirect to login and save the attempted location
+    return <Navigate to="/" state={{ from: location }} replace />;
+  }
+  
+  return children;
 };
+
+const LoginRoute = () => {
+  const isAuthenticated = !!localStorage.getItem("authToken");
+  
+  if (isAuthenticated) {
+    return <Navigate to="/home" replace />;
+  }
+  
+  return <Login />;
+};
+
 
 const AppRouter = () => {
   return (
     <Router>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            localStorage.getItem("authToken")
-              ? <Navigate to="/home" />
-              : <Login />
-          }
-        />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <App />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="/home" element={<Home />} />
-          <Route path="/room" element={<RoomEnter />} />
-          <Route path="/order" element={<Order />} />
-          <Route path="/guestOrder" element={<GuestOrder />} />
-          <Route path="/report" element={<Report />} />
-          <Route path="/charges" element={<ChargesReport />} />
-          <Route path="/staticForms" element={<StaticForms />} />
-          <Route path="/staticForms/incidentForm-create" element={<IncidentForm />} />
-          <Route path="/staticForms/incidentForm-edit/:id" element={<IncidentForm />} />
-          <Route path="/staticForms/logForm-create" element={<LogForm />} />
-          <Route path="/staticForms/moveInSummaryForm-create" element={<MoveInSummeryForm />} />
-          <Route path="/staticForms/moveInSummaryForm-edit/:id" element={<MoveInSummeryForm />} />
-
-
-        </Route>
-      </Routes>
+      <Suspense fallback={<CustomLoadingOverlay open={true} />}>
+        <Routes>
+          {/* Public Routes */}
+          <Route
+            path="/"
+            element={<LoginRoute />}
+          />
+          
+          {/* Protected Routes */}
+          <Route
+            element={
+              <ProtectedRoute>
+                <App />
+              </ProtectedRoute>
+            }
+          >
+            {/* Main Application Routes */}
+            <Route path="/home" element={<Home />} />
+            <Route path="/room" element={<RoomEnter />} />
+            <Route path="/order" element={<Order />} />
+            <Route path="/guestOrder" element={<GuestOrder />} />
+            <Route path="/report" element={<Report />} />
+            <Route path="/charges" element={<ChargesReport />} />
+            
+            {/* Static Forms Routes */}
+            <Route path="/staticForms">
+              <Route index element={<StaticForms />} />
+              
+              {/* Incident Form Routes */}
+              <Route path="incidentForm-create" element={<IncidentForm />} />
+              <Route path="incidentForm-edit/:id" element={<IncidentForm />} />
+              
+              {/* Log Form Routes */}
+              <Route path="logForm-create" element={<LogForm />} />
+              
+              {/* Move-In Summary Form Routes */}
+              <Route path="moveInSummaryForm-create" element={<MoveInSummeryForm />} />
+              <Route path="moveInSummaryForm-edit/:id" element={<MoveInSummeryForm />} />
+            </Route>
+          </Route>
+          
+          {/* 404 - Not Found Route */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </Router>
   );
 };

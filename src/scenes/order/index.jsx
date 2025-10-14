@@ -4,7 +4,7 @@ import {
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { Header } from "../../components";
 import { tokens } from "../../theme";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
@@ -16,12 +16,23 @@ import { ArrowForwardIosOutlined, EditOutlined, EmojiPeopleOutlined } from "@mui
 import en from "../../locales/Localizable_en"
 import cn from "../../locales/Localizable_cn"
 import 'dayjs/locale/zh-cn';
+import { useLocalStorage, useLazyApi } from "../../hooks";
+import { 
+  formatDate, 
+  isToday, 
+  isPast, 
+  isAfterHour,
+  isKitchenUser,
+  getApiRoomId,
+  getRoomOccupancy,
+  getLanguageObject,
+  transformCompleteMealData,
+  updateMealDataList
+} from "../../utils";
+import config from "../../config";
+import _ from 'lodash';
 
-let breakFastEndTime = 10;
-let lunchEndTime = 15;
-let dinnerEndTime = 24;
-// const MAX_MEAL_QTY = 2;
-
+const { breakfastEndHour, lunchEndHour, dinnerEndHour } = config.mealTimes;
 
 const Order = () => {
 
@@ -32,287 +43,88 @@ const Order = () => {
     const roomNo = location.state?.roomNo;
     const [langObj, setLangObj] = useState(en);
     const [date, setDate] = useState(dayjs());
-    const [loading, setLoading] = useState(false);
     const [data, setData] = useState({});
     const [mealData, setMealData] = useState([]);
-    const isToday = date.isSame(dayjs(), 'day');
-    const isPast = date.isBefore(dayjs(), 'day');
-    const isAfter10AM = isToday && (dayjs().hour() > breakFastEndTime || (dayjs().hour() === breakFastEndTime && dayjs().minute() > 0));
-    const isAfter3PM = isToday && (dayjs().hour() > lunchEndTime || (dayjs().hour() === lunchEndTime && dayjs().minute() > 0));
-    const isAfter12PM = isToday && (dayjs().hour() > dinnerEndTime || (dayjs().hour() === dinnerEndTime && dayjs().minute() > 0));
     const [mealSelections, setMealSelections] = useState([]);
     const [MAX_MEAL_QTY, setMAX_MEAL_QTY] = useState(1)
     const [kitchenSummery, setKitchenSummery] = useState(false);
-    const [userData] = useState(() => {
-        const userDatas = localStorage.getItem("userData");
-        return userDatas ? JSON.parse(userDatas) : null;
-    });
-
-    useEffect(() => {
-        const userData = localStorage.getItem("userData");
-        if (userData) {
-            const { language } = JSON.parse(userData);
-            if (language === 1) {
-                setLangObj(cn);
-            } else {
-                setLangObj(en);
+    
+    // Use custom hooks
+    const [userData] = useLocalStorage("userData", null);
+    
+    // Memoized user checks
+    const kitchenUser = useMemo(() => isKitchenUser(userData), [userData]);
+    const maxMealQty = useMemo(() => {
+        if (kitchenUser) return 99;
+        return getRoomOccupancy(userData, roomNo, config.defaults.maxMealQuantity);
+    }, [userData, roomNo, kitchenUser]);
+    
+    // Use date helpers for time checks
+    const isTodayDate = useMemo(() => isToday(date), [date]);
+    const isPastDate = useMemo(() => isPast(date), [date]);
+    const isAfter10AM = useMemo(() => isTodayDate && isAfterHour(breakfastEndHour), [isTodayDate]);
+    const isAfter3PM = useMemo(() => isTodayDate && isAfterHour(lunchEndHour), [isTodayDate]);
+    const isAfter12PM = useMemo(() => isTodayDate && isAfterHour(dinnerEndHour), [isTodayDate]);
+    
+    // Use lazy API for menu fetching
+    const { execute: fetchMenu, loading } = useLazyApi(
+        (roomId, date) => OrderServices.getMenuData(roomId, date),
+        {
+            onSuccess: (response) => {
+                const transformedData = transformCompleteMealData(response);
+                const mealWithDate = { ...transformedData, date: formatDate(date) };
+                
+                setMealData(prev => updateMealDataList(prev, mealWithDate));
+                setData(transformedData);
+            },
+            onError: (error) => {
+                console.error("Error fetching menu list:", error);
+                toast.error("Failed to load menu data");
             }
-        } else {
-            setLangObj(en);
         }
-    }, []);
+    );
 
-    const getDefaultTabIndex = () => {
+    // Set language based on user preference
+    useEffect(() => {
+        setLangObj(getLanguageObject(userData, en, cn));
+    }, [userData]);
+
+    const getDefaultTabIndex = useCallback(() => {
         const now = dayjs();
-        if (now.hour() > lunchEndTime || (now.hour() === lunchEndTime && now.minute() > 0)) {
+        if (now.hour() > lunchEndHour || (now.hour() === lunchEndHour && now.minute() > 0)) {
             return 2; // Dinner
-        } else if (now.hour() > breakFastEndTime || (now.hour() === breakFastEndTime && now.minute() > 0)) {
+        } else if (now.hour() > breakfastEndHour || (now.hour() === breakfastEndHour && now.minute() > 0)) {
             return 1; // Lunch
         }
         return 0; // Breakfast
-    };
+    }, []);
 
     const [tabIndex, setTabIndex] = useState(getDefaultTabIndex());
 
+    // Set MAX_MEAL_QTY based on user type and room
     useEffect(() => {
-        let selectedData = userData?.rooms.find((x) => x.name === roomNo);
-        setMAX_MEAL_QTY(selectedData?.occupancy)
-    }, [roomNo])
+        setMAX_MEAL_QTY(maxMealQty);
+    }, [maxMealQty]);
 
+    // Fetch menu when date changes
     useEffect(() => {
-
-        //console.log(mealSelections)
-        let obj = mealSelections?.find((x) => x.date === date.format("YYYY-MM-DD"));
-        //console.log(obj)
-        if (obj === undefined) {
-            fetchMenuDetails(date.format("YYYY-MM-DD"));
+        const existingMeal = _.find(mealSelections, { date: formatDate(date) });
+        if (!existingMeal) {
+            fetchMenuDetails(formatDate(date));
         }
-    }, [date]);
+    }, [date, mealSelections]);
 
-
+    // Handle kitchen summary state
     useEffect(() => {
-        if (location.state?.Kitchen_summery) {
-            setKitchenSummery(location.state.Kitchen_summery);
-        }
+        const summaryFlag = _.get(location, 'state.Kitchen_summery', false);
+        setKitchenSummery(summaryFlag);
     }, [location.state]);
 
-    const fetchMenuDetails = async (date) => {
-        try {
-            setLoading(true);
-            let selectedObj = userData?.rooms.find((x) => x.name === roomNo);
-            const response = await OrderServices.getMenuData(selectedObj ? selectedObj?.id : userData?.room_id, date);
-            let data = {
-                breakfast: response.breakfast,
-                lunch: response?.lunch,
-                dinner: response?.dinner,
-                is_brk_escort_service: response?.is_brk_escort_service,
-                is_brk_tray_service: response?.is_brk_tray_service,
-                is_brk_takeout_service: response?.is_brk_takeout_service,
-                is_lunch_escort_service: response?.is_lunch_escort_service,
-                is_lunch_tray_service: response?.is_lunch_tray_service,
-                is_lunch_takeout_service: response?.is_lunch_takeout_service,
-                is_dinner_escort_service: response?.is_dinner_escort_service,
-                is_dinner_tray_service: response?.is_dinner_tray_service,
-                is_dinner_takeout_service: response?.is_dinner_takeout_service
-            };
-            let meal = { ...data, date }; // Add date as a property
-            // console.log("meal", meal);
-            setMealData(prev => {
-                const foundIndex = prev.findIndex(item => dayjs(item.date).isSame(dayjs(meal.date), 'day'));
-                let updated;
-                if (foundIndex !== -1) {
-                    updated = [...prev];
-                    updated[foundIndex] = transformMealData(meal);
-                } else {
-                    updated = [...prev, transformMealData(meal)];
-                }
-                return updated;
-            });
-            setData(transformMealData(data));
-        } catch (error) {
-            console.error("Error fetching menu list:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-
-    function selectFirstOption(options) {
-        if (!options || options.length === 0) return [];
-        const anySelected = options.some(opt => opt.is_selected === 1);
-        if (anySelected) {
-            return options;
-        }
-        return options.map((opt, idx) => ({
-            ...opt,
-            is_selected: idx === 0 ? 1 : 0
-        }));
-    }
-
-    function transformMealData(mealData) {
-        // Breakfast
-        const breakfastCategories = (mealData.breakfast || []).map(cat => {
-            // Entree items
-            const entreeItems = (cat.items || [])
-                .filter(item => item.type === "item")
-                .map(item => ({
-                    id: item.item_id,
-                    name: item.item_name,
-                    chinese_name: item.chinese_name,
-                    qty: item.qty,
-                    options: selectFirstOption(item.options),
-                    preference: item.preference,
-                    order_id: item?.order_id,
-                    image: item?.item_image
-                }));
-
-            // Subcategory (e.g., alternatives)
-            const alternativeCat = (cat.items || []).find(item => item.type === "sub_cat");
-            const alternativeCatName = alternativeCat?.item_name || "";
-            const alternativeCatName_cn = alternativeCat?.chinese_name || "";
-
-            // Subcategory items
-            const alternativeItems = (cat.items || [])
-                .filter(item => item.type === "sub_cat_item")
-                .map(item => ({
-                    id: item.item_id,
-                    name: item.item_name,
-                    chinese_name: item.chinese_name,
-                    qty: item.qty,
-                    options: selectFirstOption(item.options),
-                    preference: item.preference,
-                    order_id: item?.order_id,
-                    image: item?.item_image
-                }));
-
-            return {
-                cat_id: cat.cat_id,
-                cat_name: cat.cat_name,
-                cat_name_cn: cat.chinese_name,
-                entreeItems,
-                alternativeCatName,
-                alternativeCatName_cn,
-                alternativeItems
-            };
-        });
-        const is_brk_escort_service = mealData?.is_brk_escort_service
-        const is_brk_tray_service = mealData?.is_brk_tray_service
-        const is_brk_takeout_service = mealData?.is_brk_takeout_service
-
-        // Lunch
-        const lunchCategories = (mealData.lunch || []).map(cat => {
-            // Entree items
-            const entreeItems = (cat.items || [])
-                .filter(item => item.type === "item")
-                .map(item => ({
-                    id: item.item_id,
-                    name: item.item_name,
-                    chinese_name: item.chinese_name,
-                    qty: item.qty,
-                    options: selectFirstOption(item.options),
-                    preference: item.preference,
-                    order_id: item?.order_id,
-                    image: item?.item_image
-                }));
-
-            // Subcategory (e.g., alternatives)
-            const alternativeCat = (cat.items || []).find(item => item.type === "sub_cat");
-            const alternativeCatName = alternativeCat?.item_name || "";
-            const alternativeCatName_cn = alternativeCat?.chinese_name || "";
-
-            // Subcategory items
-            const alternativeItems = (cat.items || [])
-                .filter(item => item.type === "sub_cat_item")
-                .map(item => ({
-                    id: item.item_id,
-                    name: item.item_name,
-                    chinese_name: item.chinese_name,
-                    qty: item.qty,
-                    options: selectFirstOption(item.options),
-                    preference: item.preference,
-                    order_id: item?.order_id,
-                    image: item?.item_image
-                }));
-
-            return {
-                cat_id: cat.cat_id,
-                cat_name: cat.cat_name,
-                cat_name_cn: cat.chinese_name,
-                entreeItems,
-                alternativeCatName,
-                alternativeCatName_cn,
-                alternativeItems
-            };
-        });
-        const is_lunch_escort_service = mealData?.is_lunch_escort_service
-        const is_lunch_tray_service = mealData?.is_lunch_tray_service
-        const is_lunch_takeout_service = mealData?.is_lunch_takeout_service
-
-        // Dinner
-        const dinnerCategories = (mealData.dinner || []).map(cat => {
-            // Entree items
-            const entreeItems = (cat.items || [])
-                .filter(item => item.type === "item")
-                .map(item => ({
-                    id: item.item_id,
-                    name: item.item_name,
-                    chinese_name: item.chinese_name,
-                    qty: item.qty,
-                    options: selectFirstOption(item.options),
-                    preference: item.preference,
-                    order_id: item?.order_id,
-                    image: item?.item_image
-                }));
-
-            // Subcategory (e.g., alternatives)
-            const alternativeCat = (cat.items || []).find(item => item.type === "sub_cat");
-            const alternativeCatName = alternativeCat?.item_name || "";
-            const alternativeCatName_cn = alternativeCat?.chinese_name || "";
-
-            // Subcategory items
-            const alternativeItems = (cat.items || [])
-                .filter(item => item.type === "sub_cat_item")
-                .map(item => ({
-                    id: item.item_id,
-                    name: item.item_name,
-                    chinese_name: item.chinese_name,
-                    qty: item.qty,
-                    options: selectFirstOption(item.options),
-                    preference: item.preference,
-                    order_id: item?.order_id,
-                    image: item?.item_image
-                }));
-
-            return {
-                cat_id: cat.cat_id,
-                cat_name: cat.cat_name,
-                cat_name_cn: cat.chinese_name,
-                entreeItems,
-                alternativeCatName,
-                alternativeCatName_cn,
-                alternativeItems
-            };
-        });
-        const is_dinner_escort_service = mealData?.is_dinner_escort_service
-        const is_dinner_tray_service = mealData?.is_dinner_tray_service
-        const is_dinner_takeout_service = mealData?.is_dinner_takeout_service
-
-        return {
-            date: mealData.date,
-            breakfastCategories,
-            lunchCategories,
-            dinnerCategories,
-            is_brk_escort_service,
-            is_brk_tray_service,
-            is_brk_takeout_service,
-            is_lunch_escort_service,
-            is_lunch_tray_service,
-            is_lunch_takeout_service,
-            is_dinner_escort_service,
-            is_dinner_tray_service,
-            is_dinner_takeout_service,
-        };
-    }
+    // Fetch menu details with clean helper function
+    const fetchMenuDetails = useCallback(async (dateStr) => {
+        const roomId = getApiRoomId(userData, roomNo);
+        await fetchMenu(roomId, dateStr);
+    }, [userData, roomNo, fetchMenu]);
 
     function buildOrderPayload(dataArray) {
         // console.log("dataArray", dataArray)
@@ -524,9 +336,9 @@ const Order = () => {
     function getTabIndexByTime(dateObj) {
 
         const now = dateObj;
-        if (now.hour() > lunchEndTime || (now.hour() === lunchEndTime && now.minute() > 0)) {
+        if (now.hour() > lunchEndHour || (now.hour() === lunchEndHour && now.minute() > 0)) {
             return 2; // Dinner
-        } else if (now.hour() > breakFastEndTime || (now.hour() === breakFastEndTime && now.minute() > 0)) {
+        } else if (now.hour() > breakfastEndHour || (now.hour() === breakfastEndHour && now.minute() > 0)) {
             return 1; // Lunch
         }
         return 0; // Breakfast
@@ -741,7 +553,7 @@ const Order = () => {
                                                                     }))
                                                                 }
                                                                 style={{ marginRight: 8 }}
-                                                                disabled={item.qty === 0 || isAfter10AM || isPast}
+                                                                disabled={item.qty === 0 || (!kitchenUser && (isPastDate || isAfter10AM))}
                                                             >
                                                                 -
                                                             </button>
@@ -758,7 +570,9 @@ const Order = () => {
                                                                             (prev.breakfastCategories[catIdx]?.alternativeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
                                                                         let newEntree = [...prev.breakfastCategories[catIdx].entreeItems];
                                                                         let newAlternative = [...(prev.breakfastCategories[catIdx].alternativeItems || [])];
-                                                                        if (totalQty >= MAX_MEAL_QTY) {
+                                                                        
+                                                                        // For kitchen users, skip the total qty limit enforcement
+                                                                        if (userData?.role !== "kitchen" && totalQty >= MAX_MEAL_QTY) {
                                                                             let removed = false;
                                                                             newAlternative = newAlternative.map((alt) => {
                                                                                 if (!removed && alt.qty > 0) {
@@ -826,7 +640,7 @@ const Order = () => {
                                                                     });
                                                                 }}
                                                                 style={{ marginLeft: 8 }}
-                                                                disabled={item.qty >= MAX_MEAL_QTY || isAfter10AM || isPast}
+                                                                disabled={item.qty >= MAX_MEAL_QTY || (!kitchenUser && (isPastDate || isAfter10AM))}
                                                             >
                                                                 +
                                                             </button>
@@ -976,7 +790,7 @@ const Order = () => {
                                                                     }))
                                                                 }
                                                                 style={{ marginRight: 8 }}
-                                                                disabled={item.qty === 0 || isAfter10AM || isPast}
+                                                                disabled={item.qty === 0 || (!kitchenUser && (isPastDate || isAfter10AM))}
                                                             >
                                                                 -
                                                             </button>
@@ -1061,7 +875,7 @@ const Order = () => {
                                                                     });
                                                                 }}
                                                                 style={{ marginLeft: 8 }}
-                                                                disabled={item.qty >= MAX_MEAL_QTY || isAfter10AM || isPast}
+                                                                disabled={item.qty >= MAX_MEAL_QTY || (!kitchenUser && (isPastDate || isAfter10AM))}
                                                             >
                                                                 +
                                                             </button>
@@ -1255,7 +1069,7 @@ const Order = () => {
                                                     cursor: "pointer",
                                                     width: 'auto'
                                                 }}
-                                                disabled={isAfter10AM || isPast}
+                                                disabled={!kitchenUser && (isPastDate || isAfter10AM)}
                                                 onClick={() => {
                                                     submitData(data, date)
                                                 }}
@@ -1345,7 +1159,7 @@ const Order = () => {
                                                                     }))
                                                                 }
                                                                 style={{ marginRight: 8 }}
-                                                                disabled={item.qty === 0 || isAfter3PM || isPast}
+                                                                disabled={item.qty === 0 || (!kitchenUser && (isPastDate || isAfter3PM))}
                                                             >
                                                                 -
                                                             </button>
@@ -1362,7 +1176,9 @@ const Order = () => {
                                                                             (prev.lunchCategories[catIdx]?.alternativeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
                                                                         let newEntree = [...prev.lunchCategories[catIdx].entreeItems];
                                                                         let newAlternative = [...(prev.lunchCategories[catIdx].alternativeItems || [])];
-                                                                        if (totalQty >= MAX_MEAL_QTY) {
+                                                                        
+                                                                        // For kitchen users, skip the total qty limit enforcement
+                                                                        if (userData?.role !== "kitchen" && totalQty >= MAX_MEAL_QTY) {
                                                                             let removed = false;
                                                                             newAlternative = newAlternative.map((alt) => {
                                                                                 if (!removed && alt.qty > 0) {
@@ -1430,7 +1246,7 @@ const Order = () => {
                                                                     });
                                                                 }}
                                                                 style={{ marginLeft: 8 }}
-                                                                disabled={item.qty >= MAX_MEAL_QTY || isAfter3PM || isPast}
+                                                                disabled={item.qty >= MAX_MEAL_QTY || (!kitchenUser && (isPastDate || isAfter3PM))}
                                                             >
                                                                 +
                                                             </button>
@@ -1580,7 +1396,7 @@ const Order = () => {
                                                                     }))
                                                                 }
                                                                 style={{ marginRight: 8 }}
-                                                                disabled={item.qty === 0 || isAfter3PM || isPast}
+                                                                disabled={item.qty === 0 || (!kitchenUser && (isPastDate || isAfter3PM))}
                                                             >
                                                                 -
                                                             </button>
@@ -1665,7 +1481,7 @@ const Order = () => {
                                                                     });
                                                                 }}
                                                                 style={{ marginLeft: 8 }}
-                                                                disabled={item.qty >= MAX_MEAL_QTY || isAfter3PM || isPast}
+                                                                disabled={item.qty >= MAX_MEAL_QTY || (!kitchenUser && (isPastDate || isAfter3PM))}
                                                             >
                                                                 +
                                                             </button>
@@ -1859,7 +1675,7 @@ const Order = () => {
                                                     cursor: "pointer",
                                                     width: 'auto'
                                                 }}
-                                                disabled={isAfter3PM || isPast}
+                                                disabled={!kitchenUser && (isPastDate || isAfter3PM)}
                                                 onClick={() => {
                                                     submitData(data, date)
                                                 }}
@@ -1948,7 +1764,7 @@ const Order = () => {
                                                                     }))
                                                                 }
                                                                 style={{ marginRight: 8 }}
-                                                                disabled={item.qty === 0 || isAfter12PM || isPast}
+                                                                disabled={item.qty === 0 || (!kitchenUser && (isPastDate || isAfter12PM))}
                                                             >
                                                                 -
                                                             </button>
@@ -1965,7 +1781,9 @@ const Order = () => {
                                                                             (prev.dinnerCategories[catIdx]?.alternativeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
                                                                         let newEntree = [...prev.dinnerCategories[catIdx].entreeItems];
                                                                         let newAlternative = [...(prev.dinnerCategories[catIdx].alternativeItems || [])];
-                                                                        if (totalQty >= MAX_MEAL_QTY) {
+                                                                        
+                                                                        // For kitchen users, skip the total qty limit enforcement
+                                                                        if (userData?.role !== "kitchen" && totalQty >= MAX_MEAL_QTY) {
                                                                             let removed = false;
                                                                             newAlternative = newAlternative.map((alt) => {
                                                                                 if (!removed && alt.qty > 0) {
@@ -2033,7 +1851,7 @@ const Order = () => {
                                                                     });
                                                                 }}
                                                                 style={{ marginLeft: 8 }}
-                                                                disabled={item.qty >= MAX_MEAL_QTY || isAfter12PM || isPast}
+                                                                disabled={item.qty >= MAX_MEAL_QTY || (!kitchenUser && (isPastDate || isAfter12PM))}
                                                             >
                                                                 +
                                                             </button>
@@ -2183,7 +2001,7 @@ const Order = () => {
                                                                     }))
                                                                 }
                                                                 style={{ marginRight: 8 }}
-                                                                disabled={item.qty === 0 || isAfter12PM || isPast}
+                                                                disabled={item.qty === 0 || (!kitchenUser && (isPastDate || isAfter12PM))}
                                                             >
                                                                 -
                                                             </button>
@@ -2268,7 +2086,7 @@ const Order = () => {
                                                                     });
                                                                 }}
                                                                 style={{ marginLeft: 8 }}
-                                                                disabled={item.qty >= MAX_MEAL_QTY || isAfter12PM || isPast}
+                                                                disabled={item.qty >= MAX_MEAL_QTY || (!kitchenUser && (isPastDate || isAfter12PM))}
                                                             >
                                                                 +
                                                             </button>
@@ -2465,7 +2283,7 @@ const Order = () => {
                                                     cursor: "pointer",
                                                     width: 'auto'
                                                 }}
-                                                disabled={isAfter12PM || isPast}
+                                                disabled={!kitchenUser && (isPastDate || isAfter12PM)}
                                                 onClick={() => {
                                                     submitData(data, date)
                                                 }}
