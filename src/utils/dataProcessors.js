@@ -43,13 +43,13 @@ export const findMealByDate = (mealList, date) => {
 
 /**
  * Calculate totals for report data
- * @param {Array} reportList - List of report items
- * @param {number} columnIndex - Column index to sum
+ * @param {Array} reportList - List of report items with data object
+ * @param {string} itemKey - Item key from the data object (e.g., 'T', 'E', 'TO', etc.)
  * @returns {number} Total for the column
  */
-export const calculateReportColumnTotal = (reportList = [], columnIndex) => {
+export const calculateReportColumnTotal = (reportList = [], itemKey) => {
   return _.sumBy(reportList, row => 
-    _.get(row, ['quantity', columnIndex], 0)
+    _.get(row, ['data', itemKey], 0)
   );
 };
 
@@ -63,17 +63,17 @@ export const findRoomReportData = (reportData, roomNo) => {
   const breakfast = _.find(
     _.get(reportData, 'report_breakfast_list', []), 
     { room_no: roomNo }
-  ) || { quantity: [] };
+  ) || { data: {}, option: {} };
   
   const lunch = _.find(
     _.get(reportData, 'report_lunch_list', []), 
     { room_no: roomNo }
-  ) || { quantity: [] };
+  ) || { data: {}, option: {} };
   
   const dinner = _.find(
     _.get(reportData, 'report_dinner_list', []), 
     { room_no: roomNo }
-  ) || { quantity: [] };
+  ) || { data: {}, option: {} };
   
   return { breakfast, lunch, dinner };
 };

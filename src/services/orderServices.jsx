@@ -83,6 +83,9 @@ const OrderServices = {
     }
     return requests.post(`temp-get-charges-report?date=${date}`);
   },
+  getMultipleDateChargesReportList: async (start_date,end_date) => {
+    return requests.post(`/temp-get-charges-report?start_date=${start_date}&end_date=${end_date}`);
+  },
 };
 
 export default OrderServices;
