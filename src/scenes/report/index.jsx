@@ -201,22 +201,22 @@ const Report = () => {
                                         </TableCell>
                                         {/* Breakfast Totals */}
                                         {map(get(data, 'breakfast_item_list', []), (item, i) => (
-                                            <TableCell key={`btot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)', color: 'red' }}>
-                                                {calculateReportColumnTotal(get(data, 'report_breakfast_list', []), i)}
+                                               <TableCell key={`btot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)', color: 'red' }}>
+                                                {item.total_count}
                                             </TableCell>
                                         ))}
 
                                         {/* Lunch Totals */}
                                         {map(get(data, 'lunch_item_list', []), (item, i) => (
                                             <TableCell key={`ltot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)', color: 'red' }}>
-                                                {calculateReportColumnTotal(get(data, 'report_lunch_list', []), i)}
+                                                {item.total_count}
                                             </TableCell>
                                         ))}
 
                                         {/* Dinner Totals */}
                                         {map(get(data, 'dinner_item_list', []), (item, i) => (
                                             <TableCell key={`dtot-${i}`} align="center" sx={{ fontWeight: 700, border: '1px solid rgba(224, 224, 224, 1)', color: 'red' }}>
-                                                {calculateReportColumnTotal(get(data, 'report_dinner_list', []), i)}
+                                                {item.total_count}
                                             </TableCell>
                                         ))}
                                     </TableRow>
