@@ -10,7 +10,6 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
-import OrderServices from "../../services/orderServices";
 import { toast, ToastContainer } from "react-toastify";
 import { useLocation } from "react-router-dom";
 import CustomButton from "../../components/CustomButton";
@@ -30,6 +29,7 @@ import {
 } from "../../utils";
 import config from "../../config";
 import _ from 'lodash';
+import OrderServices from "../../services/orderServices";
 
 const { breakfastEndHour, lunchEndHour, dinnerEndHour } = config.mealTimes;
 
@@ -612,7 +612,7 @@ const GuestOrder = () => {
             const payload = buildOrderPayload(data, date);
             // //console.log("Submit Guest payload ", payload);
             // //console.log("Meal Data =>", mealData);
-            let response = await OrderServices.updateGusetOrder(payload);
+            let response = await OrderServices.updateGuestOrder(payload);
             if (response.ResponseText === "success") {
                 if (response?.item_id && response?.order_id) {
                     setData(prevData =>
