@@ -92,7 +92,8 @@ const Login = () => {
       if (role === "user") {
         navigate("/order", { state: { roomNo: formData?.roomNo } });
       } else {
-        navigate("/home");
+        // Temparorry commented  and replace with /room
+        navigate("/room"); // /home
       }
     }, 1000);
   }, [navigate, formData.roomNo]);

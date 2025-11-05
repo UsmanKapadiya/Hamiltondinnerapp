@@ -19,22 +19,24 @@ const MoveInSummeryForm = lazy(() => import("./scenes/staticForms/MoveInSummeryF
 const ProtectedRoute = ({ children }) => {
   const location = useLocation();
   const isAuthenticated = !!localStorage.getItem("authToken");
-  
+
   if (!isAuthenticated) {
     // Redirect to login and save the attempted location
     return <Navigate to="/" state={{ from: location }} replace />;
   }
-  
+
   return children;
 };
 
 const LoginRoute = () => {
   const isAuthenticated = !!localStorage.getItem("authToken");
-  
+
   if (isAuthenticated) {
-    return <Navigate to="/home" replace />;
+    return <Navigate to="/room" replace />;
+    // Temparorry commented and add Room route
+    // <Navigate to="/home" replace />;
   }
-  
+
   return <Login />;
 };
 
@@ -49,7 +51,7 @@ const AppRouter = () => {
             path="/"
             element={<LoginRoute />}
           />
-          
+
           {/* Protected Routes */}
           <Route
             element={
@@ -59,30 +61,32 @@ const AppRouter = () => {
             }
           >
             {/* Main Application Routes */}
-            <Route path="/home" element={<Home />} />
+            {/* Temparorry commented  */}
+            {/* <Route path="/home" element={<Home />} /> */}
             <Route path="/room" element={<RoomEnter />} />
             <Route path="/order" element={<Order />} />
             <Route path="/guestOrder" element={<GuestOrder />} />
             <Route path="/report" element={<Report />} />
-            <Route path="/charges" element={<ChargesReport />} />
-            
+            {/* Temparorry commented  */}
+            {/* <Route path="/charges" element={<ChargesReport />} /> */}
+
             {/* Static Forms Routes */}
             <Route path="/staticForms">
               <Route index element={<StaticForms />} />
-              
+
               {/* Incident Form Routes */}
               <Route path="incidentForm-create" element={<IncidentForm />} />
               <Route path="incidentForm-edit/:id" element={<IncidentForm />} />
-              
+
               {/* Log Form Routes */}
               <Route path="logForm-create" element={<LogForm />} />
-              
+
               {/* Move-In Summary Form Routes */}
               <Route path="moveInSummaryForm-create" element={<MoveInSummeryForm />} />
               <Route path="moveInSummaryForm-edit/:id" element={<MoveInSummeryForm />} />
             </Route>
           </Route>
-          
+
           {/* 404 - Not Found Route */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
