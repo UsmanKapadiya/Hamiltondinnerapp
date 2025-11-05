@@ -14,6 +14,444 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
 import OrderServices from "../../services/orderServices";
 
+let responseData = {
+  "ResponseCode": "1",
+  "ResponseText": "",
+  "breakfast_item_list": [
+    {
+      "item_name": "T",
+      "real_item_name": "Tray Service"
+    },
+    {
+      "item_name": "E",
+      "real_item_name": "Escort Service"
+    },
+    {
+      "item_name": "TO",
+      "real_item_name": "TakeOut"
+    },
+    {
+      "item_name": "G",
+      "real_item_name": "No. Of Guests"
+    },
+    {
+      "item_name": "O1",
+      "real_item_name": "Yam Fries",
+      "item_id": 735
+    },
+    {
+      "item_name": "O2",
+      "real_item_name": "Noodles",
+      "item_id": 736
+    }
+  ],
+  "report_breakfast_list": [
+    {
+      "room_no": "311",
+      "room_id": 72,
+      "is_for_guest": 0,
+      "data": {
+        "T": 0,
+        "E": 0,
+        "TO": 1,
+        "G": 0,
+        "O1": 1,
+        "O2": 1
+      },
+      "option": {
+        "T": [],
+        "E": [],
+        "TO": [],
+        "G": [],
+        "O1": [],
+        "O2": [
+          {
+            "itemName": "item1_name"
+          }
+        ]
+      }
+    }
+  ],
+  "lunch_item_list": [
+    {
+      "item_name": "T",
+      "real_item_name": "Tray Service"
+    },
+    {
+      "item_name": "E",
+      "real_item_name": "Escort Service"
+    },
+    {
+      "item_name": "TO",
+      "real_item_name": "TakeOut"
+    },
+    {
+      "item_name": "G",
+      "real_item_name": "No. Of Guests"
+    },
+    {
+      "item_name": "O1",
+      "real_item_name": "Yam Fries",
+      "item_id": 735
+    },
+    {
+      "item_name": "O2",
+      "real_item_name": "Noodles",
+      "item_id": 736
+    }
+  ],
+  "report_lunch_list": [
+    {
+      "room_no": "311",
+      "room_id": 72,
+      "is_for_guest": 0,
+      "data": {
+        "T": 0,
+        "E": 0,
+        "TO": 1,
+        "G": 0,
+        "O1": 1,
+        "O2": 1
+      },
+      "option": {
+        "T": [],
+        "E": [],
+        "TO": [],
+        "G": [],
+        "O1": [
+          {
+            "itemName": "item1_name"
+          },
+          {
+            "itemName": "item2_name"
+          }
+        ],
+        "O2": [
+          {
+            "itemName": "item1_name"
+          }
+        ]
+      }
+    }
+  ],
+  "dinner_item_list": [
+    {
+      "item_name": "T",
+      "real_item_name": "Tray Service"
+    },
+    {
+      "item_name": "E",
+      "real_item_name": "Escort Service"
+    },
+    {
+      "item_name": "TO",
+      "real_item_name": "TakeOut"
+    },
+    {
+      "item_name": "G",
+      "real_item_name": "No. Of Guests"
+    },
+    {
+      "item_name": "O1",
+      "real_item_name": "Yam Fries",
+      "item_id": 735
+    },
+    {
+      "item_name": "O2",
+      "real_item_name": "Noodles",
+      "item_id": 736
+    }
+  ],
+  "report_dinner_list": [
+    {
+      "room_no": "311",
+      "room_id": 72,
+      "is_for_guest": 0,
+      "data": {
+        "T": 0,
+        "E": 0,
+        "TO": 1,
+        "G": 0,
+        "O1": 1,
+        "O2": 1
+      },
+      "option": {
+        "T": [],
+        "E": [],
+        "TO": [],
+        "G": [],
+        "O1": [
+          {
+            "itemName": "item1_name"
+          },
+          {
+            "itemName": "item2_name"
+          }
+        ],
+        "O2": [
+          {
+            "itemName": "item1_name"
+          }
+        ]
+      }
+    }
+  ]
+}
+let multipleDateResponseData = {
+  "ResponseCode": "1",
+  "ResponseText": "",
+  "breakfast_item_list": [
+    {
+      "item_name": "T",
+      "real_item_name": "Tray Service"
+    },
+    {
+      "item_name": "E",
+      "real_item_name": "Escort Service"
+    },
+    {
+      "item_name": "TO",
+      "real_item_name": "TakeOut"
+    },
+    {
+      "item_name": "G",
+      "real_item_name": "No. Of Guests"
+    },
+    {
+      "item_name": "O1",
+      "real_item_name": "Yam Fries",
+      "item_id": 735
+    },
+    {
+      "item_name": "O2",
+      "real_item_name": "Noodles",
+      "item_id": 736
+    }
+  ],
+  "report_breakfast_list": [
+    {
+      "room_no": "311",
+      "room_id": 72,
+      "is_for_guest": 0,
+      "data": {
+        "T": 0,
+        "E": 0,
+        "TO": 1,
+        "G": 0,
+        "O1": 2,
+        "O2": 3
+      },
+      "option": {
+        "T": [],
+        "E": [],
+        "TO": [],
+        "G": [],
+        "O1": [
+          {
+            "date": "2025-10-15",
+            "items": [
+              {
+                "itemName": "item1_name"
+              },
+              {
+                "itemName": "item2_name"
+              }
+            ]
+          }
+        ],
+        "O2": [
+          {
+            "date": "2025-10-15",
+            "items": [
+              {
+                "itemName": "item1_name"
+              }
+            ]
+          },
+          {
+            "date": "2025-10-16",
+            "items": [
+              {
+                "itemName": "item1_name"
+              },
+              {
+                "itemName": "item2_name"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "lunch_item_list": [
+    {
+      "item_name": "T",
+      "real_item_name": "Tray Service"
+    },
+    {
+      "item_name": "E",
+      "real_item_name": "Escort Service"
+    },
+    {
+      "item_name": "TO",
+      "real_item_name": "TakeOut"
+    },
+    {
+      "item_name": "G",
+      "real_item_name": "No. Of Guests"
+    },
+    {
+      "item_name": "O1",
+      "real_item_name": "Yam Fries",
+      "item_id": 735
+    },
+    {
+      "item_name": "O2",
+      "real_item_name": "Noodles",
+      "item_id": 736
+    }
+  ],
+  "report_lunch_list": [
+    {
+      "room_no": "311",
+      "room_id": 72,
+      "is_for_guest": 0,
+      "data": {
+        "T": 0,
+        "E": 0,
+        "TO": 1,
+        "G": 0,
+        "O1": 2,
+        "O2": 3
+      },
+      "option": {
+        "T": [],
+        "E": [],
+        "TO": [],
+        "G": [],
+        "O1": [
+          {
+            "date": "2025-10-15",
+            "items": [
+              {
+                "itemName": "item1_name"
+              },
+              {
+                "itemName": "item2_name"
+              }
+            ]
+          }
+        ],
+        "O2": [
+          {
+            "date": "2025-10-15",
+            "items": [
+              {
+                "itemName": "item1_name"
+              }
+            ]
+          },
+          {
+            "date": "2025-10-16",
+            "items": [
+              {
+                "itemName": "item1_name"
+              },
+              {
+                "itemName": "item2_name"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "dinner_item_list": [
+    {
+      "item_name": "T",
+      "real_item_name": "Tray Service"
+    },
+    {
+      "item_name": "E",
+      "real_item_name": "Escort Service"
+    },
+    {
+      "item_name": "TO",
+      "real_item_name": "TakeOut"
+    },
+    {
+      "item_name": "G",
+      "real_item_name": "No. Of Guests"
+    },
+    {
+      "item_name": "O1",
+      "real_item_name": "Yam Fries",
+      "item_id": 735
+    },
+    {
+      "item_name": "O2",
+      "real_item_name": "Noodles",
+      "item_id": 736
+    }
+  ],
+  "report_dinner_list": [
+    {
+      "room_no": "311",
+      "room_id": 72,
+      "is_for_guest": 0,
+      "data": {
+        "T": 0,
+        "E": 0,
+        "TO": 1,
+        "G": 0,
+        "O1": 2,
+        "O2": 3
+      },
+      "option": {
+        "T": [],
+        "E": [],
+        "TO": [],
+        "G": [],
+        "O1": [
+          {
+            "date": "2025-10-15",
+            "items": [
+              {
+                "itemName": "item1_name"
+              },
+              {
+                "itemName": "item2_name"
+              }
+            ]
+          }
+        ],
+        "O2": [
+          {
+            "date": "2025-10-15",
+            "items": [
+              {
+                "itemName": "item1_name"
+              }
+            ]
+          },
+          {
+            "date": "2025-10-16",
+            "items": [
+              {
+                "itemName": "item1_name"
+              },
+              {
+                "itemName": "item2_name"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
+
+
 const ChargesReport = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
@@ -53,7 +491,8 @@ const ChargesReport = () => {
                 try {
                     setLoading(true);
                     const response = await OrderServices.getCharges(date.format("YYYY-MM-DD"));
-                    setData(response);
+                    setData(responseData)
+                    // setData(response);
                 } catch (error) {
                     console.error("Error fetching menu list:", error);
                 } finally {
@@ -78,7 +517,8 @@ const ChargesReport = () => {
                         dayjs(startDate).format("YYYY-MM-DD"),
                         dayjs(endDate).format("YYYY-MM-DD")
                     );
-                    setData(response);
+                    // setData(response);
+                    setData(multipleDateResponseData)
                 } catch (error) {
                     console.error("Error fetching menu list:", error);
                 } finally {
@@ -431,32 +871,44 @@ const ChargesReport = () => {
                                                             let option = "";
                                                             let popupText = "";
                                                             if (Array.isArray(optionRaw)) {
-                                                                // Format each option for popup with real_item_name
-                                                                const optionLines = optionRaw
-                                                                    .filter(opt => opt && (typeof opt === 'object' ? opt.optionName : opt))
-                                                                    .map(opt => {
-                                                                        if (typeof opt === 'object' && opt.optionName) {
-                                                                            // Find matching real_item_name for this date
-                                                                            let itemNameForDate = realItemName;
-                                                                            if (item.data && Array.isArray(item.data)) {
-                                                                                const dateItem = item.data.find(d => d.date === opt.date);
-                                                                                if (dateItem) {
-                                                                                    itemNameForDate = dateItem.real_item_name;
+                                                                // Check if it's multiple date format (with date and items structure)
+                                                                const isMultipleDateFormat = optionRaw.length > 0 && optionRaw[0]?.date && optionRaw[0]?.items;
+                                                                
+                                                                if (isMultipleDateFormat) {
+                                                                    // Multiple date format: [{date: "2025-10-15", items: [{itemName: "..."}, ...]}, ...]
+                                                                    const optionLines = [];
+                                                                    optionRaw.forEach(dateGroup => {
+                                                                        if (dateGroup.date && Array.isArray(dateGroup.items)) {
+                                                                            dateGroup.items.forEach(itemObj => {
+                                                                                if (itemObj.itemName) {
+                                                                                    optionLines.push(`${dateGroup.date}: ${realItemName} - ${itemObj.itemName}`);
                                                                                 }
-                                                                            }
-                                                                            return `${opt.date || ''}: ${itemNameForDate} - ${opt.optionName}${opt.timesSelected > 1 ? ` x${opt.timesSelected}` : ''}`;
+                                                                            });
                                                                         }
-                                                                        return typeof opt === 'string' ? `${realItemName} - ${opt}` : '';
-                                                                    })
-                                                                    .filter(opt => opt.trim().length > 0);
-                                                                option = optionLines.join(', ');
-                                                                popupText = optionLines.join('\n');
+                                                                    });
+                                                                    option = optionLines.join(', ');
+                                                                    popupText = optionLines.join('\n');
+                                                                } else {
+                                                                    // Single date format: [{itemName: "..."}, ...]
+                                                                    const optionLines = optionRaw
+                                                                        .filter(opt => opt && (typeof opt === 'object' ? (opt.itemName || opt.optionName) : opt))
+                                                                        .map(opt => {
+                                                                            if (typeof opt === 'object' && (opt.itemName || opt.optionName)) {
+                                                                                const optName = opt.itemName || opt.optionName;
+                                                                                return `${realItemName} - ${optName}`;
+                                                                            }
+                                                                            return typeof opt === 'string' ? `${realItemName} - ${opt}` : '';
+                                                                        })
+                                                                        .filter(opt => opt.trim().length > 0);
+                                                                    option = optionLines.join(', ');
+                                                                    popupText = optionLines.join('\n');
+                                                                }
                                                             } else if (typeof optionRaw === 'string') {
                                                                 option = optionRaw;
                                                                 popupText = `${realItemName} - ${optionRaw}`;
                                                             }
                                                             
-                                                            const showPopup = i >= 3 && qty >= 1 && option && option.trim().length > 0;
+                                                            const showPopup = i >= 4 && qty >= 1 && option && option.trim().length > 0;
                                                             // If qty is undefined or null, show '-'
                                                              return (
                                                                 <TableCell key={`${prefix}-${i}`} align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
