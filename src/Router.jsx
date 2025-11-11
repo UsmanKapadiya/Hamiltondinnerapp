@@ -32,9 +32,7 @@ const LoginRoute = () => {
   const isAuthenticated = !!localStorage.getItem("authToken");
 
   if (isAuthenticated) {
-    return <Navigate to="/room" replace />;
-    // Temparorry commented and add Room route
-    // <Navigate to="/home" replace />;
+    return <Navigate to="/home" replace />;
   }
 
   return <Login />;
@@ -61,8 +59,7 @@ const AppRouter = () => {
             }
           >
             {/* Main Application Routes */}
-            {/* Temparorry commented  */}
-            {/* <Route path="/home" element={<Home />} /> */}
+            <Route path="/home" element={<Home />} />
             <Route path="/room" element={<RoomEnter />} />
             <Route path="/order" element={<Order />} />
             <Route path="/guestOrder" element={<GuestOrder />} />
