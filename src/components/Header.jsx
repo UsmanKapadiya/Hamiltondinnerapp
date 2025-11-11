@@ -345,7 +345,7 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
                 }}
                 disableScrollLock
               >
-                <MenuItem onClick={handleProfile}>Profile</MenuItem>
+                {/* <MenuItem onClick={handleProfile}>Profile</MenuItem> */}
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
               </Menu>
             </Box>

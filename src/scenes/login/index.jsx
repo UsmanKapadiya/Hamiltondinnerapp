@@ -92,7 +92,11 @@ const Login = () => {
       if (role === "user") {
         navigate("/order", { state: { roomNo: formData?.roomNo } });
       } else {
-        navigate("/home");
+        if((show_incident === 1 && role === "admin") || role === "kitchen"){
+          navigate("/home");
+        }else{
+          navigate("/room");
+        }
       }
     }, 1000);
   }, [navigate, formData.roomNo]);

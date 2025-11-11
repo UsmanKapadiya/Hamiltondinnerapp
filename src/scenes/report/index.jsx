@@ -100,14 +100,15 @@ const Report = () => {
                             )}
                         />
                     </LocalizationProvider>
-                    <Typography
+                    {/* Temparorry commented  */}
+                    {/* <Typography
                         variant="subtitle1"
                         sx={{ fontWeight: 600, cursor: 'pointer', }}
                         onClick={() => navigate('/charges')}
                         onMouseOver={e => (e.target.style.cursor = 'pointer')}
                     >
                         Charges
-                    </Typography>
+                    </Typography> */}
                 </Box>
                 {/* Table Section */}
                 {loading ? (
