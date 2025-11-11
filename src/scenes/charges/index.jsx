@@ -370,7 +370,22 @@ const ChargesReport = () => {
                                     (!data?.report_dinner_list || data.report_dinner_list.length === 0)
                                 ) ? (
                                     <TableRow>
-                                        <TableCell colSpan={1 + (data?.breakfast_item_list?.length || 0) + (data?.lunch_item_list?.length || 0) + (data?.dinner_item_list?.length || 0)} align="center">
+                                        <TableCell 
+                                            colSpan={
+                                                Math.max(
+                                                    1 + (data?.breakfast_item_list?.length || 0) + (data?.lunch_item_list?.length || 0) + (data?.dinner_item_list?.length || 0),
+                                                    4
+                                                )
+                                            } 
+                                            align="center"
+                                            sx={{ 
+                                                border: '1px solid rgba(224, 224, 224, 1)',
+                                                padding: '40px',
+                                                fontSize: '16px',
+                                                fontWeight: 500,
+                                                color: colors.gray[500]
+                                            }}
+                                        >
                                             No Report Found
                                         </TableCell>
                                     </TableRow>
