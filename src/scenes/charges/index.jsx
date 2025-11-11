@@ -431,32 +431,44 @@ const ChargesReport = () => {
                                                             let option = "";
                                                             let popupText = "";
                                                             if (Array.isArray(optionRaw)) {
-                                                                // Format each option for popup with real_item_name
-                                                                const optionLines = optionRaw
-                                                                    .filter(opt => opt && (typeof opt === 'object' ? opt.optionName : opt))
-                                                                    .map(opt => {
-                                                                        if (typeof opt === 'object' && opt.optionName) {
-                                                                            // Find matching real_item_name for this date
-                                                                            let itemNameForDate = realItemName;
-                                                                            if (item.data && Array.isArray(item.data)) {
-                                                                                const dateItem = item.data.find(d => d.date === opt.date);
-                                                                                if (dateItem) {
-                                                                                    itemNameForDate = dateItem.real_item_name;
+                                                                // Check if it's multiple date format (with date and items structure)
+                                                                const isMultipleDateFormat = optionRaw.length > 0 && optionRaw[0]?.date && optionRaw[0]?.items;
+                                                                
+                                                                if (isMultipleDateFormat) {
+                                                                    // Multiple date format: [{date: "2025-10-15", items: [{itemName: "..."}, ...]}, ...]
+                                                                    const optionLines = [];
+                                                                    optionRaw.forEach(dateGroup => {
+                                                                        if (dateGroup.date && Array.isArray(dateGroup.items)) {
+                                                                            dateGroup.items.forEach(itemObj => {
+                                                                                if (itemObj.itemName) {
+                                                                                    optionLines.push(`${dateGroup.date}: ${realItemName} - ${itemObj.itemName}`);
                                                                                 }
-                                                                            }
-                                                                            return `${opt.date || ''}: ${itemNameForDate} - ${opt.optionName}${opt.timesSelected > 1 ? ` x${opt.timesSelected}` : ''}`;
+                                                                            });
                                                                         }
-                                                                        return typeof opt === 'string' ? `${realItemName} - ${opt}` : '';
-                                                                    })
-                                                                    .filter(opt => opt.trim().length > 0);
-                                                                option = optionLines.join(', ');
-                                                                popupText = optionLines.join('\n');
+                                                                    });
+                                                                    option = optionLines.join(', ');
+                                                                    popupText = optionLines.join('\n');
+                                                                } else {
+                                                                    // Single date format: [{itemName: "..."}, ...]
+                                                                    const optionLines = optionRaw
+                                                                        .filter(opt => opt && (typeof opt === 'object' ? (opt.itemName || opt.optionName) : opt))
+                                                                        .map(opt => {
+                                                                            if (typeof opt === 'object' && (opt.itemName || opt.optionName)) {
+                                                                                const optName = opt.itemName || opt.optionName;
+                                                                                return `${realItemName} - ${optName}`;
+                                                                            }
+                                                                            return typeof opt === 'string' ? `${realItemName} - ${opt}` : '';
+                                                                        })
+                                                                        .filter(opt => opt.trim().length > 0);
+                                                                    option = optionLines.join(', ');
+                                                                    popupText = optionLines.join('\n');
+                                                                }
                                                             } else if (typeof optionRaw === 'string') {
                                                                 option = optionRaw;
                                                                 popupText = `${realItemName} - ${optionRaw}`;
                                                             }
                                                             
-                                                            const showPopup = i >= 3 && qty >= 1 && option && option.trim().length > 0;
+                                                            const showPopup = i >= 4 && qty >= 1 && option && option.trim().length > 0;
                                                             // If qty is undefined or null, show '-'
                                                              return (
                                                                 <TableCell key={`${prefix}-${i}`} align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
