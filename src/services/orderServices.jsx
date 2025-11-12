@@ -43,7 +43,11 @@ const OrderServices = {
     if (!date) {
       throw new Error('Date is required');
     }
-    return requests.post(`get-report-data?date=${date}`);
+    return requests.get(`/reports?search_date=${date}`);
+  },
+
+  getMultipleDateReportList: async (start_date,end_date) => {
+    return requests.get(`/reports?start_date=${start_date}&end_date=${end_date}`);
   },
 
   // Room APIs
