@@ -90,6 +90,10 @@ const Report = () => {
             ? data.columns[idx]
             : [];
 
+    // Check if report is empty
+    const isReportEmpty = () => {
+        return !rowsArray || rowsArray.length === 0;
+    };
 
     return (
         <Box m="20px">
@@ -238,6 +242,23 @@ const Report = () => {
                 {/* Table Section */}
                 {loading ? (
                     <CustomLoadingOverlay />
+                ) : isReportEmpty() ? (
+                    <Box
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        height="50vh"
+                    >
+                        <Typography
+                            variant="h5"
+                            sx={{
+                                fontWeight: 600,
+                                color: colors.gray[100]
+                            }}
+                        >
+                            No Data Available for the selected date.
+                        </Typography>
+                    </Box>
                 ) : (
                     // <TableContainer component={Paper}>
                     //     <Table sx={{ border: '1px solid rgba(224, 224, 224, 1)', borderCollapse: 'collapse' }}>
