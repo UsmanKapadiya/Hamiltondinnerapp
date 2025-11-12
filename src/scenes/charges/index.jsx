@@ -264,102 +264,129 @@ const ChargesReport = () => {
                                     <TableCell
                                         align="center"
                                         sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
-                                        colSpan={data?.breakfast_item_list?.length || 0}
+                                        colSpan={Math.max(data?.breakfast_item_list?.length || 0, 1)}
                                     >
                                         Breakfast
                                     </TableCell>
                                     <TableCell
                                         align="center"
                                         sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
-                                        colSpan={data?.lunch_item_list?.length || 0}
+                                        colSpan={Math.max(data?.lunch_item_list?.length || 0, 1)}
                                     >
                                         Lunch
                                     </TableCell>
                                     <TableCell
                                         align="center"
                                         sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
-                                        colSpan={data?.dinner_item_list?.length || 0}
+                                        colSpan={Math.max(data?.dinner_item_list?.length || 0, 1)}
                                     >
                                         Dinner
                                     </TableCell>
                                 </TableRow>
                                 <TableRow sx={{ backgroundColor: colors.blueAccent[700] }}>
-                                    {data?.breakfast_item_list?.map((item, idx) => {
-                                        // Handle both single date and multi-date formats
-                                        const getTooltipTitle = () => {
-                                            if (item.real_item_name) {
-                                                return item.real_item_name;
-                                            } else if (item.data) {
-                                                if (Array.isArray(item.data)) {
-                                                    return item.data.map(d => `${d.date}: ${d.real_item_name}`).join('\n');
-                                                } else if (item.data.real_item_name) {
-                                                    return item.data.real_item_name;
+                                    {data?.breakfast_item_list && data.breakfast_item_list.length > 0 ? (
+                                        data.breakfast_item_list.map((item, idx) => {
+                                            // Handle both single date and multi-date formats
+                                            const getTooltipTitle = () => {
+                                                if (item.real_item_name) {
+                                                    return item.real_item_name;
+                                                } else if (item.data) {
+                                                    if (Array.isArray(item.data)) {
+                                                        return item.data.map(d => `${d.date}: ${d.real_item_name}`).join('\n');
+                                                    } else if (item.data.real_item_name) {
+                                                        return item.data.real_item_name;
+                                                    }
                                                 }
-                                            }
-                                            return item.item_name;
-                                        };
-                                        return (
-                                            <TableCell
-                                                key={`breakfast-${idx}`}
-                                                align="center"
-                                                sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
-                                            >
-                                                <Tooltip title={getTooltipTitle()} arrow>
-                                                    <span>{item.item_name}</span>
-                                                </Tooltip>
-                                            </TableCell>
-                                        );
-                                    })}
-                                    {data?.lunch_item_list?.map((item, idx) => {
-                                        const getTooltipTitle = () => {
-                                            if (item.real_item_name) {
-                                                return item.real_item_name;
-                                            } else if (item.data) {
-                                                if (Array.isArray(item.data)) {
-                                                    return item.data.map(d => `${d.date}: ${d.real_item_name}`).join('\n');
-                                                } else if (item.data.real_item_name) {
-                                                    return item.data.real_item_name;
+                                                return item.item_name;
+                                            };
+                                            return (
+                                                <TableCell
+                                                    key={`breakfast-${idx}`}
+                                                    align="center"
+                                                    sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
+                                                >
+                                                    <Tooltip title={getTooltipTitle()} arrow>
+                                                        <span>{item.item_name}</span>
+                                                    </Tooltip>
+                                                </TableCell>
+                                            );
+                                        })
+                                    ) : (
+                                        <TableCell
+                                            align="center"
+                                            sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
+                                        >
+                                            -
+                                        </TableCell>
+                                    )}
+                                    {data?.lunch_item_list && data.lunch_item_list.length > 0 ? (
+                                        data.lunch_item_list.map((item, idx) => {
+                                            const getTooltipTitle = () => {
+                                                if (item.real_item_name) {
+                                                    return item.real_item_name;
+                                                } else if (item.data) {
+                                                    if (Array.isArray(item.data)) {
+                                                        return item.data.map(d => `${d.date}: ${d.real_item_name}`).join('\n');
+                                                    } else if (item.data.real_item_name) {
+                                                        return item.data.real_item_name;
+                                                    }
                                                 }
-                                            }
-                                            return item.item_name;
-                                        };
-                                        return (
-                                            <TableCell
-                                                key={`lunch-${idx}`}
-                                                align="center"
-                                                sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
-                                            >
-                                                <Tooltip title={getTooltipTitle()} arrow>
-                                                    <span>{item.item_name}</span>
-                                                </Tooltip>
-                                            </TableCell>
-                                        );
-                                    })}
-                                    {data?.dinner_item_list?.map((item, idx) => {
-                                        const getTooltipTitle = () => {
-                                            if (item.real_item_name) {
-                                                return item.real_item_name;
-                                            } else if (item.data) {
-                                                if (Array.isArray(item.data)) {
-                                                    return item.data.map(d => `${d.date}: ${d.real_item_name}`).join('\n');
-                                                } else if (item.data.real_item_name) {
-                                                    return item.data.real_item_name;
+                                                return item.item_name;
+                                            };
+                                            return (
+                                                <TableCell
+                                                    key={`lunch-${idx}`}
+                                                    align="center"
+                                                    sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
+                                                >
+                                                    <Tooltip title={getTooltipTitle()} arrow>
+                                                        <span>{item.item_name}</span>
+                                                    </Tooltip>
+                                                </TableCell>
+                                            );
+                                        })
+                                    ) : (
+                                        <TableCell
+                                            align="center"
+                                            sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
+                                        >
+                                            -
+                                        </TableCell>
+                                    )}
+                                    {data?.dinner_item_list && data.dinner_item_list.length > 0 ? (
+                                        data.dinner_item_list.map((item, idx) => {
+                                            const getTooltipTitle = () => {
+                                                if (item.real_item_name) {
+                                                    return item.real_item_name;
+                                                } else if (item.data) {
+                                                    if (Array.isArray(item.data)) {
+                                                        return item.data.map(d => `${d.date}: ${d.real_item_name}`).join('\n');
+                                                    } else if (item.data.real_item_name) {
+                                                        return item.data.real_item_name;
+                                                    }
                                                 }
-                                            }
-                                            return item.item_name;
-                                        };
-                                        return (
-                                            <TableCell
-                                                key={`dinner-${idx}`}
-                                                align="center"
-                                                sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
-                                            >
-                                                <Tooltip title={getTooltipTitle()} arrow>
-                                                    <span>{item.item_name}</span>
-                                                </Tooltip>
-                                            </TableCell>
-                                        );
-                                    })}
+                                                return item.item_name;
+                                            };
+                                            return (
+                                                <TableCell
+                                                    key={`dinner-${idx}`}
+                                                    align="center"
+                                                    sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
+                                                >
+                                                    <Tooltip title={getTooltipTitle()} arrow>
+                                                        <span>{item.item_name}</span>
+                                                    </Tooltip>
+                                                </TableCell>
+                                            );
+                                        })
+                                    ) : (
+                                        <TableCell
+                                            align="center"
+                                            sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
+                                        >
+                                            -
+                                        </TableCell>
+                                    )}
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -424,10 +451,11 @@ const ChargesReport = () => {
                                                         prefix: 'd'
                                                     }].map(({ row, itemList, prefix }, mealIdx) => (
                                                         <React.Fragment key={`${prefix}-meal-${mealIdx}`}>
-                                                            {(itemList || []).map((item, i) => {
-                                                            const itemKey = item?.item_name || "";
-                                                            let qty = row.data?.[itemKey];
-                                                            const optionRaw = row.option?.[itemKey];
+                                                            {itemList && itemList.length > 0 ? (
+                                                                itemList.map((item, i) => {
+                                                                const itemKey = item?.item_name || "";
+                                                                let qty = row.data?.[itemKey];
+                                                                const optionRaw = row.option?.[itemKey];
                                                             
                                                             // Get real_item_name from either format
                                                             let realItemName = "";
@@ -512,7 +540,12 @@ const ChargesReport = () => {
                                                                     )}
                                                                 </TableCell>
                                                             );
-                                                        })}
+                                                        })
+                                                            ) : (
+                                                                <TableCell align="center" sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}>
+                                                                    -
+                                                                </TableCell>
+                                                            )}
                                                         </React.Fragment>
                                                     ))}
                                                 </TableRow>
