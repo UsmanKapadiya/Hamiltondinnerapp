@@ -29,9 +29,6 @@ const Report = () => {
     const [rowsArray, setRowsArray] = useState([]);
     const [selectedSummaryType, setSelectedSummaryType] = useState("Single Date Record");
     const [summaryAnchor, setSummaryAnchor] = useState(null);
-    const [startDateError, setStartDateError] = useState("");
-    const [endDateError, setEndDateError] = useState("");
-    const [dateRangeError, setDateRangeError] = useState("");
 
 
     useEffect(() => {
@@ -54,43 +51,16 @@ const Report = () => {
         }
     }, [date, selectedSummaryType]);
 
-    // Validate dates for multiple date records
-    const validateDates = () => {
-        let isValid = true;
-        
-        // Reset all errors
-        setStartDateError("");
-        setEndDateError("");
-        setDateRangeError("");
-
-        // Validate start date
-        if (!startDate || !dayjs(startDate).isValid()) {
-            setStartDateError("Please select a valid start date");
-            isValid = false;
-        }
-
-        // Validate end date
-        if (!endDate || !dayjs(endDate).isValid()) {
-            setEndDateError("Please select a valid end date");
-            isValid = false;
-        }
-
-        // If both dates are valid, check if start date is not greater than end date
-        if (startDate && endDate && dayjs(startDate).isValid() && dayjs(endDate).isValid()) {
-            if (dayjs(startDate).isAfter(dayjs(endDate))) {
-                setDateRangeError("Start date cannot be greater than end date");
-                isValid = false;
-            }
-        }
-
-        return isValid;
-    };
-
     useEffect(() => {
         // Multiple Date Record fetch
-        if (selectedSummaryType === "Multiple Date Record") {
-            // Validate dates
-            if (!validateDates()) {
+        if (
+            selectedSummaryType === "Multiple Date Record" &&
+            startDate && endDate &&
+            dayjs(startDate).isValid() && dayjs(endDate).isValid()
+        ) {
+            // Validate that end date is not before start date (same date is allowed)
+            if (dayjs(endDate).isBefore(dayjs(startDate), 'day')) {
+                console.error("End date cannot be before start date");
                 setRowsArray([]);
                 setData({});
                 return;
@@ -170,51 +140,39 @@ const Report = () => {
                     {/* Left Side - Date Picker */}
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         {selectedSummaryType === "Multiple Date Record" ? (
-                            <Box display="flex" flexDirection="column" gap={1}>
-                                <Box display="flex" gap={2}>
-                                    <Box display="flex" flexDirection="column">
-                                        <DatePicker
-                                            label="Start Date"
-                                            value={startDate}
-                                            onChange={(newValue) => setStartDate(newValue)}
-                                            slotProps={{
-                                                textField: {
-                                                    variant: "filled",
-                                                    error: !!startDateError,
-                                                    helperText: startDateError,
-                                                    sx: { minWidth: 200 }
-                                                }
-                                            }}
-                                        />
-                                    </Box>
-                                    <Box display="flex" flexDirection="column">
-                                        <DatePicker
-                                            label="End Date"
-                                            value={endDate}
-                                            onChange={(newValue) => setEndDate(newValue)}
-                                            slotProps={{
-                                                textField: {
-                                                    variant: "filled",
-                                                    error: !!endDateError,
-                                                    helperText: endDateError,
-                                                    sx: { minWidth: 200 }
-                                                }
-                                            }}
-                                        />
-                                    </Box>
-                                </Box>
-                                {dateRangeError && (
-                                    <Typography
-                                        variant="caption"
-                                        sx={{
-                                            color: theme.palette.error.main,
-                                            fontWeight: 500,
-                                            marginTop: 0.5,
-                                        }}
-                                    >
-                                        {dateRangeError}
-                                    </Typography>
-                                )}
+                            <Box display="flex" gap={2}>
+                                <DatePicker
+                                    label="Start Date"
+                                    value={startDate}
+                                    onChange={(newValue) => setStartDate(newValue)}
+                                    maxDate={endDate}
+                                    slotProps={{
+                                        textField: {
+                                            fullWidth: true,
+                                            variant: "filled",
+                                            error: endDate && startDate && dayjs(startDate).isAfter(dayjs(endDate), 'day'),
+                                            helperText: endDate && startDate && dayjs(startDate).isAfter(dayjs(endDate), 'day') 
+                                                ? "Start date cannot be after end date" 
+                                                : ""
+                                        }
+                                    }}
+                                />
+                                <DatePicker
+                                    label="End Date"
+                                    value={endDate}
+                                    onChange={(newValue) => setEndDate(newValue)}
+                                    minDate={startDate}
+                                    slotProps={{
+                                        textField: {
+                                            fullWidth: true,
+                                            variant: "filled",
+                                            error: endDate && startDate && dayjs(endDate).isBefore(dayjs(startDate), 'day'),
+                                            helperText: endDate && startDate && dayjs(endDate).isBefore(dayjs(startDate), 'day') 
+                                                ? "End date cannot be before start date" 
+                                                : ""
+                                        }
+                                    }}
+                                />
                             </Box>
                         ) : (
                             <DatePicker
