@@ -416,29 +416,30 @@ const Report = () => {
                     //         </TableBody>
                     //     </Table>
                     // </TableContainer>
-                    <TableContainer component={Paper}>
-                        <Table sx={{ border: '1px solid rgba(224, 224, 224, 1)', borderCollapse: 'collapse' }}>
-                            <TableHead>
-                                <TableRow sx={{ backgroundColor: colors.blueAccent[700] }}>
-                                    {getColumns(0).map((item, index) => (
-                                        <TableCell
-                                            key={index}
-                                            align="center"
-                                            sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
-                                            {...(index === 0
-                                                ? { rowSpan: item?.rowspan }
-                                                : { colSpan: item?.colspan })}
-                                        >
-                                            {item?.title}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
+                    <Box sx={{ overflowX: 'auto', width: '100%' }}>
+                        <TableContainer component={Paper}>
+                            <Table sx={{ border: '1px solid rgba(224, 224, 224, 1)', borderCollapse: 'collapse', minWidth: 650 }}>
+                                <TableHead>
+                                    <TableRow sx={{ backgroundColor: colors.blueAccent[700] }}>
+                                        {getColumns(0).map((item, index) => (
+                                            <TableCell
+                                                key={index}
+                                                align="center"
+                                                sx={{ border: '1px solid rgba(224, 224, 224, 1)', whiteSpace: 'nowrap' }}
+                                                {...(index === 0
+                                                    ? { rowSpan: item?.rowspan }
+                                                    : { colSpan: item?.colspan })}
+                                            >
+                                                {item?.title}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
                                 <TableRow sx={{ backgroundColor: colors.blueAccent[700] }}>
                                     {getColumns(data?.columns?.length - 2).map((item, key) => (
                                         <TableCell
                                             key={key}
                                             align="center"
-                                            sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
+                                            sx={{ border: '1px solid rgba(224, 224, 224, 1)', whiteSpace: 'nowrap' }}
                                         >
                                             {item.title}
                                         </TableCell>
@@ -446,64 +447,70 @@ const Report = () => {
                                 </TableRow>
                                 {/* Display BA B1 La .... */}
                                 <TableRow sx={{ backgroundColor: colors.blueAccent[700] }}>
-                                    {getColumns(data?.columns?.length - 1).map((item, key) => (
-                                        <TableCell
-                                            key={key}
-                                            align="center"
-                                            sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
-                                        >
-                                            {item?.field || ''}
-                                            {/* Currently toolTip Commented */}
-                                            {/* <Tooltip title={item?.tooltip || ''} arrow>
-                          <span style={{ display: 'inline-block', width: '100%' }}>
-                            {item?.field || ''}
-                          </span>
-                        </Tooltip> */}
-                                        </TableCell>
-                                    ))}
+                                    {data?.columns?.[1] && typeof data.columns[1] === 'object' && !Array.isArray(data.columns[1]) ? (
+                                        Object.keys(data.columns[1]).map((key, index) => (
+                                            <TableCell
+                                                key={index}
+                                                align="center"
+                                                sx={{ border: '1px solid rgba(224, 224, 224, 1)', whiteSpace: 'nowrap' }}
+                                            >
+                                                {key}
+                                            </TableCell>
+                                        ))
+                                    ) : null}
                                 </TableRow>
                                 <TableRow>
                                     {/* First cell empty */}
                                     <TableCell
                                         align="center"
-                                        sx={{ border: '1px solid rgba(224, 224, 224, 1)', fontWeight: 'bold', backgroundColor: colors.primary[400] }}
+                                        sx={{ border: '1px solid rgba(224, 224, 224, 1)', fontWeight: 'bold', backgroundColor: colors.primary[400], whiteSpace: 'nowrap' }}
                                     >
                                     </TableCell>
                                     {/* Display total data */}
-                                    {getColumns(data?.columns?.length - 1).map((item, key) => (
-                                        <TableCell
-                                            key={key}
-                                            align="center"
-                                            sx={{ border: '1px solid rgba(224, 224, 224, 1)', fontWeight: 'bold', backgroundColor: colors.primary[400], color: colors.redAccent[800] }}
-                                        >
-                                            {data?.total[item.field] !== undefined ? data?.total[item.field] : ''}
-                                        </TableCell>
-                                    ))}
+                                    {data?.columns?.[1] && typeof data.columns[1] === 'object' && !Array.isArray(data.columns[1]) ? (
+                                        Object.keys(data.columns[1]).map((key, index) => (
+                                            <TableCell
+                                                key={index}
+                                                align="center"
+                                                sx={{ border: '1px solid rgba(224, 224, 224, 1)', fontWeight: 'bold', backgroundColor: colors.primary[400], color: colors.redAccent[800], whiteSpace: 'nowrap' }}
+                                            >
+                                                {data?.total?.[key] !== undefined ? data.total[key] : ''}
+                                            </TableCell>
+                                        ))
+                                    ) : null}
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {rowsArray.map((room, index) => (
-                                    <TableRow key={index}>
-                                        <TableCell
-                                            align="center"
-                                            sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
-                                        >
-                                            {room.room_id}
-                                        </TableCell>
-                                        {Object.keys(room).filter(key => key !== 'room_id').map((key, subIndex) => (
+                                {rowsArray.map((room, index) => {
+                                    // Get the column keys from index 1 of columns array
+                                    const columnKeys = data?.columns?.[1] && typeof data.columns[1] === 'object' && !Array.isArray(data.columns[1]) 
+                                        ? Object.keys(data.columns[1]) 
+                                        : [];
+                                    
+                                    return (
+                                        <TableRow key={index}>
                                             <TableCell
-                                                key={subIndex}
                                                 align="center"
-                                                sx={{ border: '1px solid rgba(224, 224, 224, 1)' }}
+                                                sx={{ border: '1px solid rgba(224, 224, 224, 1)', whiteSpace: 'nowrap' }}
                                             >
-                                                {room[key]}
+                                                {room.room_name || room.room_id}
                                             </TableCell>
-                                        ))}
-                                    </TableRow>
-                                ))}
+                                            {columnKeys.map((key, subIndex) => (
+                                                <TableCell
+                                                    key={subIndex}
+                                                    align="center"
+                                                    sx={{ border: '1px solid rgba(224, 224, 224, 1)', whiteSpace: 'nowrap' }}
+                                                >
+                                                    {room[key] !== undefined ? room[key] : ''}
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    );
+                                })}
                             </TableBody>
                         </Table>
                     </TableContainer>
+                    </Box>
                 )}
             </Box>
         </Box>
