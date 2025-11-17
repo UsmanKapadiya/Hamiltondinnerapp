@@ -29,7 +29,7 @@ const ChargesReport = () => {
 
 
     // For custom popup
-    const [popup, setPopup] = useState({ open: false, anchorEl: null, text: "" });
+    const [popup, setPopup] = useState({ open: false, anchorEl: null, text: "", title: "" });
 
     // useEffect(() => {
     //     const fetchChargesReports = async () => {
@@ -486,18 +486,20 @@ const ChargesReport = () => {
                                                             // Handle both string (single date) and array (multi date) formats
                                                             let option = "";
                                                             let popupText = "";
+                                                            let popupTitle = "";
                                                             if (Array.isArray(optionRaw)) {
                                                                 // Check if it's multiple date format (with date and items structure)
                                                                 const isMultipleDateFormat = optionRaw.length > 0 && optionRaw[0]?.date && optionRaw[0]?.items;
                                                                 
                                                                 if (isMultipleDateFormat) {
                                                                     // Multiple date format: [{date: "2025-10-15", items: [{itemName: "..."}, ...]}, ...]
+                                                                    popupTitle = realItemName; // Set title for multiple date format
                                                                     const optionLines = [];
                                                                     optionRaw.forEach(dateGroup => {
                                                                         if (dateGroup.date && Array.isArray(dateGroup.items)) {
                                                                             dateGroup.items.forEach(itemObj => {
                                                                                 if (itemObj.itemName) {
-                                                                                    optionLines.push(`${dateGroup.date}: ${realItemName} - ${itemObj.itemName}`);
+                                                                                    optionLines.push(`${dateGroup.date}: ${itemObj.itemName}`);
                                                                                 }
                                                                             });
                                                                         }
@@ -542,7 +544,8 @@ const ChargesReport = () => {
                                                                                 setPopup({
                                                                                     open: true,
                                                                                     anchorEl: e.currentTarget,
-                                                                                    text: popupText || 'No option available'
+                                                                                    text: popupText || 'No option available',
+                                                                                    title: popupTitle
                                                                                 });
                                                                             }}
                                                                         >
@@ -592,6 +595,11 @@ const ChargesReport = () => {
                         }
                     }}
                 >
+                    {popup.title && (
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#1565c0', mb: 1 }}>
+                            {popup.title}
+                        </Typography>
+                    )}
                     <Typography variant="body2" sx={{ fontWeight: 500, color: '#1976d2', mb: 1, whiteSpace: 'pre-line' }}>
                         {popup.text || ''}
                     </Typography>
