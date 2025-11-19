@@ -146,6 +146,7 @@ const Report = () => {
                                     value={startDate}
                                     onChange={(newValue) => setStartDate(newValue)}
                                     maxDate={endDate}
+                                    disabled={loading}
                                     slotProps={{
                                         textField: {
                                             fullWidth: true,
@@ -162,6 +163,7 @@ const Report = () => {
                                     value={endDate}
                                     onChange={(newValue) => setEndDate(newValue)}
                                     minDate={startDate}
+                                    disabled={loading}
                                     slotProps={{
                                         textField: {
                                             fullWidth: true,
@@ -179,6 +181,7 @@ const Report = () => {
                                 label="Date"
                                 value={date}
                                 onChange={(newValue) => setDate(newValue)}
+                                disabled={loading}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
@@ -192,19 +195,26 @@ const Report = () => {
 
                     {/* Right Side - Menu Icon and Charges Link */}
                     <Box display="flex" alignItems="center" gap={2}>
-                        <Tooltip title="Reports" arrow>
-                            <IconButton
-                                onClick={handleSummaryClick}
-                                sx={{
-                                    color: colors.blueAccent[700],
-                                    "&:hover": {
-                                        backgroundColor: colors.blueAccent[800],
-                                        color: colors.gray[100],
-                                    },
-                                }}
-                            >
-                                <SummarizeOutlined sx={{ fontSize: "28px" }} />
-                            </IconButton>
+                        <Tooltip title={loading ? "Loading..." : "Reports"} arrow>
+                            <span>
+                                <IconButton
+                                    onClick={handleSummaryClick}
+                                    disabled={loading}
+                                    sx={{
+                                        color: colors.blueAccent[700],
+                                        "&:hover": {
+                                            backgroundColor: colors.blueAccent[800],
+                                            color: colors.gray[100],
+                                        },
+                                        "&.Mui-disabled": {
+                                            color: colors.gray[500],
+                                            opacity: 0.5,
+                                        },
+                                    }}
+                                >
+                                    <SummarizeOutlined sx={{ fontSize: "28px" }} />
+                                </IconButton>
+                            </span>
                         </Tooltip>
                         <Menu
                             anchorEl={summaryAnchor}
@@ -243,13 +253,15 @@ const Report = () => {
                             variant="subtitle1"
                             sx={{
                                 fontWeight: 600,
-                                cursor: 'pointer',
-                                color: colors.blueAccent[700],
+                                cursor: loading ? 'default' : 'pointer',
+                                color: loading ? colors.gray[500] : colors.blueAccent[700],
+                                opacity: loading ? 0.5 : 1,
                                 "&:hover": {
-                                    color: colors.blueAccent[500],
-                                }
+                                    color: loading ? colors.gray[500] : colors.blueAccent[500],
+                                },
+                                pointerEvents: loading ? 'none' : 'auto',
                             }}
-                            onClick={() => navigate('/charges')}
+                            onClick={() => !loading && navigate('/charges')}
                         >
                             Charges
                         </Typography>
