@@ -23,6 +23,7 @@ const ChargesReport = () => {
     const [date, setDate] = useState(dayjs());
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState({});
+    const [error, setError] = useState(null);
     const [openCalendar, setOpenCalendar] = useState(true);
     const [summaryAnchor, setSummaryAnchor] = useState(null);
     const [selectedSummaryType, setSelectedSummaryType] = useState("Single Date Record");
@@ -52,10 +53,13 @@ const ChargesReport = () => {
             const fetchReports = async () => {
                 try {
                     setLoading(true);
+                    setError(null);
                     const response = await OrderServices.getCharges(date.format("YYYY-MM-DD"));
                     setData(response);
                 } catch (error) {
                     console.error("Error fetching menu list:", error);
+                    setError("Failed to fetch report. Please try again.");
+                    setData({});
                 } finally {
                     setLoading(false);
                 }
@@ -81,6 +85,7 @@ const ChargesReport = () => {
             const fetchReportsRange = async () => {
                 try {
                     setLoading(true);
+                    setError(null);
                     const response = await OrderServices.getMultipleDateChargesReportList(
                         dayjs(startDate).format("YYYY-MM-DD"),
                         dayjs(endDate).format("YYYY-MM-DD")
@@ -88,6 +93,8 @@ const ChargesReport = () => {
                     setData(response);
                 } catch (error) {
                     console.error("Error fetching menu list:", error);
+                    setError("Failed to fetch report. Please try again.");
+                    setData({});
                 } finally {
                     setLoading(false);
                 }
@@ -262,6 +269,26 @@ const ChargesReport = () => {
                 </Box>
                 {loading ? (
                     <CustomLoadingOverlay />
+                ) : error ? (
+                    <Box 
+                        display="flex" 
+                        justifyContent="center" 
+                        alignItems="center" 
+                        height="60vh"
+                        sx={{
+                            // backgroundColor: colors.primary[400],
+                            borderRadius: 2,
+                            padding: 4
+                        }}
+                    >
+                        <Typography 
+                            variant="h5" 
+                            color="error" 
+                            sx={{ fontWeight: 600 }}
+                        >
+                            {error}
+                        </Typography>
+                    </Box>
                 ) : (
                     <TableContainer component={Paper}>
                         <Table sx={{ border: '1px solid rgba(224, 224, 224, 1)', borderCollapse: 'collapse' }}>
