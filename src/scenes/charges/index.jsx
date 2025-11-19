@@ -55,9 +55,15 @@ const ChargesReport = () => {
                     setLoading(true);
                     setError(null);
                     const response = await OrderServices.getCharges(date.format("YYYY-MM-DD"));
-                    setData(response);
+                    if (response && typeof response === 'object') {
+                        setData(response);
+                        setError(null);
+                    } else {
+                        setError("Invalid response format. Please try again.");
+                        setData({});
+                    }
                 } catch (error) {
-                    console.error("Error fetching menu list:", error);
+                    console.error("Error fetching charges report:", error);
                     setError("Failed to fetch report. Please try again.");
                     setData({});
                 } finally {
@@ -78,6 +84,7 @@ const ChargesReport = () => {
             // Validate that end date is not before start date (same date is allowed)
             if (dayjs(endDate).isBefore(dayjs(startDate), 'day')) {
                 console.error("End date cannot be before start date");
+                setError("End date cannot be before start date");
                 setData({});
                 return;
             }
@@ -90,9 +97,15 @@ const ChargesReport = () => {
                         dayjs(startDate).format("YYYY-MM-DD"),
                         dayjs(endDate).format("YYYY-MM-DD")
                     );
-                    setData(response);
+                    if (response && typeof response === 'object') {
+                        setData(response);
+                        setError(null);
+                    } else {
+                        setError("Invalid response format. Please try again.");
+                        setData({});
+                    }
                 } catch (error) {
-                    console.error("Error fetching menu list:", error);
+                    console.error("Error fetching charges report:", error);
                     setError("Failed to fetch report. Please try again.");
                     setData({});
                 } finally {
@@ -174,6 +187,7 @@ const ChargesReport = () => {
                                     value={startDate}
                                     onChange={(newValue) => setStartDate(newValue)}
                                     maxDate={endDate}
+                                    disabled={loading}
                                     slotProps={{
                                         textField: {
                                             fullWidth: true,
@@ -190,6 +204,7 @@ const ChargesReport = () => {
                                     value={endDate}
                                     onChange={(newValue) => setEndDate(newValue)}
                                     minDate={startDate}
+                                    disabled={loading}
                                     slotProps={{
                                         textField: {
                                             fullWidth: true,
@@ -207,6 +222,7 @@ const ChargesReport = () => {
                                 label="Date"
                                 value={date}
                                 onChange={handleDateChange}
+                                disabled={loading}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
@@ -218,19 +234,26 @@ const ChargesReport = () => {
                             />
                         )}
                     </LocalizationProvider>
-                    <Tooltip title="Reports" arrow>
-                        <IconButton
-                            onClick={handleUserMenuOpen}
-                            sx={{
-                                color: colors.blueAccent[700],
-                                "&:hover": {
-                                    backgroundColor: colors.blueAccent[800],
-                                    color: colors.gray[100],
-                                },
-                            }}
-                        >
-                            <SummarizeOutlined sx={{ fontSize: "28px" }} />
-                        </IconButton>
+                    <Tooltip title={loading ? "Loading..." : "Reports"} arrow>
+                        <span>
+                            <IconButton
+                                onClick={handleUserMenuOpen}
+                                disabled={loading}
+                                sx={{
+                                    color: colors.blueAccent[700],
+                                    "&:hover": {
+                                        backgroundColor: colors.blueAccent[800],
+                                        color: colors.gray[100],
+                                    },
+                                    "&.Mui-disabled": {
+                                        color: colors.gray[500],
+                                        opacity: 0.5,
+                                    },
+                                }}
+                            >
+                                <SummarizeOutlined sx={{ fontSize: "28px" }} />
+                            </IconButton>
+                        </span>
                     </Tooltip>
                     <Menu
                         anchorEl={anchorEl}
@@ -250,6 +273,7 @@ const ChargesReport = () => {
                             selected={selectedSummaryType === "Single Date Record"}
                             onClick={() => {
                                 setSelectedSummaryType("Single Date Record");
+                                setError(null);
                                 handleSummaryClose();
                             }}
                         >
@@ -259,6 +283,7 @@ const ChargesReport = () => {
                             selected={selectedSummaryType === "Multiple Date Record"}
                             onClick={() => {
                                 setSelectedSummaryType("Multiple Date Record");
+                                setError(null);
                                 handleSummaryClose();
                             }}
                         >
