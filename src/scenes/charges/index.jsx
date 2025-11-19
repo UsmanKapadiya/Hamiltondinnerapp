@@ -274,7 +274,7 @@ const ChargesReport = () => {
                             onClick={() => {
                                 setSelectedSummaryType("Single Date Record");
                                 setError(null);
-                                handleSummaryClose();
+                                handleUserMenuClose();
                             }}
                         >
                             Single Date Record
@@ -284,7 +284,7 @@ const ChargesReport = () => {
                             onClick={() => {
                                 setSelectedSummaryType("Multiple Date Record");
                                 setError(null);
-                                handleSummaryClose();
+                                handleUserMenuClose();
                             }}
                         >
                             Multiple Date Record
