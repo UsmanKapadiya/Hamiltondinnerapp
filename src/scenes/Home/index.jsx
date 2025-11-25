@@ -17,6 +17,14 @@ const Home = () => {
     const [userData] = useLocalStorage("userData", null);
     const navigate = useNavigate();
 
+    useEffect(() => {
+        if (!userData) return;
+        const allow = (userData.show_incident === "1" && userData.role === "admin") || userData.role === "kitchen";
+        if (!allow) {
+            navigate("/room", { replace: true });
+        }
+    }, [userData, navigate]);
+
     const handleLogout = useCallback((e) => {
         e.preventDefault();
 

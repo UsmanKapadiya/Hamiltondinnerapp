@@ -90,12 +90,12 @@ const Login = () => {
     
     setTimeout(() => {
       if (role === "user") {
-        navigate("/order", { state: { roomNo: formData?.roomNo } });
+        navigate("/order", { state: { roomNo: formData?.roomNo }, replace: true });
       } else {
-        if((show_incident === 1 && role === "admin") || role === "kitchen"){
-          navigate("/home");
+        if((show_incident === "1" && role === "admin") || role === "kitchen"){
+          navigate("/home", { replace: true });
         }else{
-          navigate("/room");
+          navigate("/room", { replace: true });
         }
       }
     }, 1000);
