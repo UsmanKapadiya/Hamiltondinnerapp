@@ -653,19 +653,7 @@ const GuestOrder = () => {
             <Dialog open={alertOpen} onClose={handleAlertCancel} maxWidth="xs" fullWidth>
                 <DialogTitle sx={{ textAlign: 'center', fontWeight: 600 }}>Remove All Items?</DialogTitle>
                 <DialogContent sx={{ textAlign: 'center', fontSize: 16 }}>
-                    Order is already selected for {
-                        [
-                            ...(data.breakfastCategories || []).flatMap(cat =>
-                                [...(cat.entreeItems || []), ...(cat.alternativeItems || [])]
-                            ),
-                            ...(data.lunchCategories || []).flatMap(cat =>
-                                [...(cat.entreeItems || []), ...(cat.alternativeItems || [])]
-                            ),
-                            ...(data.dinnerCategories || []).flatMap(cat =>
-                                [...(cat.entreeItems || []), ...(cat.alternativeItems || [])]
-                            ),
-                        ].reduce((sum, item) => sum + (item.qty || 0), 0)
-                    } guest(s).<br />
+                    Order is already selected for {guestCount} guest(s).<br />
                     If you continue, it will remove all items from the order.
                 </DialogContent>
                 <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
