@@ -2,7 +2,8 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || `http://hamiltondinnerapp.staging.intelligrp.com/api/`,
+   baseURL: import.meta.env.VITE_API_BASE_URL || `https://hamiltondinnerapp.redesign.intelligrp.com/api`, 
+  // baseURL: import.meta.env.VITE_API_BASE_URL || `http://hamiltondinnerapp.staging.intelligrp.com/api/`, //old url
   timeout: 50000,
   headers: {
     Accept: 'application/json',
