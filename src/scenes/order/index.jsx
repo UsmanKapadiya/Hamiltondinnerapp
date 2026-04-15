@@ -301,11 +301,13 @@ const Order = () => {
                 // Ensure both fields are strings and trimmed
                 const specialInstruction = (data?.specialInstruction ?? "").toString().trim();
                 const foodTexture = (data?.foodTexture ?? "").toString().trim();
+                const allergy_Info = (data?.allergy_Info ?? "").toString().trim();
 
                 const response = await OrderServices.updateRoomDetails(
                     data.selectedUser.id,
                     specialInstruction,
-                    foodTexture
+                    foodTexture,
+                    allergy_Info
                 );
 
                 if (response.ResponseCode === "1") {

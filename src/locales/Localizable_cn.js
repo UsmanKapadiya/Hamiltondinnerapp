@@ -35,5 +35,6 @@ export default {
     "maximumGuestWarn": "最多可容纳 10 位客人。",
     "servedWithSoup": "配汤",
     "servedWithDessert": "搭配甜点",
-    "guest": "客人"
+    "guest": "客人",
+    "allergy" : "过敏信息"
 }

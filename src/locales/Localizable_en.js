@@ -35,5 +35,6 @@ export default {
     "maximumGuestWarn": "Maximum 10 guests allowed.",
     "servedWithSoup": "served with Soup",
     "servedWithDessert": "served with Dessert",
-    "guest": "Guest"
+    "guest": "Guest",
+    "allergy" : "Allergy Information"
 }

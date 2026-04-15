@@ -23,6 +23,7 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
   const [openModal, setOpenModal] = useState(false);
   const [foodTexture, setFoodTexture] = useState("");
   const [specialInstruction, setSpecialInstruction] = useState("");
+  const [allergy_Info, setAllergy_Info] = useState("");
   const [selectedUser, setSelectedUser] = useState("");
   const [langObj, setLangObj] = useState(en);
   const [userData] = useState(() => {
@@ -71,6 +72,7 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
     const selectedUserData = userData?.rooms?.find((x) => x?.name === title);
     setFoodTexture("");
     setSpecialInstruction("");
+    setAllergy_Info("");
     setSelectedUser(selectedUserData);
     if (selectedUserData?.id) {
       try {
@@ -78,6 +80,7 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
         if (response.ResponseCode === "1") {
           setFoodTexture(response?.Data?.food_texture || "");
           setSpecialInstruction(response?.Data?.special_instrucations || "");
+          setAllergy_Info(response?.Data?.allergy_info || "");          
         } else {
           toast.error(response.ResponseText || "Login failed. Please try again.");
         }
@@ -103,6 +106,7 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
       handleRoomUpdate({
         foodTexture,
         specialInstruction,
+        allergy_Info,
         selectedUser
       });
     }
@@ -147,6 +151,14 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
               minRows={2}
               value={specialInstruction}
               onChange={e => setSpecialInstruction(e.target.value)}
+              fullWidth
+            />
+             <TextField
+              label={langObj.allergy}
+              multiline
+              minRows={2}
+              value={allergy_Info}
+              onChange={e => setAllergy_Info(e.target.value)}
               fullWidth
             />
             <Box display="flex" justifyContent="flex-end" gap={1} mt={2}>

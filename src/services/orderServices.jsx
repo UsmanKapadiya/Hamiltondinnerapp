@@ -64,7 +64,7 @@ const OrderServices = {
   /**
    * Update room details
    */
-  updateRoomDetails: async (id, specialInstructions, foodTexture) => {
+  updateRoomDetails: async (id, specialInstructions, foodTexture, allergy_Info) => {
     if (!id) {
       throw new Error('Room ID is required');
     }
@@ -72,7 +72,8 @@ const OrderServices = {
       `${id}/update-room-details`,
       {
         special_instrucations: specialInstructions,
-        food_texture: foodTexture
+        food_texture: foodTexture,
+        allergy_info: allergy_Info
       }
     );
   },
