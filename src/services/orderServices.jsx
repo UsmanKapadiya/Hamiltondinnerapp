@@ -54,6 +54,11 @@ const OrderServices = {
   /**
    * Get room details by ID
    */
+
+  getAllActiveRoomList: async () => {
+    return requests.get(`/rooms-list`);
+  },
+
   getRoomDetails: async (id) => {
     if (!id) {
       throw new Error('Room ID is required');

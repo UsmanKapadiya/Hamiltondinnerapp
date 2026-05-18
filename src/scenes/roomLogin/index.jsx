@@ -18,6 +18,7 @@ import logo from "../../assets/images/logo.png";
 import CustomButton from "../../components/CustomButton";
 import { useLocalStorage } from "../../hooks";
 import { sanitizeInput } from "../../utils/validation";
+import OrderServices from "../../services/orderServices";
 
 const RoomEnter = () => {
     const theme = useTheme();
@@ -28,16 +29,36 @@ const RoomEnter = () => {
     const [loading, setLoading] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const navigate = useNavigate();
-    const [userData] = useLocalStorage("userData", null);
+    const [userData, setUserData] = useLocalStorage("userData", null);
 
     // Check authentication status
     useEffect(() => {
         if (isLoggingOut) return;        
         const authToken = localStorage.getItem("authToken");
+        fetchRoomList();
         if (!authToken) {
             navigate("/", { replace: true });
         }
     }, [navigate, isLoggingOut]);
+
+   const fetchRoomList = useCallback(async () => {
+    try {
+        const response = await OrderServices.getAllActiveRoomList();
+
+        if (response?.rooms) {
+
+            const updatedUserData = {
+                ...(userData || {}),
+                rooms: response.rooms,
+            };
+
+            setUserData(updatedUserData);
+        }
+
+    } catch (error) {
+        toast.error("Room is not fetched. Please try again.");
+    }
+}, [userData, setUserData]);
 
     const handleChange = useCallback((e) => {
         const { name, value } = e.target;
