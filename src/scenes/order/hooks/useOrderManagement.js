@@ -174,18 +174,78 @@ export const useOrderManagement = () => {
         ]),
       ];
 
-      const selectedRoom = _.find(userData.rooms, { name: roomNo });
-      const room_id = selectedRoom?.id || 0;
+      // Use getApiRoomId to properly retrieve the room ID (same method as fetchMenuDetails)
+      const room_id = getApiRoomId(userData, roomNo);
 
       const orders = dataArray.map((data) => {
-        const items = getItems(data);
-        const hasItems = items.some((item) => item.qty > 0);
+        const updated = getItems(data);
+        
+        // Find original data for this date from mealData
+        const origDay = Array.isArray(mealData)
+          ? mealData.find((m) => m.date === data.date)
+          : mealData.date === data.date
+          ? mealData
+          : null;
+        
+        const original = origDay ? getItems(origDay) : [];
+        
+        // Create maps for efficient lookup
+        const origMap = new Map(original.map((o) => [`${o.item_id}_${o.order_id}`, o]));
+        const updMap = new Map(updated.map((u) => [`${u.item_id}_${u.order_id}`, u]));
 
-        if (!hasItems) return null;
+        const items = [];
+
+        // 1. Check for new or changed items in updated
+        updated.forEach((u) => {
+          const key = `${u.item_id}_${u.order_id}`;
+          const o = origMap.get(key);
+          
+          if (!o) {
+            // New item — include only if qty > 0
+            if (u.qty > 0) {
+              items.push(u);
+            }
+          } else if (
+            u.qty !== o.qty ||
+            u.preference !== o.preference ||
+            u.item_options !== o.item_options
+          ) {
+            // Changed item — include it
+            items.push(u);
+          }
+        });
+
+        // 2. Check for removed items (present in original but not in updated, or qty went to 0)
+        original.forEach((o) => {
+          const key = `${o.item_id}_${o.order_id}`;
+          if (!updMap.has(key) && o.qty > 0) {
+            // Item completely removed, send with qty: 0
+            items.push({
+              ...o,
+              qty: 0,
+              preference: "",
+              item_options: "",
+            });
+          }
+        });
+
+        // Check if service flags changed
+        const additionalServicesChanged =
+          data.is_dinner_takeout_service !== (origDay?.is_dinner_takeout_service || 0) ||
+          data.is_dinner_tray_service !== (origDay?.is_dinner_tray_service || 0) ||
+          data.is_dinner_escort_service !== (origDay?.is_dinner_escort_service || 0) ||
+          data.is_brk_tray_service !== (origDay?.is_brk_tray_service || 0) ||
+          data.is_brk_escort_service !== (origDay?.is_brk_escort_service || 0) ||
+          data.is_brk_takeout_service !== (origDay?.is_brk_takeout_service || 0) ||
+          data.is_lunch_tray_service !== (origDay?.is_lunch_tray_service || 0) ||
+          data.is_lunch_escort_service !== (origDay?.is_lunch_escort_service || 0) ||
+          data.is_lunch_takeout_service !== (origDay?.is_lunch_takeout_service || 0);
+
+        // Only include this order if there are item changes or service changes
+        if (items.length === 0 && !additionalServicesChanged) return null;
 
         return {
           date: data.date,
-          breakfast: items.filter((item) => item.qty > 0),
           is_brk_tray_service: data.is_brk_tray_service || 0,
           is_brk_escort_service: data.is_brk_escort_service || 0,
           is_brk_takeout_service: data.is_brk_takeout_service || 0,
@@ -195,6 +255,7 @@ export const useOrderManagement = () => {
           is_dinner_tray_service: data.is_dinner_tray_service || 0,
           is_dinner_escort_service: data.is_dinner_escort_service || 0,
           is_dinner_takeout_service: data.is_dinner_takeout_service || 0,
+          items,
         };
       }).filter(Boolean);
 
@@ -204,7 +265,7 @@ export const useOrderManagement = () => {
         orders_to_change: JSON.stringify(orders),
       };
     },
-    [userData, roomNo]
+    [userData, roomNo, mealData]
   );
 
   // Get updated meal selections
@@ -233,37 +294,20 @@ export const useOrderManagement = () => {
         const response = await OrderServices.submitOrder(payload);
 
         if (response?.ResponseText === "success") {
-          toast.success(langObj.orderSuccess);
-
-          const allCategories = [
-            ...(data.breakfastCategories || []),
-            ...(data.lunchCategories || []),
-            ...(data.dinnerCategories || []),
-          ];
-
-          const allItems = allCategories.flatMap((cat) => [
-            ...(cat.entreeItems || []),
-            ...(cat.alternativeItems || []),
-          ]);
-
-          const updatedData = { ...data };
-          allItems.forEach((item) => {
-            if (item.qty > 0 && response.order_id) {
-              item.order_id = response.order_id;
-            }
-          });
-
-          setData(updatedData);
-          setMealSelections((prev) => getUpdatedMealSelections(prev, updatedData, date));
+          toast.success(langObj.orderSuccess || "Order submitted successfully!");
+          
+          // Clear meal selections and refetch menu
+          setMealSelections([]);
+          await fetchMenuDetails(date);
         } else {
           toast.error(response?.ResponseText || langObj.orderFailed);
         }
       } catch (error) {
         console.error("Error submitting order:", error);
-        toast.error(langObj.orderFailed);
+        toast.error(langObj.orderFailed || "An error occurred while submitting the order.");
       }
     },
-    [mealSelections, buildOrderPayload, langObj, getUpdatedMealSelections]
+    [mealSelections, buildOrderPayload, langObj, getUpdatedMealSelections, fetchMenuDetails]
   );
 
   // Room update handler
