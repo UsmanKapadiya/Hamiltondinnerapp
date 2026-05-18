@@ -117,6 +117,187 @@ export const updateCategoryItems = (
 };
 
 /**
+ * Increase item quantity with automatic decrement of other items when limit is reached
+ * This enforces mutual exclusivity when MAX_MEAL_QTY is reached
+ */
+export const increaseItemQuantityWithLimit = (
+  item,
+  maxQty,
+  allEntreeItems,
+  allAlternativeItems,
+  isKitchenUser
+) => {
+  if (item.qty >= maxQty) return { entreeItems: allEntreeItems, alternativeItems: allAlternativeItems };
+
+  // Calculate total quantity
+  const totalQty =
+    (allEntreeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
+    (allAlternativeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
+
+  let newEntreeItems = [...allEntreeItems];
+  let newAlternativeItems = [...(allAlternativeItems || [])];
+
+  // For non-kitchen users, enforce the MAX_MEAL_QTY limit by removing from others
+  if (!isKitchenUser && totalQty >= maxQty) {
+    let removed = false;
+
+    // First try to remove from alternative items
+    newAlternativeItems = newAlternativeItems.map((alt) => {
+      if (!removed && alt.qty > 0) {
+        removed = true;
+        const newQty = alt.qty - 1;
+        return {
+          ...alt,
+          qty: newQty,
+          options:
+            _.size(alt.options) > 0 && alt.qty > 0 && newQty === 0
+              ? resetItemOptions(alt.options)
+              : alt.options,
+          preference:
+            _.size(alt.preference) > 0 && alt.qty > 0 && newQty === 0
+              ? resetItemPreferences(alt.preference)
+              : alt.preference,
+        };
+      }
+      return alt;
+    });
+
+    // If no alternative item was removed, remove from another entree item
+    if (!removed) {
+      newEntreeItems = newEntreeItems.map((en) => {
+        if (!removed && en.id !== item.id && en.qty > 0) {
+          removed = true;
+          const newQty = en.qty - 1;
+          return {
+            ...en,
+            qty: newQty,
+            options:
+              _.size(en.options) > 0 && en.qty > 0 && newQty === 0
+                ? resetItemOptions(en.options)
+                : en.options,
+            preference:
+              _.size(en.preference) > 0 && en.qty > 0 && newQty === 0
+                ? resetItemPreferences(en.preference)
+                : en.preference,
+          };
+        }
+        return en;
+      });
+    }
+  }
+
+  // Now increment the current item
+  newEntreeItems = newEntreeItems.map((i) =>
+    i.id === item.id
+      ? {
+          ...i,
+          qty: (i.qty || 0) + 1,
+          options:
+            _.size(i.options) > 0 && (i.qty || 0) === 0
+              ? resetItemOptions(i.options)
+              : i.options,
+          preference:
+            _.size(i.preference) > 0 && (i.qty || 0) === 0
+              ? resetItemPreferences(i.preference)
+              : i.preference,
+        }
+      : i
+  );
+
+  return { entreeItems: newEntreeItems, alternativeItems: newAlternativeItems };
+};
+
+/**
+ * Increase alternative item quantity with automatic decrement of other items when limit is reached
+ */
+export const increaseAlternativeItemQuantityWithLimit = (
+  item,
+  maxQty,
+  allEntreeItems,
+  allAlternativeItems,
+  isKitchenUser
+) => {
+  if (item.qty >= maxQty) return { entreeItems: allEntreeItems, alternativeItems: allAlternativeItems };
+
+  // Calculate total quantity
+  const totalQty =
+    (allEntreeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0) +
+    (allAlternativeItems?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0);
+
+  let newEntreeItems = [...(allEntreeItems || [])];
+  let newAlternativeItems = [...allAlternativeItems];
+
+  // For non-kitchen users, enforce the MAX_MEAL_QTY limit by removing from others
+  if (!isKitchenUser && totalQty >= maxQty) {
+    let removed = false;
+
+    // First try to remove from entree items
+    newEntreeItems = newEntreeItems.map((en) => {
+      if (!removed && en.qty > 0) {
+        removed = true;
+        const newQty = en.qty - 1;
+        return {
+          ...en,
+          qty: newQty,
+          options:
+            _.size(en.options) > 0 && en.qty > 0 && newQty === 0
+              ? resetItemOptions(en.options)
+              : en.options,
+          preference:
+            _.size(en.preference) > 0 && en.qty > 0 && newQty === 0
+              ? resetItemPreferences(en.preference)
+              : en.preference,
+        };
+      }
+      return en;
+    });
+
+    // If no entree item was removed, remove from another alternative item
+    if (!removed) {
+      newAlternativeItems = newAlternativeItems.map((alt) => {
+        if (!removed && alt.id !== item.id && alt.qty > 0) {
+          removed = true;
+          const newQty = alt.qty - 1;
+          return {
+            ...alt,
+            qty: newQty,
+            options:
+              _.size(alt.options) > 0 && alt.qty > 0 && newQty === 0
+                ? resetItemOptions(alt.options)
+                : alt.options,
+            preference:
+              _.size(alt.preference) > 0 && alt.qty > 0 && newQty === 0
+                ? resetItemPreferences(alt.preference)
+                : alt.preference,
+          };
+        }
+        return alt;
+      });
+    }
+  }
+
+  // Now increment the current alternative item
+  newAlternativeItems = newAlternativeItems.map((i) =>
+    i.id === item.id
+      ? {
+          ...i,
+          qty: (i.qty || 0) + 1,
+          options:
+            _.size(i.options) > 0 && (i.qty || 0) === 0
+              ? resetItemOptions(i.options)
+              : i.options,
+          preference:
+            _.size(i.preference) > 0 && (i.qty || 0) === 0
+              ? resetItemPreferences(i.preference)
+              : i.preference,
+        }
+      : i
+  );
+
+  return { entreeItems: newEntreeItems, alternativeItems: newAlternativeItems };
+};
+
+/**
  * Toggle service flag (0 <-> 1)
  */
 export const toggleServiceFlag = (currentValue) => {

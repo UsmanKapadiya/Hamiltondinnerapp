@@ -11,10 +11,11 @@ import ServiceOptions from "./ServiceOptions";
 import {
   decreaseItemQuantity,
   increaseItemQuantity,
+  increaseItemQuantityWithLimit,
+  increaseAlternativeItemQuantityWithLimit,
   updateItemOption,
   updateItemPreference,
   updateCategoryItems,
-  toggleServiceFlag,
   hasItemsWithQuantity,
 } from "../utils/itemHelpers";
 
@@ -57,16 +58,44 @@ const MealSection = ({
   };
 
   const handleIncrease = (catIdx, itemType, item) => {
-    setData((prev) => ({
-      ...prev,
-      [categoryKey]: updateCategoryItems(
-        prev[categoryKey],
-        catIdx,
-        itemType,
-        item.id,
-        (i) => increaseItemQuantity(i, MAX_MEAL_QTY)
-      ),
-    }));
+    setData((prev) => {
+      const category = prev[categoryKey][catIdx];
+      const allEntreeItems = category.entreeItems || [];
+      const allAlternativeItems = category.alternativeItems || [];
+
+      let updatedItems;
+      
+      if (itemType === "entreeItems") {
+        updatedItems = increaseItemQuantityWithLimit(
+          item,
+          MAX_MEAL_QTY,
+          allEntreeItems,
+          allAlternativeItems,
+          userData?.role === "kitchen"
+        );
+      } else {
+        updatedItems = increaseAlternativeItemQuantityWithLimit(
+          item,
+          MAX_MEAL_QTY,
+          allEntreeItems,
+          allAlternativeItems,
+          userData?.role === "kitchen"
+        );
+      }
+
+      return {
+        ...prev,
+        [categoryKey]: prev[categoryKey].map((cat, idx) =>
+          idx === catIdx
+            ? {
+                ...cat,
+                entreeItems: updatedItems.entreeItems,
+                alternativeItems: updatedItems.alternativeItems,
+              }
+            : cat
+        ),
+      };
+    });
   };
 
   const handleOptionChange = (catIdx, itemType, item, optionId) => {
@@ -96,10 +125,21 @@ const MealSection = ({
   };
 
   const handleServiceToggle = (serviceKey) => {
-    setData((prev) => ({
-      ...prev,
-      [serviceKey]: toggleServiceFlag(prev[serviceKey]),
-    }));
+    setData((prev) => {
+      // Reset all service flags for this meal type to 0, then toggle the selected one
+      const updates = {};
+      serviceKeys.forEach((key) => {
+        updates[key.key] = 0;
+      });
+      
+      // Toggle the selected service (if it was already 1, it becomes 0; if it was 0, it becomes 1)
+      updates[serviceKey] = prev[serviceKey] === 1 ? 0 : 1;
+      
+      return {
+        ...prev,
+        ...updates,
+      };
+    });
   };
 
   const getCategoryName = (cat) => {
