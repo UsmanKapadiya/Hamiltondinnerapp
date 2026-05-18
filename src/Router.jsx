@@ -4,7 +4,7 @@ import App from "./App";
 import CustomLoadingOverlay from "./components/CustomLoadingOverlay";
 
 // Lazy load components for better performance
-const Login = lazy(() => import("./scenes/login"));
+const Login = lazy(() => import("./scenes/login/index"));
 const Home = lazy(() => import("./scenes/Home"));
 const RoomEnter = lazy(() => import("./scenes/roomLogin"));
 const Report = lazy(() => import("./scenes/report"));
