@@ -230,9 +230,9 @@ export const useOrderManagement = () => {
 
         const payload = buildOrderPayload(newMealSelections);
 
-        const response = await OrderServices.changeOrder(payload);
+        const response = await OrderServices.submitOrder(payload);
 
-        if (response?.message === "success") {
+        if (response?.ResponseText === "success") {
           toast.success(langObj.orderSuccess);
 
           const allCategories = [
@@ -256,7 +256,7 @@ export const useOrderManagement = () => {
           setData(updatedData);
           setMealSelections((prev) => getUpdatedMealSelections(prev, updatedData, date));
         } else {
-          toast.error(langObj.orderFailed);
+          toast.error(response?.ResponseText || langObj.orderFailed);
         }
       } catch (error) {
         console.error("Error submitting order:", error);
@@ -271,32 +271,33 @@ export const useOrderManagement = () => {
     async (data) => {
       if (data?.selectedUser?.id) {
         try {
-          const response = await OrderServices.updateRoomDetails({
-            room_id: data.selectedUser.id,
-            ..._.pick(data, ["breakfast_time", "lunch_time", "dinner_time"]),
-          });
+          const specialInstruction = (data?.specialInstruction ?? "").toString().trim();
+          const foodTexture = (data?.foodTexture ?? "").toString().trim();
+          const allergy_Info = (data?.allergy_Info ?? "").toString().trim();
 
-          if (response?.message === "success") {
-            const updatedUserData = {
-              ...userData,
-              breakfast_time: data.breakfast_time,
-              lunch_time: data.lunch_time,
-              dinner_time: data.dinner_time,
-            };
-            localStorage.setItem("userData", JSON.stringify(updatedUserData));
-            toast.success("Room details updated successfully");
+          const response = await OrderServices.updateRoomDetails(
+            data.selectedUser.id,
+            specialInstruction,
+            foodTexture,
+            allergy_Info
+          );
+
+          if (response?.ResponseCode === "1") {
+            toast.success(response?.ResponseText || "Room Details Updated Successfully");
           } else {
-            toast.error("Failed to update room details");
+            toast.error(response?.ResponseText || "Room Details Update failed. Please try again.");
           }
         } catch (error) {
           console.error("Error updating room details:", error);
-          toast.error("Failed to update room details");
+          const errorMessage =
+            error?.response?.data?.error || "An unexpected error occurred. Please try again.";
+          toast.error(errorMessage);
         }
       } else {
-        toast.error("Please select a room");
+        toast.error("No user selected for room update.");
       }
     },
-    [userData]
+    []
   );
 
   // Handle guest order click
