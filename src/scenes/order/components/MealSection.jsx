@@ -28,6 +28,7 @@ const MealSection = ({
   kitchenSummery,
   disabled,
   MAX_MEAL_QTY,
+  isGuestOrder = false,
   langObj,
   guideline,
   guidelineCn,
@@ -190,6 +191,8 @@ const MealSection = ({
               userData={userData}
               kitchenSummery={kitchenSummery}
               disabled={disabled}
+              maxQty={MAX_MEAL_QTY}
+              isGuestOrder={isGuestOrder}
               onDecrease={() => handleDecrease(catIdx, "entreeItems", item)}
               onIncrease={() => handleIncrease(catIdx, "entreeItems", item)}
               onOptionChange={(optId) =>
@@ -218,6 +221,8 @@ const MealSection = ({
               userData={userData}
               kitchenSummery={kitchenSummery}
               disabled={disabled}
+              maxQty={MAX_MEAL_QTY}
+              isGuestOrder={isGuestOrder}
               onDecrease={() => handleDecrease(catIdx, "alternativeItems", item)}
               onIncrease={() => handleIncrease(catIdx, "alternativeItems", item)}
               onOptionChange={(optId) =>

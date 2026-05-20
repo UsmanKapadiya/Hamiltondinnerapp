@@ -24,9 +24,9 @@ import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
 import MealSection from "../order/components/MealSection";
 import { useGuestOrder } from "./hooks/useGuestOrder";
 import {
-  getBreakfastServiceKeys,
-  getLunchServiceKeys,
-  getDinnerServiceKeys,
+  getGuestBreakfastServiceKeys,
+  getGuestLunchServiceKeys,
+  getGuestDinnerServiceKeys,
   SERVED_WITH_CONFIG,
 } from "../order/constants/mealServiceConfig";
 
@@ -71,10 +71,10 @@ const GuestOrderViewController = () => {
     handleDateChange,
   } = useGuestOrder();
 
-  // Get service configurations with translations
-  const breakfastServiceKeys = getBreakfastServiceKeys(langObj);
-  const lunchServiceKeys = getLunchServiceKeys(langObj);
-  const dinnerServiceKeys = getDinnerServiceKeys(langObj);
+  // Get guest-specific service configurations (tray service only)
+  const breakfastServiceKeys = getGuestBreakfastServiceKeys(langObj);
+  const lunchServiceKeys = getGuestLunchServiceKeys(langObj);
+  const dinnerServiceKeys = getGuestDinnerServiceKeys(langObj);
 
   // Get served with text configurations
   const lunchServedWith = {
@@ -215,7 +215,7 @@ const GuestOrderViewController = () => {
                   variant="outlined"
                   sx={{ minWidth: 36, mx: 1 }}
                   onClick={handleIncrement}
-                  disabled={isPastDate}
+                  disabled={isPastDate || guestCount >= 10}
                 >
                   +
                 </Button>

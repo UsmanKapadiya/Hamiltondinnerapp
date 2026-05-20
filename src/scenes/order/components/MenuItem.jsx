@@ -7,6 +7,8 @@ const MenuItem = ({
   userData,
   kitchenSummery,
   disabled,
+  maxQty,
+  isGuestOrder = false,
   onDecrease,
   onIncrease,
   onOptionChange,
@@ -23,6 +25,11 @@ const MenuItem = ({
   const hasOptions = _.size(item.options) > 0;
   const hasPreferences = _.size(item.preference) > 0;
   const showOptionsAndPreferences = item.qty > 0;
+  
+  // For guest orders, disable + button when item quantity reaches max guest count
+  const incrementDisabled = isGuestOrder 
+    ? disabled || (item.qty >= maxQty)
+    : disabled;
 
   return (
     <Box mb={1} ml={itemType === "alternative" ? 2 : 0}>
@@ -63,7 +70,7 @@ const MenuItem = ({
             <button
               onClick={onIncrease}
               style={{ marginLeft: 8 }}
-              disabled={disabled}
+              disabled={incrementDisabled}
             >
               +
             </button>

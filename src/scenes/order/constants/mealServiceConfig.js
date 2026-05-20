@@ -37,6 +37,33 @@ export const getDinnerServiceKeys = (langObj) => [
 ];
 
 /**
+ * Get breakfast service configuration for guest orders (tray service only)
+ * @param {Object} langObj - Language object containing translations
+ * @returns {Array} Array of service configurations
+ */
+export const getGuestBreakfastServiceKeys = (langObj) => [
+  { key: "is_brk_tray_service", label: langObj.trayService },
+];
+
+/**
+ * Get lunch service configuration for guest orders (tray service only)
+ * @param {Object} langObj - Language object containing translations
+ * @returns {Array} Array of service configurations
+ */
+export const getGuestLunchServiceKeys = (langObj) => [
+  { key: "is_lunch_tray_service", label: langObj.trayService },
+];
+
+/**
+ * Get dinner service configuration for guest orders (tray service only)
+ * @param {Object} langObj - Language object containing translations
+ * @returns {Array} Array of service configurations
+ */
+export const getGuestDinnerServiceKeys = (langObj) => [
+  { key: "is_dinner_tray_service", label: langObj.trayService },
+];
+
+/**
  * Get served with text configurations
  */
 export const SERVED_WITH_CONFIG = {
