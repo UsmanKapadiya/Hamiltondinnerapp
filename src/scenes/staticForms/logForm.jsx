@@ -1,106 +1,29 @@
-import React, { useState } from "react";
+import React from "react";
 import { Box, TextField, Autocomplete } from "@mui/material";
 import CustomButton from "../../components/CustomButton";
-import { LoginOutlined } from "@mui/icons-material";
-import { Formik, Field, Form } from "formik";
-import * as Yup from "yup";
+import { Formik } from "formik";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
 import { Header } from "../../components";
 import { toast } from "react-toastify";
-import StaticFormServices from "../../services/staticFormServices";
-import { useNavigate } from "react-router-dom";
 
-const initialValues = {
-    room_number: "",
-    resident_name: "",
-    log_text: "",
-    logged_by: "",
-    action_taken: "",
-    follow_up_required: "",
-};
-
-const validationSchema = Yup.object({
-    room_number: Yup.string().required("Room Number is required"),
-    resident_name: Yup.string().required("Resident Name is required"),
-    log_text: Yup.string().required("This field is required"),
-    logged_by: Yup.string().required("Logged By is required"),
-});
+// Import configuration and utilities
+import {
+    initialLogFormValues,
+    logFormValidationSchema,
+} from "./config/logFormConfig";
+import { useUserData, useCompletedNames } from "./hooks/useLogFormHooks";
+import { useLogForm } from "./hooks/useLogForm";
 
 const LogForm = () => {
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
-    const [userData] = useState(() => {
-        const userDatas = localStorage.getItem("userData");
-        return userDatas ? JSON.parse(userDatas) : null;
-    });
-
-    const [completedNames, setCompletedNames] = useState(() => {
-        const stored = localStorage.getItem("completedNames");
-        return stored ? JSON.parse(stored) : [];
-    });
-
-    console.log(userData)
-
-    // When room number changes, auto-fill resident name
-    const handleRoomNumberChange = (e, handleChange, setFieldValue, values) => {
-        handleChange(e);
-        const roomNumber = e.target.value;
-        if (userData?.rooms && Array.isArray(userData.rooms)) {
-            const found = userData.rooms.find(r =>
-                String(r.name).toLowerCase() === String(roomNumber).toLowerCase()
-            );
-            if (found && found.resident_name) {
-                setFieldValue('resident_name', found.resident_name);
-            } else {
-                setFieldValue('resident_name', '');
-            }
-        }
-    };
-
-    const handleSubmit = async (values, actions) => {
-        const name = values.logged_by?.trim();
-        if (name && !completedNames.includes(name)) {
-            const updated = [...completedNames, name];
-            setCompletedNames(updated);
-            localStorage.setItem("completedNames", JSON.stringify(updated));
-        }
-        //Room id Found in userData
-        const found = userData.rooms.find(r =>
-            String(r.name).toLowerCase() === String(values?.room_number).toLowerCase()
-        );
-        // Add is_completed and logged_at fields
-        const now = new Date();
-        const pad = n => n.toString().padStart(2, '0');
-        const logged_at = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-        const rawStringData = { ...values };
-        rawStringData['is_completed'] = 0;
-        rawStringData['logged_at'] = logged_at;
-
-        const payload = {
-            form_type: 2,
-            room_id: found?.id,
-            data: JSON.stringify(rawStringData)
-        };
-
-        try {
-            const response = await StaticFormServices.logFormSubmit(payload);
-            // Only show toast if success and use ResponseText
-            if (response?.ResponseCode === "1") {
-                toast.success(response?.ResponseText || "Form submitted successfully.");
-                setTimeout(() => {
-                    navigate("/staticForms");
-                }, 1200);
-
-            }
-        } catch (error) {
-            toast.error("Form is not submitted. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-
-        // console.log("Payload for API:", payload);
-        // actions.resetForm();
-    };
+    // Use custom hooks for state management
+    const userData = useUserData();
+    const { completedNames, addCompletedName } = useCompletedNames();
+    const {
+        loading,
+        handleSubmit,
+        handleRoomNumberChange,
+        availableRoomNumbers,
+    } = useLogForm(userData, completedNames, addCompletedName);
 
     return (
         <Box m="20px">
@@ -119,7 +42,13 @@ const LogForm = () => {
                 </Box>
             ) : (
                 <>
-                    <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={validationSchema} validateOnBlur={true} validateOnChange={false}>
+                    <Formik 
+                        initialValues={initialLogFormValues} 
+                        onSubmit={handleSubmit} 
+                        validationSchema={logFormValidationSchema} 
+                        validateOnBlur={true} 
+                        validateOnChange={false}
+                    >
                         {({ values, handleChange, handleBlur, handleSubmit, setFieldValue, errors, touched, isSubmitting, isValid, submitCount }) => (
                             <form onSubmit={e => {
                                 e.preventDefault();
@@ -132,20 +61,10 @@ const LogForm = () => {
                                     <Box display="flex" gap={2}>
                                         <Autocomplete
                                             freeSolo
-                                            options={userData?.rooms ? userData.rooms.map(r => r.name) : []}
+                                            options={availableRoomNumbers}
                                             value={values.room_number}
                                             onInputChange={(e, newValue) => {
-                                                setFieldValue('room_number', newValue);
-                                                if (userData?.rooms && Array.isArray(userData.rooms)) {
-                                                    const found = userData.rooms.find(r =>
-                                                        String(r.name).toLowerCase() === String(newValue).toLowerCase()
-                                                    );
-                                                    if (found && found.resident_name) {
-                                                        setFieldValue('resident_name', found.resident_name);
-                                                    } else {
-                                                        setFieldValue('resident_name', '');
-                                                    }
-                                                }
+                                                handleRoomNumberChange(newValue, setFieldValue);
                                             }}
                                             onBlur={handleBlur}
                                             fullWidth

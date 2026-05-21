@@ -11,7 +11,7 @@ const Report = lazy(() => import("./scenes/report"));
 const Order = lazy(() => import("./scenes/order"));
 const GuestOrder = lazy(() => import("./scenes/guestOrder"));
 const ChargesReport = lazy(() => import("./scenes/charges"));
-const StaticForms = lazy(() => import("./scenes/staticForms"));
+const StaticForms = lazy(() => import("./scenes/staticForms/StaticFormsController"));
 const IncidentForm = lazy(() => import("./scenes/staticForms/incidentForm"));
 const LogForm = lazy(() => import("./scenes/staticForms/logForm"));
 const MoveInSummeryForm = lazy(() => import("./scenes/staticForms/MoveInSummeryForm"));

@@ -17,7 +17,6 @@ import { DatePicker, TimePicker, LocalizationProvider } from "@mui/x-date-picker
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Header, PdfModal } from "../../components";
 import { Formik } from "formik";
-import * as yup from "yup";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { toast } from "react-toastify";
@@ -25,9 +24,9 @@ import dayjs from "dayjs";
 import _ from "lodash";
 import CustomLoadingOverlay from "../../components/CustomLoadingOverlay";
 import CustomButton from "../../components/CustomButton";
-import StaticFormServices from "../../services/staticFormServices";
 
-// Import form configuration constants
+// Import configuration
+import { incidentFormValidationSchema } from "./config/incidentFormConfig";
 import {
   incidentInvolvedData,
   typeOfIncidentOptions,
@@ -42,254 +41,74 @@ import {
   yesNoOptions,
 } from "../../config/incidentFormConfig";
 
-// ==================== VALIDATION SCHEMA ====================
+// Import utilities and hooks
+import {
+  mapOptions,
+  getUserData,
+  getDefaultFollowUpUser,
+} from "./utils/incidentFormHelpers";
+import {
+  useIncidentFormMappers,
+  useFollowUpPermissions,
+  useScrollToFollowUp,
+  useFollowUpConfirmation,
+  usePdfModal,
+} from "./hooks/useIncidentFormHooks";
+import { useIncidentForm } from "./hooks/useIncidentForm";
 
-const validationSchema = yup.object({
-  // Incident Involved
-  incident_involved: yup.array().of(yup.string()).min(1, "Please select Incident Involved"),
-  inc_invl_other_text: yup.string().when('incident_involved', {
-    is: (val) => Array.isArray(val) && val.includes('Other'),
-    then: (schema) => schema.required('Please enter other Incident Involved'),
-    otherwise: (schema) => schema,
-  }),
-
-  incident_date: yup.string().required("Date is required"),
-  incident_tm: yup.string().required("Time Of Incident is required"),
-  incident_location: yup.string().required("Location Of Incident is required"),
-  witnessed_by: yup.string().required("Witnessed By is required"),
-
-  // Discovery
-  discovery_date: yup.string().required("Date Of Discovery is required"),
-  discovery_tm: yup.string().required("Time Of Discovery is required"),
-  discovery_location: yup.string().required("Location Of Discovery is required"),
-  discovered_by: yup.string().required("Discovered By is required"),
-
-  // type_of_incident
-  type_of_incident: yup.array().of(yup.string()),
-  type_of_inc_other_text: yup.string().when('type_of_incident', {
-    is: (val) => Array.isArray(val) && val.includes('Other'),
-    then: (schema) => schema.required('Please enter Other Type Of Incident'),
-    otherwise: (schema) => schema,
-  }),
-
-  // other_witnesses 
-  other_witnesses: yup.string(),
-  witness_name1: yup.string().when('other_witnesses', {
-    is: 'Yes',
-    then: (schema) => schema.required('Witness Name 1 is required'),
-    otherwise: (schema) => schema,
-  }),
-  witness_position1: yup.string().when('other_witnesses', {
-    is: 'Yes',
-    then: (schema) => schema.required('Witness Position 1 is required'),
-    otherwise: (schema) => schema,
-  }),
-
-  condition_at_incident: yup.array().of(yup.string()),
-  condition_at_inc_other_text: yup.string().when('condition_at_incident', {
-    is: (val) => Array.isArray(val) && val.includes('Other (Specify)'),
-    then: (schema) => schema.required('Please specify Other Condition'),
-    otherwise: (schema) => schema,
-  }),
-
-
-  ambulation: yup.array().of(yup.string()),
-  ambulation_other_text: yup.string().when('ambulation', {
-    is: (val) => Array.isArray(val) && val.includes('Other (Specify)'),
-    then: (schema) => schema.required('Please specify Other Condition'),
-    otherwise: (schema) => schema,
-  }),
-
-  // NOTIFICATION
-  // Informed Of Incident
-  informed_of_inc_other: yup.boolean(),
-  informed_of_inc_other_text: yup.string().when('informed_of_inc_other', {
-    is: true,
-    then: (schema) => schema.required('Please specify Other Condition'),
-    otherwise: (schema) => schema,
-  }),
-
-  notified_family_doctor: yup.string(),
-  notified_family_doctor_date: yup.string().when('notified_family_doctor', {
-    is: (val) => !!val, // not empty
-    then: (schema) => schema.required('Date is required when Family Doctor is notified'),
-    otherwise: (schema) => schema,
-  }),
-  notified_family_doctor_tm: yup.string().when('notified_family_doctor', {
-    is: (val) => !!val,
-    then: (schema) => schema.required('Time is required when Family Doctor is notified'),
-    otherwise: (schema) => schema,
-  }),
-
-  // notified_resident_responsibl
-  notified_resident_responsible_party: yup.string(),
-  notified_resident_name: yup.string().when('notified_resident_responsible_party', {
-    is: 'Yes',
-    then: (schema) => schema.required('Notified Resident Name is required'),
-    otherwise: (schema) => schema,
-  }),
-
-  notified_resident_date: yup.string().when('notified_resident_responsible_party', {
-    is: 'Yes',
-    then: (schema) => schema.required('Notified Resident Date is required'),
-    otherwise: (schema) => schema,
-  }),
-  notified_resident_tm: yup.string().when('notified_resident_responsible_party', {
-    is: 'Yes',
-    then: (schema) => schema.required('Notified Resident Time is required'),
-    otherwise: (schema) => schema,
-  }),
-
-  notified_other: yup.string(),
-  notified_other_date: yup.string().when('notified_other', {
-    is: (val) => !!val && val.trim() !== '',
-    then: (schema) => schema.required('Date is required when Other is notified'),
-    otherwise: (schema) => schema,
-  }),
-  notified_other_tm: yup.string().when('notified_other', {
-    is: (val) => !!val && val.trim() !== '',
-    then: (schema) => schema.required('Time is required when Other is notified'),
-    otherwise: (schema) => schema,
-  }),
-
-  //completed 
-  completed_by: yup.string().required("Completed By is required"),
-  completed_position: yup.string().required("Completed Position is required"),
-  completed_date: yup.string().required("Completed Date is required"),
-  completed_tm: yup.string().required("Completed Time is required"),
-
-  follow_up_assigned_to: yup.string().required("Assign Follow Up to is required"),
-});
-
-// ==================== UTILITY FUNCTIONS ====================
-
-/**
- * Generic mapping function to transform comma-separated strings into arrays
- * Handles "Other" option with custom text input
- * @param {string} rawString - Comma-separated string from API
- * @param {Array} options - Array of option objects with key and label
- * @param {string} otherLabel - Label for the "Other" option
- * @param {string} otherTextKey - Key name for other text field
- * @param {string} arrKey - Key name for the array field
- * @returns {Object} Object with array of selected values and other text
- */
-const mapOptions = (rawString, options, otherLabel = "Other", otherTextKey = "other_text", arrKey = "arr") => {
-  if (!rawString) {
-    return {
-      [arrKey]: [],
-      [otherTextKey]: "",
-    };
-  }
-  
-  const values = rawString.split(",").map(v => v.trim());
-  const labels = options.map(opt => opt.label);
-  const resultArr = [];
-  let otherText = "";
-
-  values.forEach(val => {
-    if (labels.includes(val)) {
-      resultArr.push(val);
-    } else if (val) {
-      resultArr.push(otherLabel);
-      otherText = val;
-    }
-  });
-
-  return {
-    [arrKey]: _.uniq(resultArr), // Remove duplicates using lodash
-    [otherTextKey]: otherText,
-  };
-};
-
-/**
- * Get user data from localStorage with error handling
- * @returns {Object|null} User data object or null
- */
-const getUserData = () => {
-  try {
-    const userDatas = localStorage.getItem("userData");
-    return userDatas ? JSON.parse(userDatas) : null;
-  } catch (error) {
-    console.error("Error parsing user data:", error);
-    return null;
-  }
-};
-
+// ==================== COMPONENT ====================
 
 const IncidentForm = () => {
   // ==================== HOOKS ====================
   const location = useLocation();
   const navigate = useNavigate();
   const followUpRef = useRef(null);
+  const userData = useMemo(() => getUserData(), []);
   
   // ==================== STATE ====================
   const [incidentFormDetails, setIncidentFormDetails] = useState({});
   const [loading, setLoading] = useState(true);
   const [formId, setFormId] = useState();
-  const [userData] = useState(getUserData);
   const [canEditFollowUpFields, setCanEditFollowUpFields] = useState(false);
-  const [showFollowUpConfirm, setShowFollowUpConfirm] = useState(false);
-  const [pendingSubmitValues, setPendingSubmitValues] = useState(null);
-  const [pendingSubmitActions, setPendingSubmitActions] = useState(null);
-  const [pdfModalOpen, setPdfModalOpen] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState("");
-  const [selectedFormId, setSelectedFormId] = useState(null);
-  const [isFollowUpIncomplete, setIsFollowUpIncomplete] = useState(false);
 
-  // ==================== COMPUTED VALUES ====================
-  const canEditFollowUp = useMemo(() => 
-    _.includes(["admin", "superadmin"], userData?.role),
-    [userData?.role]
-  );
+  // ==================== CUSTOM HOOKS ====================
+  const {
+    mapIncidentInvolved,
+    mapTypeOfIncident,
+    mapConditionAtIncident,
+    mapAmbulation,
+    mapInformedOfIncident,
+  } = useIncidentFormMappers();
+
+  const { canEditFollowUp, canUpdateFollowUp } = useFollowUpPermissions(userData, location?.state?.formData);
   
-  const canUpdateFollowUp = useMemo(() => 
-    canEditFollowUp || userData?.user_id === location?.state?.formData?.follow_up_user?.id,
-    [canEditFollowUp, userData?.user_id, location?.state?.formData?.follow_up_user?.id]
-  );
+  const {
+    showFollowUpConfirm,
+    pendingSubmitValues,
+    pendingSubmitActions,
+    setShowFollowUpConfirm,
+    handleOpenConfirm,
+    handleCloseConfirm,
+  } = useFollowUpConfirmation();
 
-  // ==================== MAPPING FUNCTIONS ====================
-  /**
-   * Map API response strings to form field arrays
-   */
-  const mapIncidentInvolved = useCallback((rawString) =>
-    mapOptions(rawString, incidentInvolvedData, "Other", "inc_invl_other_text", "incident_involved"),
-    []
-  );
+  const {
+    pdfModalOpen,
+    setPdfModalOpen,
+    pdfUrl,
+    setPdfUrl,
+    selectedFormId,
+    setSelectedFormId,
+    isFollowUpIncomplete,
+    setIsFollowUpIncomplete,
+  } = usePdfModal();
 
-  const mapTypeOfIncident = useCallback((rawString) =>
-    mapOptions(rawString, typeOfIncidentOptions, "Other", "type_of_inc_other_text", "type_of_incident"),
-    []
-  );
+  const {
+    submitIncidentForm: hookSubmitIncidentForm,
+    handleAttachmentUpload: hookHandleAttachmentUpload,
+    handleSendMail: hookHandleSendMail,
+  } = useIncidentForm(userData, incidentFormDetails, formId, setLoading, setIncidentFormDetails, navigate, setSelectedFormId, setIsFollowUpIncomplete, setPdfUrl, setPdfModalOpen);
 
-  const mapConditionAtIncident = useCallback((rawString) =>
-    mapOptions(rawString, conditionAtTimeOptions, "Other (Specify)", "condition_at_inc_other_text", "condition_at_incident"),
-    []
-  );
-
-  const mapAmbulation = useCallback((rawString) =>
-    mapOptions(rawString, ambulationOptions, "Other (Specify)", "ambulation_other_text", "ambulation"),
-    []
-  );
-
-  const mapInformedOfIncident = useCallback((rawString) =>
-    mapOptions(rawString, InformedOfIncident, "Other", "informed_of_inc_other_text", "informed_of_incident"),
-    []
-  );
-
-  useEffect(() => {
-    if (location.state?.scrollToFollowUp && followUpRef.current) {
-      const checkAndScroll = () => {
-        if (followUpRef.current) {
-          followUpRef.current.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }
-      };
-
-      setTimeout(checkAndScroll, 500);
-    }
-  }, [location.state?.scrollToFollowUp, loading]);
+  useScrollToFollowUp(location.state?.scrollToFollowUp, followUpRef);
 
   useEffect(() => {
     setLoading(true);
@@ -436,358 +255,25 @@ const IncidentForm = () => {
           !values.followUp_examine_result
         );
 
-
       const userRole = userData?.role;
       const isConciergeOrNurse = userRole === "concierge" || userRole === "nurse";
       const isFollowUpHidden = !values.show_follow_up_details;
 
       if (!isConciergeOrNurse && !isFollowUpHidden && isFollowUpIncomplete) {
-        setPendingSubmitValues(values);
-        setPendingSubmitActions(actions);
-        setShowFollowUpConfirm(true);
-        setLoading(false);
+        handleOpenConfirm(values, actions);
         return;
       }
 
-      await submitIncidentForm(values, actions);
+      await hookSubmitIncidentForm(values, actions);
     },
-    [initialValues, navigate]
+    [incidentFormDetails, formId, userData, navigate, handleOpenConfirm]
   );
 
-  /**
-   * Submit incident form data to API
-   * Processes arrays, handles file uploads, and manages form state
-   * @param {Object} values - Form values from Formik
-   * @param {Object} actions - Formik actions
-   */
-  const submitIncidentForm = async (values, actions) => {
-    setLoading(true);
-    
-    // ==================== PROCESS INCIDENT INVOLVED ====================
-    const incidentInvolvedArr = _.compact([
-      ..._.filter(values.incident_involved, val => val !== "Other"),
-      ...(values.incident_involved?.includes("Other") && values.inc_invl_other_text 
-        ? [values.inc_invl_other_text] 
-        : [])
-    ]);
-
-    // ==================== PROCESS TYPE OF INCIDENT ====================
-    const typeOfIncidentArr = _.compact([
-      ..._.filter(values.type_of_incident, type => type !== "Other"),
-      ...(values.type_of_incident?.includes("Other") && values.type_of_inc_other_text 
-        ? [values.type_of_inc_other_text] 
-        : [])
-    ]);
-
-    // ==================== PROCESS CONDITION AT INCIDENT ====================
-    const conditionAtIncidentArr = _.compact([
-      ..._.filter(values.condition_at_incident, item => item !== "Other (Specify)"),
-      ...(values.condition_at_incident?.includes("Other (Specify)") && values.condition_at_inc_other_text 
-        ? [values.condition_at_inc_other_text] 
-        : [])
-    ]);
-    const conditionAtIncidentStr = conditionAtIncidentArr.join(",");
-
-    // ==================== PROCESS AMBULATION ====================
-    const ambulationArr = _.compact([
-      ..._.filter(values.ambulation, item => item !== "Other (Specify)"),
-      ...(values.ambulation?.includes("Other (Specify)") && values.ambulation_other_text 
-        ? [values.ambulation_other_text] 
-        : [])
-    ]);
-    const ambulationStr = _.isEmpty(ambulationArr) ? "" : ambulationArr.join(",");
-
-    // ==================== PROCESS INFORMED OF INCIDENT ====================
-    const informedOfIncidentArr = _.compact([
-      ..._.filter(values.informed_of_incident, label => label !== "Other"),
-      ...(values.informed_of_incident?.includes("Other") && values.informed_of_inc_other_text 
-        ? [values.informed_of_inc_other_text] 
-        : [])
-    ]);
-    
-    // ==================== PROCESS DATE/TIME FIELDS ====================
-    const incidentDateTime = values.incident_date && values.incident_tm
-      ? dayjs(`${values.incident_date} ${values.incident_tm}`, "YYYY-MM-DD HH:mm")
-      : null;
-    const discoveryDateTime = values.discovery_date && values.discovery_tm
-      ? dayjs(`${values.discovery_date} ${values.discovery_tm}`, "YYYY-MM-DD hh:mm A")
-      : null;
-
-    const notifiedFamilyDoctorDateTime = values.notified_family_doctor_date && values.notified_family_doctor_tm
-      ? dayjs(`${values.notified_family_doctor_date} ${values.notified_family_doctor_tm}`, "YYYY-MM-DD hh:mm A")
-      : null;
-
-    const notifiedResidentDateTime = values.notified_resident_date && values.notified_resident_tm
-      ? dayjs(`${values.notified_resident_date} ${values.notified_resident_tm}`, "YYYY-MM-DD hh:mm A")
-      : null;
-
-    const completedDateTime = values.completed_date && values.completed_tm
-      ? dayjs(`${values.completed_date} ${values.completed_tm}`, "YYYY-MM-DD hh:mm A")
-      : null;
-
-    const notifiedOtherDateTime = values.notified_other_date && values.notified_other_tm
-      ? dayjs(`${values.notified_other_date} ${values.notified_other_tm}`, "YYYY-MM-DD hh:mm A")
-      : null;
-
-    const payload = {
-      incident_involved: incidentInvolvedArr.join(","),
-      inc_invl_staff: values.incident_involved?.includes("Staff") ? 1 : 0,
-      inc_invl_resident: values.incident_involved?.includes("Resident") ? 1 : 0,
-      inc_invl_visitor: values.incident_involved?.includes("Visitor") ? 1 : 0,
-      inc_invl_other: values.incident_involved?.includes("Other") ? 1 : 0,
-      incident_date: incidentDateTime
-        ? dayjs(incidentDateTime).format("DD MMM YYYY hh:mm A")
-        : "",
-      incident_dt: incidentDateTime
-        ? dayjs(incidentDateTime).format("DD MMM YYYY")
-        : "",
-      incident_tm: values.incident_tm || "",
-      incident_location: values.incident_location || "",
-      witnessed_by: values.witnessed_by || "",
-      discovery_date: discoveryDateTime
-        ? dayjs(discoveryDateTime).format("DD MMM YYYY hh:mm A")
-        : "",
-      discovery_dt: discoveryDateTime
-        ? dayjs(discoveryDateTime).format("DD MMM YYYY")
-        : "",
-      discovery_tm: values.discovery_tm || "",
-      discovery_location: values.discovery_location || "",
-      discovered_by: values.discovered_by || "",
-
-      type_of_incident: typeOfIncidentArr.join(","),
-      ...typeOfIncidentOptions.reduce((acc, option) => {
-        acc[option.key] = values.type_of_incident?.includes(option.label) ? 1 : 0;
-        return acc;
-      }, {}),
-
-      ...(values.type_of_inc_other_text
-        ? { type_of_inc_other_text: values.type_of_inc_other_text }
-        : {}),
-
-      ...(values.safety_fob ? { safety_fob: values.safety_fob } : {}),
-      ...(values.safety_callbell ? { safety_callbell: values.safety_callbell } : {}),
-      ...(values.safety_caution ? { safety_caution: values.safety_caution } : {}),
-      ...(values.safety_other ? { safety_other: values.safety_other } : {}),
-
-      other_witnesses: values.other_witnesses || "",
-      ...(values.other_witnesses === "Yes" && {
-        ...(values.witness_name1 ? { witness_name1: values.witness_name1 } : {}),
-        ...(values.witness_position1 ? { witness_position1: values.witness_position1 } : {}),
-        ...(values.witness_name2 ? { witness_name2: values.witness_name2 } : {}),
-        ...(values.witness_position2 ? { witness_position2: values.witness_position2 } : {}),
-      }),
-
-      condition_at_incident: conditionAtIncidentStr,
-      ...conditionAtTimeOptions.reduce((acc, option) => {
-        acc[option.key] = values.condition_at_incident?.includes(option.label) ? 1 : 0;
-        return acc;
-      }, {}),
-      ...(values.condition_at_incident?.includes('Other (Specify)') && values.condition_at_inc_other_text
-        ? { condition_at_inc_other_text: values.condition_at_inc_other_text }
-        : {}),
-
-      // fall_assessment 
-      fall_assessment: (values.fall_assessment || []).join(","),
-      ...fallAssessmentOptions.reduce((acc, option) => {
-        acc[option.key] = values.fall_assessment?.includes(option.label) ? 1 : 0;
-        return acc;
-      }, {}),
-
-      // ambulation: incidentFormDetails?.ambulation || [],
-      ...(ambulationStr ? { ambulation: ambulationStr } : {}),
-      ...(values.ambulation?.includes("Other (Specify)") && values.ambulation_other_text
-        ? { ambulation_other_text: values.ambulation_other_text }
-        : {}),
-      ...ambulationOptions.reduce((acc, option) => {
-        acc[option.key] = values.ambulation?.includes(option.label) ? 1 : 0;
-        return acc;
-      }, {}),
-
-      // Fire
-      ...(values.fire_alarm_pulled ? { fire_alarm_pulled: values.fire_alarm_pulled } : {}),
-      ...(values.fire_false_alarm ? { fire_false_alarm: values.fire_false_alarm } : {}),
-      ...(values.fire_extinguisher_used ? { fire_extinguisher_used: values.fire_extinguisher_used } : {}),
-      ...(values.fire_personal_injury ? { fire_personal_injury: values.fire_personal_injury } : {}),
-      ...(values.fire_property_damage ? { fire_property_damage: values.fire_property_damage } : {}),
-
-      // Factual
-      factual_description: values?.factual_description || "",
-
-      // Informed Of Incidents
-      informed_of_incident: informedOfIncidentArr.join(","),
-      ...InformedOfIncident.reduce((acc, option) => {
-        acc[option.key] = values.informed_of_incident?.includes(option.label) ? 1 : 0;
-        return acc;
-      }, {}),
-      ...(values.informed_of_incident?.includes("Other") && values.informed_of_inc_other_text
-        ? { informed_of_inc_other_text: values.informed_of_inc_other_text }
-        : {}),
-      initial_assistant_gm: values?.initial_assistant_gm || "",
-      initial_gm: values?.initial_gm || "",
-      initial_risk_mng_committee: values?.initial_risk_mng_committee || "",
-      initial_other: values?.initial_other || "",
-
-      notified_family_doctor: values.notified_family_doctor || "",
-      notified_family_doctor_date: notifiedFamilyDoctorDateTime
-        ? dayjs(notifiedFamilyDoctorDateTime).format("DD MMM YYYY hh:mm A")
-        : "",
-      notified_family_doctor_dt: notifiedFamilyDoctorDateTime
-        ? dayjs(notifiedFamilyDoctorDateTime).format("DD MMM YYYY")
-        : "",
-      notified_family_doctor_tm: values.notified_family_doctor_tm || "",
-
-      notified_other: values.notified_other || "",
-      notified_other_date: notifiedOtherDateTime
-        ? dayjs(notifiedOtherDateTime).format("DD MMM YYYY hh:mm A")
-        : "",
-      notified_other_dt: notifiedOtherDateTime
-        ? dayjs(notifiedOtherDateTime).format("DD MMM YYYY")
-        : "",
-      notified_other_tm: values.notified_other_tm || "",
-
-
-      notified_resident_responsible_party: values.notified_resident_responsible_party || "",
-      notified_resident_name: values.notified_resident_name || "",
-      notified_resident_date: notifiedResidentDateTime
-        ? dayjs(notifiedResidentDateTime).format("DD MMM YYYY hh:mm A")
-        : "",
-      notified_resident_dt: notifiedResidentDateTime
-        ? dayjs(notifiedResidentDateTime).format("DD MMM YYYY")
-        : "",
-      notified_resident_tm: values.notified_resident_tm || "",
-
-      // Completed
-      completed_by: values.completed_by || "",
-      completed_position: values.completed_position || "",
-      completed_date: completedDateTime
-        ? dayjs(completedDateTime).format("DD MMM YYYY hh:mm A")
-        : "",
-      completed_dt: completedDateTime
-        ? dayjs(completedDateTime).format("DD MMM YYYY")
-        : "",
-      completed_tm: values.completed_tm || "",
-
-      follow_up_assigned_to: values.follow_up_assigned_to || "",
-      followUp_issue: values.followUp_issue || "",
-      followUp_findings: values?.followUp_findings || '',
-      followUp_possible_solutions: values?.followUp_possible_solutions || '',
-      followUp_action_plan: values?.followUp_action_plan || '',
-      followUp_examine_result: values?.followUp_examine_result || '',
-
-    };
-    // console.log("Payload", payload);
-    const now = new Date();
-    const pad = n => n.toString().padStart(2, '0');
-    const logged_at = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-    const rawStringData = { ...payload };
-    rawStringData['is_completed'] = incidentFormDetails?.is_completed ? incidentFormDetails?.is_completed : 0;
-    rawStringData['logged_at'] = incidentFormDetails?.logged_at ? incidentFormDetails?.logged_at : logged_at;
-
-    // console.log("rawStringData", rawStringData)
-    const found = userData.rooms.find(r =>
-      String(r.name).toLowerCase() === String(values?.room_number).toLowerCase()
-    );
-   
-    // console.log("finalPayload", finalPayload)
-    const formData = new FormData();
-    formData.append('form_type', 1);
-    if (formId) {
-      formData.append('form_id', formId);
-    } else {
-      formData.append('room_id', found?.id);
-    }
-    formData.append('follow_up_assigned_to', values?.follow_up_assigned_to);
-    formData.append('data', JSON.stringify(rawStringData));
-
-    // Handle attachments
-    if (Array.isArray(values.attachments) && values.attachments.length > 0) {
-      let fileIndex = 0;
-
-      values.attachments.forEach((file) => {
-        if (file instanceof File) {
-          // New file upload - append directly
-          formData.append(`file${fileIndex}`, file, file.name);
-          fileIndex++;
-        } else if (file.id) {
-          // Existing attachment from API - preserve by ID
-          formData.append(`existing_attachments[]`, file.id);
-        } else if (typeof file === 'string' && file.startsWith('data:')) {
-          // Handle base64 encoded files (if any)
-          const byteString = atob(file.split(',')[1]);
-          const mimeString = file.split(',')[0].split(':')[1].split(';')[0];
-          const ab = new ArrayBuffer(byteString.length);
-          const ia = new Uint8Array(ab);
-          for (let i = 0; i < byteString.length; i++) {
-            ia[i] = byteString.charCodeAt(i);
-          }
-          const blob = new Blob([ab], { type: mimeString });
-          const extension = mimeString.split('/')[1];
-          formData.append(`file${fileIndex}`, blob, `attachment_${Date.now()}_${fileIndex}.${extension}`);
-          fileIndex++;
-        }
-      });
-    }
-
-    try {
-      if (formId) {
-        const response = await StaticFormServices.logFormUpdate(formData);
-        if (response?.ResponseCode === "1") {
-          toast.success("Form Updated successfully.");
-          // Open PDF modal if formLink is available
-          if (response?.new_form_link) {
-            setSelectedFormId(formId);
-            const url = response.new_form_link;
-            // Store whether follow-up is incomplete for the PDF modal
-            setIsFollowUpIncomplete(response?.isFollowUpIncomplete === 1);
-            const isPdf = url && url.toLowerCase().endsWith(".pdf");
-            if (isPdf) {
-              setPdfUrl(url);
-              setPdfModalOpen(true);
-            } else {
-              window.open(url, "_blank");
-            }
-          } else {
-            setTimeout(() => {
-              navigate("/staticForms");
-            }, 1200);
-          }
-        }
-      } else {
-        const response = await StaticFormServices.logFormSubmit(formData);
-        if (response?.ResponseCode === "1") {
-          toast.success(response?.ResponseText || "Form submitted successfully.");
-          // Open PDF modal if formLink is available
-          if (response?.formLink) {
-            setSelectedFormId(response?.form_id || null);
-            const url = response.formLink;
-            // Store whether follow-up is incomplete for the PDF modal
-            setIsFollowUpIncomplete(response?.isFollowUpIncomplete === 1);
-            const isPdf = url && url.toLowerCase().endsWith(".pdf");
-            if (isPdf) {
-              setPdfUrl(url);
-              setPdfModalOpen(true);
-            } else {
-              window.open(url, "_blank");
-            }
-          } else {
-            setTimeout(() => {
-              navigate("/staticForms");
-            }, 1200);
-          }
-        }
-      }
-    } catch (error) {
-      toast.error("Form is not submitted. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleConfirmSubmit = async () => {
-    setShowFollowUpConfirm(false);
+    handleCloseConfirm();
     setLoading(true);
     if (pendingSubmitValues && pendingSubmitActions) {
-      await submitIncidentForm(pendingSubmitValues, pendingSubmitActions);
+      await hookSubmitIncidentForm(pendingSubmitValues, pendingSubmitActions);
     }
   };
 
@@ -801,57 +287,6 @@ const IncidentForm = () => {
       }, 300);
     }
   };
-
-  const handleAttachmentUpload = async (files) => {
-    if (!formId || !files || files.length === 0) return;
-
-    const uploadFormData = new FormData();
-    uploadFormData.append('form_id', formId);
-
-    files.forEach((file, index) => {
-      uploadFormData.append(`file${index}`, file, file.name);
-    });
-
-    try {
-      const response = await StaticFormServices.addFormAttachment(uploadFormData);
-      if (response?.ResponseCode === "1") {
-        toast.success("Attachments uploaded successfully.");
-
-        const uploadedAttachments = response.attachments || [];
-
-        setIncidentFormDetails(prev => ({
-          ...prev,
-          attachments: [...uploadedAttachments]
-        }));
-      } else {
-        toast.error("Failed to upload attachments.");
-      }
-    } catch (error) {
-      console.error("Error uploading attachments:", error);
-      toast.error("Error uploading attachments. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-   const handleSendMail = async (emailTo) => {
-      if (!emailTo) {
-        toast.error("Email is required.");
-        return;
-      }
-  
-      try {
-        let payload = { to_id: emailTo, form_id: formId };
-        const response = await StaticFormServices.sendMail(payload);
-        if (response?.ResponseCode === "1") {
-          toast.success(`Email sent to ${emailTo}`);
-        } else if (response?.Message) {
-          toast.error(response.Message);
-        }
-      } catch (error) {
-        toast.error("Failed to send email. Please try again.");
-      }
-    };
   
   return (
     <Box m="20px">
@@ -873,7 +308,7 @@ const IncidentForm = () => {
           onSubmit={handleFormSubmit}
           initialValues={initialValues}
           enableReinitialize
-          validationSchema={validationSchema}
+          validationSchema={incidentFormValidationSchema}
         >
           {({
             values,
@@ -1472,7 +907,7 @@ const IncidentForm = () => {
 
                         if (formId) {
                           // If form exists, upload immediately to API
-                          await handleAttachmentUpload(files);
+                          await hookHandleAttachmentUpload(files);
                         } else {                          
                           const prev = values.attachments || [];
                           setFieldValue("attachments", [...files, ...prev]);
@@ -2196,7 +1631,7 @@ const IncidentForm = () => {
           navigate("/staticForms");
         }}
         pdfUrl={pdfUrl}
-        onMail={handleSendMail}
+        onMail={hookHandleSendMail}
         showPrintButton={userData?.form_types?.find((f) => f.id === 1)?.allow_print === 1}
         showMailButton={userData?.form_types?.find((f) => f.id === 1)?.allow_mail === 1 ? true : false}
         showFollowUpButton={isFollowUpIncomplete}

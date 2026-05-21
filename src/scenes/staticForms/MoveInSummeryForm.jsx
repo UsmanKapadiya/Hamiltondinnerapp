@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef } from "react";
 import { Box, Checkbox, FormControlLabel, FormGroup, TextField, Button, Grid, Radio, Typography } from "@mui/material";
 import CustomButton from "../../components/CustomButton";
 import { Formik } from "formik";
@@ -7,455 +7,35 @@ import { Header } from "../../components";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
-import SignaturePad from 'react-signature-canvas'
+import SignaturePad from 'react-signature-canvas';
 
-
-import StaticFormServices from "../../services/staticFormServices";
-import * as Yup from "yup";
-import { useLocation, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-
-function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
-
-const contarctTeam = [
-    { 'Yearly': 'contract_term_yearly' },
-    { 'Monthly': 'contract_term_monthly' },
-    { 'Weekly': 'contract_term_weekly' },
-    { 'Daily': 'contract_term_daily' }]
-
-const payor_information = [
-    { "PAD": "payor_information_PAD" },
-    { "Post Dated-Cheque": "payor_information_Post_Dated_Cheque" }
-]
-const Others = [
-    { 'Unit Key': 'unit_key' },
-    { 'Elpas Fob': 'elpas_fob' }
-]
-
-const validationSchema = Yup.object().shape({
-    suite_number: Yup.string()
-        .trim()
-        .required("Please enter Suite Number."),
-    contract_signing_date: Yup.string()
-        .required("Please select Contract Signing Date."),
-    sales_name: Yup.string()
-        .trim()
-        .required("Please enter Sales Name."),
-    contartTeam: Yup.array()
-        .min(1, "Please select Contract Term."),
-    tenancy_commence_date: Yup.string()
-        .required("Please select Tenancy Commence Date."),
-    contract_expiry_date: Yup.string()
-        .required("Please select Contract Expiry Date."),
-    first_resident_name_first_name: Yup.string()
-        .trim()
-        .required("Please enter First Name of 1st Resident."),
-    first_resident_name_last_name: Yup.string()
-        .trim()
-        .required("Please enter Last Name of 1st Resident."),
-    first_resident_dob: Yup.string()
-        .required("Please select DOB of 1st Resident."),
-    // 2nd Resident validations (conditional)
-    second_resident_name_first_name: Yup.string().when('has_2nd_resident', {
-        is: true,
-        then: schema => schema.trim().required("Please enter First Name of 2nd Resident."),
-        otherwise: schema => schema,
-    }),
-    second_resident_name_last_name: Yup.string().when('has_2nd_resident', {
-        is: true,
-        then: schema => schema.trim().required("Please enter Last Name of 2nd Resident."),
-        otherwise: schema => schema,
-    }),
-    second_resident_dob: Yup.string().when('has_2nd_resident', {
-        is: true,
-        then: schema => schema.required("Please select DOB of 2nd Resident."),
-        otherwise: schema => schema,
-    }),
-
-    first_month_payment_received: Yup.boolean(),
-    first_month_payment_received_cheque_note: Yup.string().when('first_month_payment_received', {
-        is: true,
-        then: schema => schema.trim().required("Please enter Cheque Number for 1st Month Payment."),
-        otherwise: schema => schema,
-    }),
-    first_month_payment_received_cheque_date: Yup.string().when('first_month_payment_received', {
-        is: true,
-        then: schema => schema.required("Please select Cheque Date for 1st Month Payment."),
-        otherwise: schema => schema,
-    }),
-    first_month_payment_received_cheque_amount: Yup.number().when('first_month_payment_received', {
-        is: true,
-        then: schema => schema.typeError("Please enter Total for 1st Month Payment..").required("Please enter Total for 1st Month Payment."),
-        otherwise: schema => schema,
-    }),
-    monthly_rate: Yup.string()
-        .trim()
-        .required("Please enter Monthly Rate."),
-    security_deposit_received: Yup.boolean(),
-    security_deposit_received_cheque_note: Yup.string().when('security_deposit_received', {
-        is: true,
-        then: schema => schema.trim().required("Please enter Cheque Number for Security Deposit."),
-        otherwise: schema => schema,
-    }),
-    security_deposit_received_cheque_date: Yup.string().when('security_deposit_received', {
-        is: true,
-        then: schema => schema.required("Please select Cheque Date for Security Deposit."),
-        otherwise: schema => schema,
-    }),
-    security_deposit_received_cheque_amount: Yup.number().when('security_deposit_received', {
-        is: true,
-        then: schema => schema.typeError("Please enter Total for Security Deposit.").required("Please enter Total for Security Deposit."),
-        otherwise: schema => schema,
-    }),
-    payor_information_PAD: Yup.boolean(),
-    payor_information_Post_Dated_Cheque: Yup.boolean(),
-    payor_information_selected: Yup.string().test(
-        "payor-information-required",
-        "Please select Payor Information",
-        function () {
-            const { payor_information_PAD, payor_information_Post_Dated_Cheque } = this.parent;
-            return payor_information_PAD || payor_information_Post_Dated_Cheque;
-        }
-    ),
-    payor_name: Yup.string().when('payor_information_PAD', {
-        is: true,
-        then: schema => schema.trim().required("Please enter Payor's Name."),
-        otherwise: schema => schema,
-    }),
-    bank_name: Yup.string().when('payor_information_PAD', {
-        is: true,
-        then: schema => schema.trim().required("Please enter Bank Name."),
-        otherwise: schema => schema,
-    }),
-    bank_ID: Yup.string().when('payor_information_PAD', {
-        is: true,
-        then: schema => schema
-            .trim()
-            .required("Please enter Bank ID.")
-            .length(3, "Bank ID must be of 3 digits Only.")
-            .matches(/^\d{3}$/, "Bank ID must be of 3 digits Only."),
-        otherwise: schema => schema,
-    }),
-    account_number: Yup.string().when('payor_information_PAD', {
-        is: true,
-        then: schema => schema.trim().required("Please enter Account Number."),
-        otherwise: schema => schema,
-    }),
-    transit: Yup.string().when('payor_information_PAD', {
-        is: true,
-        then: schema => schema
-            .trim()
-            .required("Please enter Transit.")
-            .length(5, "Transit must be of 5 digits Only.")
-            .matches(/^\d{5}$/, "Transit must be of 5 digits Only."),
-        otherwise: schema => schema,
-    }),
-
-    unit_key_value: Yup.string().when('unit_key', {
-        is: (val) => Boolean(val),
-        then: schema => schema.trim().required("Please enter Unit Key."),
-        otherwise: schema => schema,
-    }),
-    elpas_fob_value: Yup.string().when('elpas_fob', {
-        is: (val) => Boolean(val),
-        then: schema => schema.trim().required("Please enter Elpas Fob."),
-        otherwise: schema => schema,
-    }),
-    resident_signature: Yup.string().required("Signature is required"),
-    suite_insurance_copy_received_date: Yup.string().when('suite_insurance_copy_received', {
-        is: true,
-        then: schema => schema.required("Please select Date for Suite Insurance Copy Received."),
-        otherwise: schema => schema,
-    }),
-
-    insurance_company_name: Yup.string().when('suite_insurance_coverage_approved', {
-        is: true,
-        then: schema => schema.trim().required("Please enter Insurance Company Name."),
-        otherwise: schema => schema,
-    }),
-    policy_number: Yup.string().when('suite_insurance_coverage_approved', {
-        is: true,
-        then: schema => schema.trim().required("Please enter Policy Number."),
-        otherwise: schema => schema,
-    }),
-    reviewed_by: Yup.string()
-        .trim()
-        .required("Please enter Reviewed by."),
-    date: Yup.string()
-        .required("Please select Date."),
-});
-
-const initialValues = {
-    id: "",
-    suite_number: "",
-    contract_signing_date: "",
-    sales_name: "",
-    contartTeam: [],
-    contract_term_yearly: 0,
-    contract_term_monthly: 0,
-    contract_term_weekly: 0,
-    contract_term_daily: 0,
-    tenancy_commence_date: "",
-    contract_expiry_date: "",
-    // 1st Resident
-    first_resident_name_first_name: "",
-    first_resident_name_middle_name: "",
-    first_resident_name_last_name: "",
-    first_resident_dob: "",
-    // 2nd Resident
-    has_2nd_resident: false,
-    second_resident_name_first_name: "",
-    second_resident_name_middle_name: "",
-    second_resident_name_last_name: "",
-    second_resident_dob: "",
-    // 1st Month Payment
-    first_month_payment_received: false,
-
-    first_month_payment_received_cheque_note: "",
-    first_month_payment_received_cheque_date: "",
-    first_month_payment_received_cheque_amount: "",
-
-    monthly_rate: "",
-    care_plan_rate: "",
-    one_time_move_in_fee: null,
-
-    parking_rate: "",
-    parking_gst_val: "",
-    parking_quantity: 1,
-
-    scooter_rate: "",
-    scooter_quantity: 1,
-
-    window_screen_rate: "",
-    window_screen_quantity: 1,
-    grab_bar_rate: "",
-    grab_bar_quantity: 1,
-    payment_others_rate: "",
-
-    security_deposit_received: false,
-    security_deposit_received_cheque_note: "",
-    security_deposit_received_cheque_date: "",
-    security_deposit_received_cheque_amount: "",
-
-    half_month_deposit_for_first_resident_rate: "",
-    half_month_care_plan_rate: "",
-
-    move_in_out_rate: "",
-
-    elpas_rate: "",
-    elpas_quantity: 1,
-    garage_fob_rate: "",
-    garage_fob_quantity: 1,
-    deposit_others_rate: "",
-
-    payor_information_PAD: false,
-    payor_information_Post_Dated_Cheque: false,
-    payor_information_selected: "",
-
-    payor_name: "",
-    bank_name: "",
-    bank_ID: "",
-    account_number: "",
-    transit: "",
-
-    unit_key: 0,
-    unit_key_value: "",
-    elpas_fob: 0,
-    elpas_fob_value: "",
-
-    resident_signature: "",
-
-    suite_insurance_copy_received: false,
-    suite_insurance_copy_received_date: "",
-
-    suite_insurance_coverage_approved: false,
-    insurance_company_name: "",
-    policy_number: "",
-
-    reviewed_by: "",
-    date: "",
-};
+// Import configuration and utilities
+import {
+    CONTRACT_TERMS,
+    PAYOR_INFORMATION,
+    OTHERS_OPTIONS,
+    moveInFormValidationSchema,
+} from "./config/moveInFormConfig";
+import {
+    useSignatureHandler,
+    useHalfMonthDeposit,
+    useHalfCarePlanRate,
+} from "./hooks/useMoveInFormHooks";
+import { useMoveInForm } from "./hooks/useMoveInForm";
+import { toNumber } from "./utils/moveInFormHelpers";
 
 const MoveInSummeryForm = () => {
-    const sigPadRef = useRef(null)
-    const location = useLocation();
-    const navigate = useNavigate();
-    const [loading, setLoading] = useState(false);
-    const [formId, setFormId] = useState();
-    const [initialFormValues, setInitialFormValues] = useState(initialValues);
-    const [defaultElpasRate, setDefaultElpasRate] = useState(0);
-    const [defaultGaregeFobRate, setDefaultGaregeFobRate] = useState(0);
-
-    useEffect(() => {
-        const fetchFormData = async () => {
-            setLoading(true);
-            try {
-
-                if (location?.state?.formData?.form_data) {
-                    setFormId(location.state?.id);
-                    setInitialFormValues({
-                        ...initialValues,
-                        ...location.state.formData.form_data,
-                        id: location.state?.id || location.state.formData?.form_data?.id || "",
-                        resident_signature: "",
-                    });
-                    setLoading(false);
-                    return;
-                }
-
-                const response = await StaticFormServices.getDefaultValue();
-                const data = response?.Data || {};
-
-                const parkingRate = parseFloat(data.parking_rate || 0);
-                const gstParkingPercentage = parseFloat(data.gst_percentage_for_parking || 0);
-                const parkingGST = parkingRate * gstParkingPercentage / 100;
-                const monthlyRate2ndRes = parseFloat(data.monthly_rate_for_second_resident || 0);
-                const halfRentalDeposit2ndRes = monthlyRate2ndRes / 2;
-
-                setDefaultElpasRate(Number(data?.elpas_rate) || 0);
-                setDefaultGaregeFobRate(Number(data?.garage_fob_rate) || 0);
-                setInitialFormValues({
-                    ...initialValues,
-                    elpas_rate: Number(data?.elpas_rate) || 0,
-                    garage_fob_rate: Number(data.garage_fob_rate) || 0,
-                    gst_percentage_for_parking: parkingGST.toFixed(2),
-                    one_time_move_in_fee: data.one_time_move_in_fee || "",
-                    parking_rate: data.parking_rate || "",
-                    halfRentalDeposit2ndRes: halfRentalDeposit2ndRes.toFixed(2),
-                    move_in_out_rate: data.move_in_out_rate || "",
-                    elpas_quantity: 1,
-                });
-            } catch (error) {
-                // Handle error
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchFormData();
-    }, []);
-
-    const toNumber = (value) => Number(value) || 0;
-
-    const useSignatureHandler = (sigPadRef, values, setFieldValue, setFieldTouched) => {
-        const handleEnd = () => {
-            if (sigPadRef.current?.isEmpty()) {
-                setFieldValue("resident_signature", "");
-                setFieldTouched("resident_signature", true, false);
-            } else {
-                const dataUrl = sigPadRef.current.getCanvas().toDataURL("image/png");
-                setFieldValue("resident_signature", dataUrl, true);
-                setFieldTouched("resident_signature", true, false);
-            }
-        };
-
-        useEffect(() => {
-            if (sigPadRef.current && values.resident_signature && sigPadRef.current.isEmpty()) {
-                try {
-                    sigPadRef.current.fromDataURL(values.resident_signature);
-                } catch (e) {
-                    console.error("Error loading signature:", e);
-                }
-            }
-        }, [values.resident_signature]);
-
-        return handleEnd;
-    };
-
-    const useHalfMonthDeposit = (values, initialFormValues, setFieldValue) => {
-        useEffect(() => {
-            const baseDeposit = toNumber(initialFormValues?.halfRentalDeposit2ndRes) * 2;
-            const monthlyRate = toNumber(values.monthly_rate);
-
-            if (monthlyRate > 0) {
-                const value = values.has_2nd_resident
-                    ? (monthlyRate > baseDeposit ? ((monthlyRate - baseDeposit) / 2).toFixed(2) : "")
-                    : (monthlyRate / 2).toFixed(2);
-                setFieldValue("half_month_deposit_for_first_resident_rate", value);
-            } else {
-                setFieldValue("half_month_deposit_for_first_resident_rate", "");
-            }
-        }, [values.has_2nd_resident, values.monthly_rate]);
-    };
-
-    const useHalfCarePlanRate = (values, setFieldValue) => {
-        useEffect(() => {
-            const rate = toNumber(values.care_plan_rate);
-            setFieldValue("half_month_care_plan_rate", rate > 0 ? (rate / 2).toFixed(2) : "");
-        }, [values.care_plan_rate]);
-    };
-
-    // Edit Time Also multiply elpas_rate and garage_fob_rate with count // commented
-    // const useRateCalculator = (fieldName, quantity, rate, setFieldValue) => {
-    //     console.log(fieldName)
-    //     useEffect(() => {
-    //         const qty = toNumber(quantity);
-    //         const unitRate = toNumber(rate);
-    //         setFieldValue(fieldName, qty > 0 && unitRate > 0 ? qty * unitRate : "");
-    //     }, [quantity]);
-    // };
-
-
-    const handleSubmit = async (values, actions) => {
-        setLoading(true);
-        try {
-            let signatureData = values.resident_signature;
-
-            if (!signatureData) {
-                signatureData = "";
-            }
-
-            const byteString = atob(signatureData.split(',')[1]);
-            const mimeString = signatureData.split(',')[0].split(':')[1].split(';')[0];
-            const ab = new ArrayBuffer(byteString.length);
-            const ia = new Uint8Array(ab);
-            for (let i = 0; i < byteString.length; i++) {
-                ia[i] = byteString.charCodeAt(i);
-            }
-            const blob = new Blob([ab], { type: mimeString });
-
-            const formData = new FormData();
-            if (formId) {
-                formData.append("form_id", formId);
-            }
-
-            if (signatureData) {
-                formData.append("file", blob, `Img_${generateUUID()}.jpg`);
-            }
-
-            formData.append("form_type", "3");
-            formData.append("data", JSON.stringify(values));
-
-            let response;
-            if (formId) {
-                response = await StaticFormServices.moveInSummeryUpdate(formData);
-                if (response?.ResponseCode === "1") {
-                    toast.success("Form Updated successfully.");
-                    setTimeout(() => {
-                        navigate("/staticForms");
-                    }, 1200);
-                }
-            } else {
-                response = await StaticFormServices.moveInSummerySubmit(formData);
-                if (response?.ResponseCode === "1") {
-                    toast.success(response?.ResponseText || "Form submitted successfully.");
-                    setTimeout(() => {
-                        navigate("/staticForms");
-                    }, 1200);
-                }
-            }
-        } catch (error) {
-            console.error("Error during form submission:", error);
-            toast.error("Form is not submitted. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    };
-    // console.log(initialFormValues);
+    const sigPadRef = useRef(null);
+    
+    // Use the main form hook for state and logic
+    const {
+        loading,
+        formId,
+        initialFormValues,
+        defaultElpasRate,
+        defaultGaregeFobRate,
+        handleSubmit,
+    } = useMoveInForm();
 
     return (
         <Box m="20px">
@@ -477,7 +57,7 @@ const MoveInSummeryForm = () => {
                     <Formik
                         initialValues={initialFormValues}
                         enableReinitialize
-                        validationSchema={validationSchema}
+                        validationSchema={moveInFormValidationSchema}
                         onSubmit={handleSubmit}
                     >
                         {({
@@ -550,7 +130,7 @@ const MoveInSummeryForm = () => {
                                                 <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
                                                     Cotract Team
                                                 </Box>
-                                                {contarctTeam.map((item) => {
+                                                {CONTRACT_TERMS.map((item) => {
                                                     const label = Object.keys(item)[0];
                                                     const value = item[label];
                                                     return (
@@ -1179,7 +759,7 @@ const MoveInSummeryForm = () => {
                                                     <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
                                                         Payor Information
                                                     </Box>
-                                                    {payor_information.map((item) => {
+                                                    {PAYOR_INFORMATION.map((item) => {
                                                         const label = Object.keys(item)[0];
                                                         const stateKey = item[label];
                                                         const checked = values[stateKey] || false;
@@ -1190,7 +770,7 @@ const MoveInSummeryForm = () => {
                                                                         <Checkbox
                                                                             checked={checked}
                                                                             onChange={() => {
-                                                                                payor_information.forEach((itm) => {
+                                                                                PAYOR_INFORMATION.forEach((itm) => {
                                                                                     const key = itm[Object.keys(itm)[0]];
                                                                                     setFieldValue(key, key === stateKey);
                                                                                 });
@@ -1282,7 +862,7 @@ const MoveInSummeryForm = () => {
                                                     <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
                                                         Others
                                                     </Box>
-                                                    {Others.map((item) => {
+                                                    {OTHERS_OPTIONS.map((item) => {
                                                         const label = Object.keys(item)[0];
                                                         const stateKey = item[label];
                                                         const checked = Boolean(values[stateKey]);
