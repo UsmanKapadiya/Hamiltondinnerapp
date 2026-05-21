@@ -252,6 +252,7 @@ const GuestOrderViewController = () => {
                   kitchenSummery={false}
                   disabled={isPastDate || isAfter10AM}
                   MAX_MEAL_QTY={guestCount}
+                  isGuestOrder={true}
                   langObj={langObj}
                   guideline={userData?.breakfast_guideline}
                   guidelineCn={userData?.breakfast_guideline_cn}
@@ -273,6 +274,7 @@ const GuestOrderViewController = () => {
                   kitchenSummery={false}
                   disabled={isPastDate || isAfter3PM}
                   MAX_MEAL_QTY={guestCount}
+                  isGuestOrder={true}
                   langObj={langObj}
                   guideline={userData?.lunch_guideline}
                   guidelineCn={userData?.lunch_guideline_cn}
@@ -294,6 +296,7 @@ const GuestOrderViewController = () => {
                   userData={userData}
                   kitchenSummery={false}
                   disabled={isPastDate || isAfter12PM}
+                  isGuestOrder={true}
                   MAX_MEAL_QTY={guestCount}
                   langObj={langObj}
                   guideline={userData?.dinner_guideline}
