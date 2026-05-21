@@ -26,10 +26,8 @@ const MenuItem = ({
   const hasPreferences = _.size(item.preference) > 0;
   const showOptionsAndPreferences = item.qty > 0;
   
-  // For guest orders, disable + button when item quantity reaches max guest count
-  const incrementDisabled = isGuestOrder 
-    ? disabled || (item.qty >= maxQty)
-    : disabled;
+  // Disable + button when item quantity reaches max limit (for both guest and regular orders)
+  const incrementDisabled = disabled || (item.qty >= maxQty);
 
   return (
     <Box mb={1} ml={itemType === "alternative" ? 2 : 0}>
