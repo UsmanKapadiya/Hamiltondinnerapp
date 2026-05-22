@@ -1,4 +1,3 @@
-import React from "react";
 import { Box, Typography } from "@mui/material";
 import _ from "lodash";
 
@@ -25,9 +24,9 @@ const MenuItem = ({
   const hasOptions = _.size(item.options) > 0;
   const hasPreferences = _.size(item.preference) > 0;
   const showOptionsAndPreferences = item.qty > 0;
-  
+
   // Disable + button when item quantity reaches max limit (for both guest and regular orders)
-  const incrementDisabled = disabled || (item.qty >= maxQty);
+  const incrementDisabled = disabled || item.qty >= maxQty;
 
   return (
     <Box mb={1} ml={itemType === "alternative" ? 2 : 0}>
@@ -80,7 +79,10 @@ const MenuItem = ({
       <Box
         mt={2}
         ml={itemType === "alternative" ? 3 : 1}
-        sx={{ width: "100%", minHeight: showOptionsAndPreferences ? "auto" : 0 }}
+        sx={{
+          width: "100%",
+          minHeight: showOptionsAndPreferences ? "auto" : 0,
+        }}
       >
         {showOptionsAndPreferences && (
           <Box mt={2}>

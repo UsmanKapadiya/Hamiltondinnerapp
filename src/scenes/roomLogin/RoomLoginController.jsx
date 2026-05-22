@@ -1,291 +1,239 @@
-import React from "react";
 import {
-    Box,
-    TextField,
-    Typography,
-    useTheme,
-    useMediaQuery,
-    IconButton,
+  Box,
+  TextField,
+  Typography,
+  useTheme,
+  useMediaQuery,
+  IconButton,
 } from "@mui/material";
 import { ToastContainer } from "react-toastify";
-import {
-    ArrowForwardIosOutlined,
-    LogoutOutlined,
-} from "@mui/icons-material";
+import { ArrowForwardIosOutlined, LogoutOutlined } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { tokens } from "../../theme";
 import logo from "../../assets/images/logo.png";
 import CustomButton from "../../components/CustomButton";
 
 const RoomEnterView = ({
-    formData,
-    errors,
-    loading,
-    handleChange,
-    handleSubmit,
-    handleLogout,
+  formData,
+  errors,
+  loading,
+  handleChange,
+  handleSubmit,
+  handleLogout,
 }) => {
-    const theme = useTheme();
-    const colors = tokens(theme.palette.mode);
-    const isMdDevices = useMediaQuery("(min-width: 724px)");
-    const navigate = useNavigate();
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
+  const isMdDevices = useMediaQuery("(min-width: 724px)");
+  const navigate = useNavigate();
 
-    return (
+  return (
+    <Box
+      display="flex"
+      height="100vh"
+      width="100%"
+      sx={{
+        overflowX: "hidden",
+        overflowY: "auto",
+      }}
+    >
+      <ToastContainer />
+
+      <Box
+        flex={7}
+        sx={{
+          backgroundColor: colors.blueAccent[700],
+
+          height: "100vh",
+
+          width: "100%",
+
+          overflowX: "hidden",
+        }}
+      />
+
+      <Box
+        flex={5}
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        sx={{
+          backgroundColor: "white",
+
+          height: "100vh",
+
+          width: "100%",
+        }}
+      >
         <Box
-            display="flex"
-            height="100vh"
-            width="100%"
-            sx={{
-                overflowX: "hidden",
-                overflowY: "auto",
-            }}
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{
+            display: "flex",
+
+            flexDirection: "column",
+
+            justifyContent: "center",
+
+            alignItems: "center",
+
+            width: "100%",
+
+            maxWidth: "400px",
+
+            padding: "20px",
+
+            margin: "0 auto",
+          }}
         >
-            <ToastContainer />
+          <img
+            src={logo}
+            alt="Logo"
+            style={{
+              width: 80,
+              marginBottom: 16,
+            }}
+          />
 
-            <Box
-                flex={7}
-                sx={{
-                    backgroundColor:
-                        colors.blueAccent[700],
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{
+              textAlign: "center",
 
-                    height: "100vh",
+              textTransform: "uppercase",
 
-                    width: "100%",
+              fontWeight: 700,
+            }}
+          >
+            Welcome to our
+            <br />
+            Exceptional
+            <br />
+            Senior Living
+          </Typography>
 
-                    overflowX: "hidden",
-                }}
-            />
+          <TextField
+            label="Room No"
+            name="roomNo"
+            type="text"
+            value={formData.roomNo}
+            onChange={handleChange}
+            error={!!errors.roomNo}
+            helperText={errors.roomNo}
+            fullWidth
+            margin="normal"
+            InputProps={{
+              endAdornment: (
+                <IconButton
+                  onClick={handleSubmit}
+                  edge="end"
+                  aria-label="submit room number"
+                  sx={{
+                    color: colors.blueAccent[700],
 
-            <Box
-                flex={5}
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                sx={{
-                    backgroundColor: "white",
-
-                    height: "100vh",
-
-                    width: "100%",
-                }}
-            >
-                <Box
-                    component="form"
-                    onSubmit={handleSubmit}
-                    sx={{
-                        display: "flex",
-
-                        flexDirection: "column",
-
-                        justifyContent: "center",
-
-                        alignItems: "center",
-
-                        width: "100%",
-
-                        maxWidth: "400px",
-
-                        padding: "20px",
-
-                        margin: "0 auto",
-                    }}
+                    marginRight: 2,
+                  }}
                 >
-                    <img
-                        src={logo}
-                        alt="Logo"
-                        style={{
-                            width: 80,
-                            marginBottom: 16,
-                        }}
-                    />
+                  <ArrowForwardIosOutlined />
+                </IconButton>
+              ),
 
-                    <Typography
-                        variant="h6"
-                        gutterBottom
-                        sx={{
-                            textAlign: "center",
+              sx: {
+                borderRadius: "30px",
 
-                            textTransform:
-                                "uppercase",
+                background: colors.blueAccent[50],
 
-                            fontWeight: 700,
-                        }}
-                    >
-                        Welcome to our
-                        <br />
-                        Exceptional
-                        <br />
-                        Senior Living
-                    </Typography>
+                paddingRight: 0,
+              },
+            }}
+          />
 
-                    <TextField
-                        label="Room No"
-                        name="roomNo"
-                        type="text"
-                        value={formData.roomNo}
-                        onChange={handleChange}
-                        error={!!errors.roomNo}
-                        helperText={errors.roomNo}
-                        fullWidth
-                        margin="normal"
-                        InputProps={{
-                            endAdornment: (
-                                <IconButton
-                                    onClick={
-                                        handleSubmit
-                                    }
-                                    edge="end"
-                                    aria-label="submit room number"
-                                    sx={{
-                                        color:
-                                            colors
-                                                .blueAccent[700],
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            gap={1}
+            width="100%"
+          >
+            <CustomButton
+              onClick={() => navigate("/report")}
+              endIcon={<ArrowForwardIosOutlined />}
+              sx={{
+                bgcolor: colors.blueAccent[50],
 
-                                        marginRight: 2,
-                                    }}
-                                >
-                                    <ArrowForwardIosOutlined />
-                                </IconButton>
-                            ),
+                color: colors.blueAccent[700],
 
-                            sx: {
-                                borderRadius:
-                                    "30px",
+                "&:hover": {
+                  bgcolor: colors.blueAccent[100],
 
-                                background:
-                                    colors
-                                        .blueAccent[50],
+                  color: colors.blueAccent[800],
+                },
 
-                                paddingRight: 0,
-                            },
-                        }}
-                    />
+                padding: "10px 32px",
 
-                    <Box
-                        display="flex"
-                        flexDirection="column"
-                        alignItems="center"
-                        gap={1}
-                        width="100%"
-                    >
-                        <CustomButton
-                            onClick={() =>
-                                navigate("/report")
-                            }
-                            endIcon={
-                                <ArrowForwardIosOutlined />
-                            }
-                            sx={{
-                                bgcolor:
-                                    colors
-                                        .blueAccent[50],
+                boxShadow: "none",
 
-                                color:
-                                    colors
-                                        .blueAccent[700],
+                border: "none",
 
-                                "&:hover": {
-                                    bgcolor:
-                                        colors
-                                            .blueAccent[100],
+                borderRadius: 4,
 
-                                    color:
-                                        colors
-                                            .blueAccent[800],
-                                },
+                fontWeight: 600,
 
-                                padding:
-                                    "10px 32px",
+                fontSize: 16,
 
-                                boxShadow: "none",
+                cursor: "pointer",
 
-                                border: "none",
+                width: "240px",
 
-                                borderRadius: 4,
+                maxWidth: "100%",
+              }}
+            >
+              View Report
+            </CustomButton>
 
-                                fontWeight: 600,
+            <CustomButton
+              onClick={handleLogout}
+              startIcon={<LogoutOutlined />}
+              disabled={loading}
+              sx={{
+                bgcolor: colors.blueAccent[700],
 
-                                fontSize: 16,
+                color: "#fcfcfc",
 
-                                cursor: "pointer",
+                fontSize: isMdDevices ? "14px" : "10px",
 
-                                width: "240px",
+                fontWeight: "bold",
 
-                                maxWidth: "100%",
-                            }}
-                        >
-                            View Report
-                        </CustomButton>
+                padding: "10px 32px",
 
-                        <CustomButton
-                            onClick={
-                                handleLogout
-                            }
-                            startIcon={
-                                <LogoutOutlined />
-                            }
-                            disabled={loading}
-                            sx={{
-                                bgcolor:
-                                    colors
-                                        .blueAccent[700],
+                borderRadius: 4,
 
-                                color: "#fcfcfc",
+                textDecoration: "none",
 
-                                fontSize:
-                                    isMdDevices
-                                        ? "14px"
-                                        : "10px",
+                transition: ".3s ease",
 
-                                fontWeight:
-                                    "bold",
+                opacity: loading ? 0.7 : 1,
 
-                                padding:
-                                    "10px 32px",
+                pointerEvents: loading ? "none" : "auto",
 
-                                borderRadius: 4,
+                cursor: loading ? "not-allowed" : "pointer",
 
-                                textDecoration:
-                                    "none",
+                width: "240px",
 
-                                transition:
-                                    ".3s ease",
+                maxWidth: "100%",
 
-                                opacity:
-                                    loading
-                                        ? 0.7
-                                        : 1,
-
-                                pointerEvents:
-                                    loading
-                                        ? "none"
-                                        : "auto",
-
-                                cursor:
-                                    loading
-                                        ? "not-allowed"
-                                        : "pointer",
-
-                                width: "240px",
-
-                                maxWidth: "100%",
-
-                                "&:hover": {
-                                    bgcolor:
-                                        colors
-                                            .blueAccent[800],
-                                },
-                            }}
-                        >
-                            {loading
-                                ? "Loading..."
-                                : "Log Out"}
-                        </CustomButton>
-                    </Box>
-                </Box>
-            </Box>
+                "&:hover": {
+                  bgcolor: colors.blueAccent[800],
+                },
+              }}
+            >
+              {loading ? "Loading..." : "Log Out"}
+            </CustomButton>
+          </Box>
         </Box>
-    );
+      </Box>
+    </Box>
+  );
 };
 
 export default RoomEnterView;

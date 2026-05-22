@@ -5,7 +5,10 @@ import _ from "lodash";
  */
 export const resetItemOptions = (options) => {
   if (!_.isArray(options) || _.isEmpty(options)) return options;
-  return options.map((opt, idx) => ({ ...opt, is_selected: idx === 0 ? 1 : 0 }));
+  return options.map((opt, idx) => ({
+    ...opt,
+    is_selected: idx === 0 ? 1 : 0,
+  }));
 };
 
 /**
@@ -21,7 +24,7 @@ export const resetItemPreferences = (preferences) => {
  */
 export const decreaseItemQuantity = (item) => {
   const newQty = Math.max((item.qty || 0) - 1, 0);
-  
+
   return {
     ...item,
     qty: newQty,
@@ -43,16 +46,18 @@ export const increaseItemQuantity = (item, maxQty) => {
   if (item.qty >= maxQty) return item;
 
   const wasZero = (item.qty || 0) === 0;
-  
+
   return {
     ...item,
     qty: (item.qty || 0) + 1,
-    options: wasZero && _.size(item.options) > 0
-      ? resetItemOptions(item.options)
-      : item.options,
-    preference: wasZero && _.size(item.preference) > 0
-      ? resetItemPreferences(item.preference)
-      : item.preference,
+    options:
+      wasZero && _.size(item.options) > 0
+        ? resetItemOptions(item.options)
+        : item.options,
+    preference:
+      wasZero && _.size(item.preference) > 0
+        ? resetItemPreferences(item.preference)
+        : item.preference,
   };
 };
 
@@ -77,7 +82,12 @@ export const updateItemPreference = (item, preferenceId) => {
     ...item,
     preference: _.map(item.preference, (pref) => ({
       ...pref,
-      is_selected: pref.id === preferenceId ? (pref.is_selected ? 0 : 1) : pref.is_selected,
+      is_selected:
+        pref.id === preferenceId
+          ? pref.is_selected
+            ? 0
+            : 1
+          : pref.is_selected,
     })),
   };
 };
@@ -87,10 +97,12 @@ export const updateItemPreference = (item, preferenceId) => {
  */
 export const hasItemsWithQuantity = (categories) => {
   if (!_.isArray(categories)) return false;
-  
-  return _.some(categories, (cat) =>
-    _.some(cat.entreeItems, (item) => item.qty > 0) ||
-    _.some(cat.alternativeItems, (item) => item.qty > 0)
+
+  return _.some(
+    categories,
+    (cat) =>
+      _.some(cat.entreeItems, (item) => item.qty > 0) ||
+      _.some(cat.alternativeItems, (item) => item.qty > 0),
   );
 };
 
@@ -102,7 +114,7 @@ export const updateCategoryItems = (
   categoryIndex,
   itemType,
   itemId,
-  updateFn
+  updateFn,
 ) => {
   return _.map(categories, (cat, idx) => {
     if (idx !== categoryIndex) return cat;
@@ -110,7 +122,7 @@ export const updateCategoryItems = (
     return {
       ...cat,
       [itemType]: _.map(cat[itemType], (item) =>
-        item.id === itemId ? updateFn(item) : item
+        item.id === itemId ? updateFn(item) : item,
       ),
     };
   });
@@ -125,9 +137,13 @@ export const increaseItemQuantityWithLimit = (
   maxQty,
   allEntreeItems,
   allAlternativeItems,
-  isKitchenUser
+  isKitchenUser,
 ) => {
-  if (item.qty >= maxQty) return { entreeItems: allEntreeItems, alternativeItems: allAlternativeItems };
+  if (item.qty >= maxQty)
+    return {
+      entreeItems: allEntreeItems,
+      alternativeItems: allAlternativeItems,
+    };
 
   // Calculate total quantity
   const totalQty =
@@ -201,7 +217,7 @@ export const increaseItemQuantityWithLimit = (
               ? resetItemPreferences(i.preference)
               : i.preference,
         }
-      : i
+      : i,
   );
 
   return { entreeItems: newEntreeItems, alternativeItems: newAlternativeItems };
@@ -215,9 +231,13 @@ export const increaseAlternativeItemQuantityWithLimit = (
   maxQty,
   allEntreeItems,
   allAlternativeItems,
-  isKitchenUser
+  isKitchenUser,
 ) => {
-  if (item.qty >= maxQty) return { entreeItems: allEntreeItems, alternativeItems: allAlternativeItems };
+  if (item.qty >= maxQty)
+    return {
+      entreeItems: allEntreeItems,
+      alternativeItems: allAlternativeItems,
+    };
 
   // Calculate total quantity
   const totalQty =
@@ -291,7 +311,7 @@ export const increaseAlternativeItemQuantityWithLimit = (
               ? resetItemPreferences(i.preference)
               : i.preference,
         }
-      : i
+      : i,
   );
 
   return { entreeItems: newEntreeItems, alternativeItems: newAlternativeItems };

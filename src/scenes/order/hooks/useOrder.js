@@ -49,7 +49,7 @@ export const useOrder = () => {
 
   // ==================== Memoized User Checks ====================
   const kitchenUser = useMemo(() => isKitchenUser(userData), [userData]);
-  
+
   const maxMealQty = useMemo(() => {
     if (kitchenUser) return config.defaults.maxMenuQuantityForKitchenUser;
     return getRoomOccupancy(userData, roomNo, config.defaults.maxMealQuantity);
@@ -60,15 +60,15 @@ export const useOrder = () => {
   const isPastDate = useMemo(() => isPast(date), [date]);
   const isAfter10AM = useMemo(
     () => isTodayDate && isAfterHour(breakfastEndHour),
-    [isTodayDate]
+    [isTodayDate],
   );
   const isAfter3PM = useMemo(
     () => isTodayDate && isAfterHour(lunchEndHour),
-    [isTodayDate]
+    [isTodayDate],
   );
   const isAfter12PM = useMemo(
     () => isTodayDate && isAfterHour(dinnerEndHour),
-    [isTodayDate]
+    [isTodayDate],
   );
 
   // ==================== Guidelines Checks ====================
@@ -76,21 +76,21 @@ export const useOrder = () => {
     () =>
       !_.isEmpty(_.get(userData, "breakfast_guideline")) &&
       !_.isEmpty(_.get(data, "breakfastCategories")),
-    [userData, data.breakfastCategories]
+    [userData, data.breakfastCategories],
   );
 
   const showLunchGuideline = useMemo(
     () =>
       !_.isEmpty(_.get(userData, "lunch_guideline")) &&
       !_.isEmpty(_.get(data, "lunchCategories")),
-    [userData, data.lunchCategories]
+    [userData, data.lunchCategories],
   );
 
   const showDinnerGuideline = useMemo(
     () =>
       !_.isEmpty(_.get(userData, "dinner_guideline")) &&
       !_.isEmpty(_.get(data, "dinnerCategories")),
-    [userData, data.dinnerCategories]
+    [userData, data.dinnerCategories],
   );
 
   // ==================== API for Menu Fetching ====================
@@ -108,7 +108,7 @@ export const useOrder = () => {
         console.error("Error fetching menu list:", error);
         toast.error("Failed to load menu data");
       },
-    }
+    },
   );
 
   // ==================== Default Tab Index ====================
@@ -116,7 +116,7 @@ export const useOrder = () => {
     const now = dayjs();
     const hour = now.hour();
     const minute = now.minute();
-    
+
     if (hour > lunchEndHour || (hour === lunchEndHour && minute > 0)) {
       return 2; // Dinner
     } else if (hour >= breakfastEndHour) {
@@ -142,7 +142,7 @@ export const useOrder = () => {
   useEffect(() => {
     const dateStr = formatDate(date);
     const existingMeal = _.find(mealSelections, { date: dateStr });
-    
+
     if (!existingMeal) {
       fetchMenuDetails(dateStr);
     }
@@ -163,7 +163,7 @@ export const useOrder = () => {
       const roomId = getApiRoomId(userData, roomNo);
       await fetchMenu(roomId, dateStr);
     },
-    [userData, roomNo, fetchMenu]
+    [userData, roomNo, fetchMenu],
   );
 
   /**
@@ -176,24 +176,24 @@ export const useOrder = () => {
       const orders = _.chain(dataArray)
         .map((data) => {
           const updatedItems = getAllItemsFromMealData(data);
-          
+
           // Find original data for this date
           const originalMeal = _.isArray(mealData)
             ? _.find(mealData, { date: data.date })
             : _.get(mealData, "date") === data.date
-            ? mealData
-            : null;
-          
-          const originalItems = originalMeal 
+              ? mealData
+              : null;
+
+          const originalItems = originalMeal
             ? getAllItemsFromMealData(originalMeal)
             : [];
-          
+
           // Get changed items
           const changedItems = getChangedItems(updatedItems, originalItems);
-          
+
           // Check if service flags changed
           const servicesChanged = hasServiceFlagsChanged(data, originalMeal);
-          
+
           // Only include this order if there are changes
           if (_.isEmpty(changedItems) && !servicesChanged) return null;
 
@@ -204,10 +204,22 @@ export const useOrder = () => {
             is_brk_takeout_service: _.get(data, "is_brk_takeout_service", 0),
             is_lunch_tray_service: _.get(data, "is_lunch_tray_service", 0),
             is_lunch_escort_service: _.get(data, "is_lunch_escort_service", 0),
-            is_lunch_takeout_service: _.get(data, "is_lunch_takeout_service", 0),
+            is_lunch_takeout_service: _.get(
+              data,
+              "is_lunch_takeout_service",
+              0,
+            ),
             is_dinner_tray_service: _.get(data, "is_dinner_tray_service", 0),
-            is_dinner_escort_service: _.get(data, "is_dinner_escort_service", 0),
-            is_dinner_takeout_service: _.get(data, "is_dinner_takeout_service", 0),
+            is_dinner_escort_service: _.get(
+              data,
+              "is_dinner_escort_service",
+              0,
+            ),
+            is_dinner_takeout_service: _.get(
+              data,
+              "is_dinner_takeout_service",
+              0,
+            ),
             items: changedItems,
           };
         })
@@ -220,7 +232,7 @@ export const useOrder = () => {
         orders_to_change: JSON.stringify(orders),
       };
     },
-    [userData, roomNo, mealData]
+    [userData, roomNo, mealData],
   );
 
   /**
@@ -230,11 +242,11 @@ export const useOrder = () => {
     const foundIndex = _.findIndex(prev, { date: dateStr });
 
     if (foundIndex !== -1) {
-      return _.map(prev, (item, idx) => 
-        idx === foundIndex ? { ...data, date: dateStr } : item
+      return _.map(prev, (item, idx) =>
+        idx === foundIndex ? { ...data, date: dateStr } : item,
       );
     }
-    
+
     return [...prev, { ...data, date: dateStr }];
   }, []);
 
@@ -244,15 +256,21 @@ export const useOrder = () => {
   const submitData = useCallback(
     async (data, date) => {
       try {
-        const newMealSelections = getUpdatedMealSelections(mealSelections, data, date);
+        const newMealSelections = getUpdatedMealSelections(
+          mealSelections,
+          data,
+          date,
+        );
         setMealSelections(newMealSelections);
 
         const payload = buildOrderPayload(newMealSelections);
         const response = await OrderServices.submitOrder(payload);
 
         if (_.get(response, "ResponseText") === "success") {
-          toast.success(langObj.orderSuccess || "Order submitted successfully!");
-          
+          toast.success(
+            langObj.orderSuccess || "Order submitted successfully!",
+          );
+
           // Clear meal selections and refetch menu
           setMealSelections([]);
           await fetchMenuDetails(date);
@@ -261,57 +279,69 @@ export const useOrder = () => {
         }
       } catch (error) {
         console.error("Error submitting order:", error);
-        toast.error(langObj.orderFailed || "An error occurred while submitting the order.");
+        toast.error(
+          langObj.orderFailed ||
+            "An error occurred while submitting the order.",
+        );
       }
     },
-    [mealSelections, buildOrderPayload, langObj, getUpdatedMealSelections, fetchMenuDetails]
+    [
+      mealSelections,
+      buildOrderPayload,
+      langObj,
+      getUpdatedMealSelections,
+      fetchMenuDetails,
+    ],
   );
 
   /**
    * Room update handler
    */
-  const roomUpdate = useCallback(
-    async (data) => {
-      const userId = _.get(data, "selectedUser.id");
-      
-      if (!userId) {
-        toast.error("No user selected for room update.");
-        return;
-      }
+  const roomUpdate = useCallback(async (data) => {
+    const userId = _.get(data, "selectedUser.id");
 
-      try {
-        const specialInstruction = _.trim(_.toString(_.get(data, "specialInstruction", "")));
-        const foodTexture = _.trim(_.toString(_.get(data, "foodTexture", "")));
-        const allergy_Info = _.trim(_.toString(_.get(data, "allergy_Info", "")));
+    if (!userId) {
+      toast.error("No user selected for room update.");
+      return;
+    }
 
-        const response = await OrderServices.updateRoomDetails(
-          userId,
-          specialInstruction,
-          foodTexture,
-          allergy_Info
+    try {
+      const specialInstruction = _.trim(
+        _.toString(_.get(data, "specialInstruction", "")),
+      );
+      const foodTexture = _.trim(_.toString(_.get(data, "foodTexture", "")));
+      const allergy_Info = _.trim(_.toString(_.get(data, "allergy_Info", "")));
+
+      const response = await OrderServices.updateRoomDetails(
+        userId,
+        specialInstruction,
+        foodTexture,
+        allergy_Info,
+      );
+
+      if (_.get(response, "ResponseCode") === "1") {
+        toast.success(
+          _.get(response, "ResponseText", "Room Details Updated Successfully"),
         );
-
-        if (_.get(response, "ResponseCode") === "1") {
-          toast.success(
-            _.get(response, "ResponseText", "Room Details Updated Successfully")
-          );
-        } else {
-          toast.error(
-            _.get(response, "ResponseText", "Room Details Update failed. Please try again.")
-          );
-        }
-      } catch (error) {
-        console.error("Error updating room details:", error);
-        const errorMessage = _.get(
-          error,
-          "response.data.error",
-          "An unexpected error occurred. Please try again."
+      } else {
+        toast.error(
+          _.get(
+            response,
+            "ResponseText",
+            "Room Details Update failed. Please try again.",
+          ),
         );
-        toast.error(errorMessage);
       }
-    },
-    []
-  );
+    } catch (error) {
+      console.error("Error updating room details:", error);
+      const errorMessage = _.get(
+        error,
+        "response.data.error",
+        "An unexpected error occurred. Please try again.",
+      );
+      toast.error(errorMessage);
+    }
+  }, []);
 
   /**
    * Handle guest order click
@@ -331,7 +361,7 @@ export const useOrder = () => {
   const getTabIndexByTime = useCallback((dateObj) => {
     const hour = dateObj.hour();
     const minute = dateObj.minute();
-    
+
     if (hour > lunchEndHour || (hour === lunchEndHour && minute > 0)) {
       return 2; // Dinner
     } else if (hour >= breakfastEndHour) {
@@ -354,7 +384,7 @@ export const useOrder = () => {
         const updatedSelections = getUpdatedMealSelections(
           mealSelections,
           data,
-          previousDate
+          previousDate,
         );
         setMealSelections(updatedSelections);
         setDate(newDate);
@@ -369,13 +399,13 @@ export const useOrder = () => {
         const updatedSelections = getUpdatedMealSelections(
           mealSelections,
           data,
-          previousDate
+          previousDate,
         );
         setMealSelections(updatedSelections);
         setDate(newDate);
       }
     },
-    [date, mealSelections, data, getUpdatedMealSelections, getTabIndexByTime]
+    [date, mealSelections, data, getUpdatedMealSelections, getTabIndexByTime],
   );
 
   // ==================== Return Values ====================

@@ -1,4 +1,3 @@
-import React from "react";
 import { Box, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { ArrowForwardIosOutlined } from "@mui/icons-material";
@@ -53,7 +52,7 @@ const MealSection = ({
         catIdx,
         itemType,
         item.id,
-        decreaseItemQuantity
+        decreaseItemQuantity,
       ),
     }));
   };
@@ -65,14 +64,14 @@ const MealSection = ({
       const allAlternativeItems = category.alternativeItems || [];
 
       let updatedItems;
-      
+
       if (itemType === "entreeItems") {
         updatedItems = increaseItemQuantityWithLimit(
           item,
           MAX_MEAL_QTY,
           allEntreeItems,
           allAlternativeItems,
-          userData?.role === "kitchen"
+          userData?.role === "kitchen",
         );
       } else {
         updatedItems = increaseAlternativeItemQuantityWithLimit(
@@ -80,7 +79,7 @@ const MealSection = ({
           MAX_MEAL_QTY,
           allEntreeItems,
           allAlternativeItems,
-          userData?.role === "kitchen"
+          userData?.role === "kitchen",
         );
       }
 
@@ -93,7 +92,7 @@ const MealSection = ({
                 entreeItems: updatedItems.entreeItems,
                 alternativeItems: updatedItems.alternativeItems,
               }
-            : cat
+            : cat,
         ),
       };
     });
@@ -107,7 +106,7 @@ const MealSection = ({
         catIdx,
         itemType,
         item.id,
-        (i) => updateItemOption(i, optionId)
+        (i) => updateItemOption(i, optionId),
       ),
     }));
   };
@@ -120,7 +119,7 @@ const MealSection = ({
         catIdx,
         itemType,
         item.id,
-        (i) => updateItemPreference(i, preferenceId)
+        (i) => updateItemPreference(i, preferenceId),
       ),
     }));
   };
@@ -132,10 +131,10 @@ const MealSection = ({
       serviceKeys.forEach((key) => {
         updates[key.key] = 0;
       });
-      
+
       // Toggle the selected service (if it was already 1, it becomes 0; if it was 0, it becomes 1)
       updates[serviceKey] = prev[serviceKey] === 1 ? 0 : 1;
-      
+
       return {
         ...prev,
         ...updates,
@@ -144,7 +143,11 @@ const MealSection = ({
   };
 
   const getCategoryName = (cat) => {
-    if (userData?.langCode === "cn" && cat.cat_name_cn && cat.cat_name_cn.trim() !== "") {
+    if (
+      userData?.langCode === "cn" &&
+      cat.cat_name_cn &&
+      cat.cat_name_cn.trim() !== ""
+    ) {
       return cat.cat_name_cn;
     }
     return cat.cat_name;
@@ -180,7 +183,9 @@ const MealSection = ({
             }}
           >
             {getCategoryName(cat)}
-            {servedWithText && cat.cat_name === servedWithText.catName && ` (${servedWithText.text})`}
+            {servedWithText &&
+              cat.cat_name === servedWithText.catName &&
+              ` (${servedWithText.text})`}
           </Typography>
 
           {/* Entree Items */}
@@ -209,7 +214,10 @@ const MealSection = ({
 
           {/* Alternative Items */}
           {cat.alternativeCatName && (
-            <Typography variant="subtitle1" sx={{ mt: 3, mb: 2, fontWeight: 700 }}>
+            <Typography
+              variant="subtitle1"
+              sx={{ mt: 3, mb: 2, fontWeight: 700 }}
+            >
               {getAlternativeCategoryName(cat)}
             </Typography>
           )}
@@ -223,8 +231,12 @@ const MealSection = ({
               disabled={disabled}
               maxQty={MAX_MEAL_QTY}
               isGuestOrder={isGuestOrder}
-              onDecrease={() => handleDecrease(catIdx, "alternativeItems", item)}
-              onIncrease={() => handleIncrease(catIdx, "alternativeItems", item)}
+              onDecrease={() =>
+                handleDecrease(catIdx, "alternativeItems", item)
+              }
+              onIncrease={() =>
+                handleIncrease(catIdx, "alternativeItems", item)
+              }
               onOptionChange={(optId) =>
                 handleOptionChange(catIdx, "alternativeItems", item, optId)
               }
@@ -254,7 +266,9 @@ const MealSection = ({
         <>
           <hr />
           <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-            {userData?.langCode === "cn" && guidelineCn && guidelineCn.trim() !== ""
+            {userData?.langCode === "cn" &&
+            guidelineCn &&
+            guidelineCn.trim() !== ""
               ? guidelineCn
               : guideline}
           </Typography>

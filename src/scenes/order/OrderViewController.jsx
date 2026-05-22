@@ -1,4 +1,3 @@
-import React from "react";
 import { Box, useTheme, TextField, Tabs, Tab } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -40,7 +39,7 @@ const OrderViewController = () => {
     setTabIndex,
     loading,
     kitchenSummery,
-    
+
     // Computed values
     kitchenUser,
     isPastDate,
@@ -51,7 +50,7 @@ const OrderViewController = () => {
     showBreakFastGuideline,
     showLunchGuideline,
     showDinnerGuideline,
-    
+
     // Methods
     submitData,
     roomUpdate,
@@ -78,7 +77,13 @@ const OrderViewController = () => {
     <Box m="20px">
       {/* Header */}
       <Header
-        title={kitchenSummery ? "Kitchen Summary " : roomNo ? roomNo : userData?.room_id}
+        title={
+          kitchenSummery
+            ? "Kitchen Summary "
+            : roomNo
+              ? roomNo
+              : userData?.room_id
+        }
         icon={""}
         editRoomsDetails={userData?.role !== "kitchen"}
         editIcon={<EditOutlined />}
@@ -88,7 +93,7 @@ const OrderViewController = () => {
         handleRoomUpdate={roomUpdate}
         profileScreen={true}
       />
-      
+
       <ToastContainer />
 
       {/* Main Content */}
@@ -120,7 +125,12 @@ const OrderViewController = () => {
         }}
       >
         {/* Date Picker */}
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          mb={2}
+        >
           <LocalizationProvider
             dateAdapter={AdapterDayjs}
             adapterLocale={userData?.langCode === "cn" ? "zh-cn" : "en"}

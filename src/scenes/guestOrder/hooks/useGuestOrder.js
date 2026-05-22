@@ -37,7 +37,9 @@ export const useGuestOrder = () => {
   const selectedDate = _.get(location, "state.selectedDate");
 
   // ==================== State Management ====================
-  const [date, setDate] = useState(selectedDate ? dayjs(selectedDate) : dayjs());
+  const [date, setDate] = useState(
+    selectedDate ? dayjs(selectedDate) : dayjs(),
+  );
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState({});
   const [mealData, setMealData] = useState({});
@@ -54,7 +56,10 @@ export const useGuestOrder = () => {
 
     if (hour > lunchEndHour || (hour === lunchEndHour && minute > 0)) {
       return 2; // Dinner
-    } else if (hour > breakfastEndHour || (hour === breakfastEndHour && minute > 0)) {
+    } else if (
+      hour > breakfastEndHour ||
+      (hour === breakfastEndHour && minute > 0)
+    ) {
       return 1; // Lunch
     }
     return 0; // Breakfast
@@ -67,15 +72,15 @@ export const useGuestOrder = () => {
   const isPastDate = useMemo(() => isPast(date), [date]);
   const isAfter10AM = useMemo(
     () => isTodayDate && isAfterHour(breakfastEndHour),
-    [isTodayDate]
+    [isTodayDate],
   );
   const isAfter3PM = useMemo(
     () => isTodayDate && isAfterHour(lunchEndHour),
-    [isTodayDate]
+    [isTodayDate],
   );
   const isAfter12PM = useMemo(
     () => isTodayDate && isAfterHour(dinnerEndHour),
-    [isTodayDate]
+    [isTodayDate],
   );
 
   // Guidelines checks
@@ -83,21 +88,21 @@ export const useGuestOrder = () => {
     () =>
       !_.isEmpty(_.get(userData, "breakfast_guideline")) &&
       !_.isEmpty(_.get(data, "breakfastCategories")),
-    [userData, data.breakfastCategories]
+    [userData, data.breakfastCategories],
   );
 
   const showLunchGuideline = useMemo(
     () =>
       !_.isEmpty(_.get(userData, "lunch_guideline")) &&
       !_.isEmpty(_.get(data, "lunchCategories")),
-    [userData, data.lunchCategories]
+    [userData, data.lunchCategories],
   );
 
   const showDinnerGuideline = useMemo(
     () =>
       !_.isEmpty(_.get(userData, "dinner_guideline")) &&
       !_.isEmpty(_.get(data, "dinnerCategories")),
-    [userData, data.dinnerCategories]
+    [userData, data.dinnerCategories],
   );
 
   // ==================== Effects ====================
@@ -155,14 +160,16 @@ export const useGuestOrder = () => {
         const orderIds = _.get(response, "order_id");
 
         if (itemIds && orderIds) {
-          setData((prevData) => updateGuestOrderIds(prevData, itemIds, orderIds));
+          setData((prevData) =>
+            updateGuestOrderIds(prevData, itemIds, orderIds),
+          );
           await fetchMenuDetails();
         }
 
         toast.success("Guest Order submitted successfully!");
       } else {
         toast.error(
-          _.get(response, "ResponseText", "Guest Order submission failed.")
+          _.get(response, "ResponseText", "Guest Order submission failed."),
         );
       }
     } catch (error) {
@@ -224,9 +231,7 @@ export const useGuestOrder = () => {
    */
   const handleDateChange = (newDate) => {
     setDate(newDate);
-    setData((data) =>
-      resetAllMealQuantities(data)
-    );
+    setData((data) => resetAllMealQuantities(data));
     setGuestCount((prev) => (prev > 1 ? prev - 1 : 1));
   };
 

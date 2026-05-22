@@ -7,10 +7,10 @@ import _ from "lodash";
  */
 export const selectFirstOption = (options) => {
   if (_.isEmpty(options)) return [];
-  
+
   const hasSelected = _.some(options, (opt) => opt.is_selected === 1);
   if (hasSelected) return options;
-  
+
   return _.map(options, (opt, idx) => ({
     ...opt,
     is_selected: idx === 0 ? 1 : 0,
@@ -47,7 +47,7 @@ export const flattenMealItems = (items = []) => {
  */
 export const getAllItemsFromCategories = (categories) => {
   if (!_.isArray(categories)) return [];
-  
+
   return _.flatMap(categories, (cat) => [
     ..._.get(cat, "entreeItems", []),
     ..._.get(cat, "alternativeItems", []),
@@ -60,10 +60,12 @@ export const getAllItemsFromCategories = (categories) => {
  * @returns {Array} All flattened items
  */
 export const getAllItemsFromMealData = (data) => {
-  const breakfast = getAllItemsFromCategories(_.get(data, "breakfastCategories", []));
+  const breakfast = getAllItemsFromCategories(
+    _.get(data, "breakfastCategories", []),
+  );
   const lunch = getAllItemsFromCategories(_.get(data, "lunchCategories", []));
   const dinner = getAllItemsFromCategories(_.get(data, "dinnerCategories", []));
-  
+
   return flattenMealItems([...breakfast, ...lunch, ...dinner]);
 };
 
@@ -75,7 +77,7 @@ export const getAllItemsFromMealData = (data) => {
  */
 export const hasItemChanged = (updated, original) => {
   if (!original) return updated.qty > 0;
-  
+
   return (
     updated.qty !== original.qty ||
     updated.preference !== original.preference ||
@@ -92,26 +94,23 @@ export const hasItemChanged = (updated, original) => {
 export const getChangedItems = (updatedItems, originalItems) => {
   const originalMap = _.keyBy(
     originalItems,
-    (o) => `${o.item_id}_${o.order_id}`
+    (o) => `${o.item_id}_${o.order_id}`,
   );
-  
-  const updatedMap = _.keyBy(
-    updatedItems,
-    (u) => `${u.item_id}_${u.order_id}`
-  );
-  
+
+  const updatedMap = _.keyBy(updatedItems, (u) => `${u.item_id}_${u.order_id}`);
+
   const changedItems = [];
-  
+
   // Check updated items for new or changed items
   _.forEach(updatedItems, (updated) => {
     const key = `${updated.item_id}_${updated.order_id}`;
     const original = originalMap[key];
-    
+
     if (hasItemChanged(updated, original)) {
       changedItems.push(updated);
     }
   });
-  
+
   // Check original items for removed items
   _.forEach(originalItems, (original) => {
     const key = `${original.item_id}_${original.order_id}`;
@@ -124,7 +123,7 @@ export const getChangedItems = (updatedItems, originalItems) => {
       });
     }
   });
-  
+
   return changedItems;
 };
 
@@ -146,9 +145,10 @@ export const hasServiceFlagsChanged = (current, original) => {
     "is_lunch_escort_service",
     "is_lunch_takeout_service",
   ];
-  
-  return _.some(serviceKeys, (key) => 
-    _.get(current, key, 0) !== _.get(original, key, 0)
+
+  return _.some(
+    serviceKeys,
+    (key) => _.get(current, key, 0) !== _.get(original, key, 0),
   );
 };
 
@@ -160,10 +160,16 @@ export const hasServiceFlagsChanged = (current, original) => {
 export const resetAllMealQuantities = (data) => {
   const resetCategory = (category) => ({
     ...category,
-    entreeItems: _.map(category.entreeItems || [], (item) => ({ ...item, qty: 0 })),
-    alternativeItems: _.map(category.alternativeItems || [], (item) => ({ ...item, qty: 0 })),
+    entreeItems: _.map(category.entreeItems || [], (item) => ({
+      ...item,
+      qty: 0,
+    })),
+    alternativeItems: _.map(category.alternativeItems || [], (item) => ({
+      ...item,
+      qty: 0,
+    })),
   });
-  
+
   return {
     ...data,
     breakfastCategories: _.map(data.breakfastCategories || [], resetCategory),
@@ -184,7 +190,7 @@ export const calculateTotalMealQuantity = (data) => {
       const altSum = _.sumBy(cat.alternativeItems || [], "qty");
       return entreeSum + altSum;
     });
-  
+
   return (
     sumCategoryQuantities(data.breakfastCategories || []) +
     sumCategoryQuantities(data.lunchCategories || []) +
@@ -202,23 +208,23 @@ export const calculateTotalMealQuantity = (data) => {
 export const updateOrderIdsInData = (data, itemIds, orderIds) => {
   const updateItems = (items) => {
     if (!_.isArray(items)) return items;
-    
+
     return _.map(items, (item) => {
       const idx = _.findIndex(itemIds, (id) => id === item.id);
       return idx !== -1 ? { ...item, order_id: orderIds[idx] } : item;
     });
   };
-  
+
   const updateCategories = (categories) => {
     if (!_.isArray(categories)) return categories;
-    
+
     return _.map(categories, (cat) => ({
       ...cat,
       entreeItems: updateItems(cat.entreeItems),
       alternativeItems: updateItems(cat.alternativeItems),
     }));
   };
-  
+
   return {
     ...data,
     breakfastCategories: updateCategories(data.breakfastCategories),
@@ -247,7 +253,10 @@ export const getCategoryName = (category, langCode) => {
  * @returns {string} Alternative category name
  */
 export const getAlternativeCategoryName = (category, langCode) => {
-  if (langCode === "cn" && _.trim(_.get(category, "alternativeCatName_cn", ""))) {
+  if (
+    langCode === "cn" &&
+    _.trim(_.get(category, "alternativeCatName_cn", ""))
+  ) {
     return category.alternativeCatName_cn;
   }
   return category.alternativeCatName || "";

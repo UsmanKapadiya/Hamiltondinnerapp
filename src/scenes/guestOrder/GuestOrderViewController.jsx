@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Box,
   useTheme,
@@ -89,7 +88,13 @@ const GuestOrderViewController = () => {
   return (
     <>
       {/* Alert Dialog */}
-      <Dialog open={alertOpen} onClose={handleAlertCancel} disableScrollLock={true} maxWidth="xs" fullWidth>
+      <Dialog
+        open={alertOpen}
+        onClose={handleAlertCancel}
+        disableScrollLock={true}
+        maxWidth="xs"
+        fullWidth
+      >
         <DialogTitle sx={{ textAlign: "center", fontWeight: 600 }}>
           Remove All Items?
         </DialogTitle>
@@ -99,10 +104,18 @@ const GuestOrderViewController = () => {
           If you continue, it will remove all items from the order.
         </DialogContent>
         <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
-          <Button onClick={handleAlertCancel} variant="outlined" color="primary">
+          <Button
+            onClick={handleAlertCancel}
+            variant="outlined"
+            color="primary"
+          >
             Cancel
           </Button>
-          <Button onClick={handleAlertContinue} variant="contained" color="error">
+          <Button
+            onClick={handleAlertContinue}
+            variant="contained"
+            color="error"
+          >
             Continue
           </Button>
         </DialogActions>
@@ -154,7 +167,12 @@ const GuestOrderViewController = () => {
           }}
         >
           {/* Date Picker */}
-          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            mb={2}
+          >
             <LocalizationProvider
               dateAdapter={AdapterDayjs}
               adapterLocale={userData?.langCode === "cn" ? "zh-cn" : "en"}
@@ -192,7 +210,11 @@ const GuestOrderViewController = () => {
               p: 1,
             }}
           >
-            <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+            >
               <Typography
                 variant="h6"
                 sx={{

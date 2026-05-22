@@ -1,10 +1,9 @@
-import React from "react";
 import RoomEnterView from "./RoomLoginController";
 import useRoomEnterLogic from "./useRoomLogin";
 
 const RoomEnter = () => {
-    const props = useRoomEnterLogic();
-    return <RoomEnterView {...props} />;
+  const props = useRoomEnterLogic();
+  return <RoomEnterView {...props} />;
 };
 
 export default RoomEnter;

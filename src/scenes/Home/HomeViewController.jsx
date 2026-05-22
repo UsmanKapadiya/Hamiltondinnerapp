@@ -1,7 +1,3 @@
-// src/pages/home/HomeView.jsx
-
-import React from "react";
-
 import { Box, Typography, IconButton, useTheme } from "@mui/material";
 
 import {

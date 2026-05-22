@@ -48,9 +48,18 @@ export const useOrderManagement = () => {
   // Date checks
   const isTodayDate = useMemo(() => isToday(date), [date]);
   const isPastDate = useMemo(() => isPast(date), [date]);
-  const isAfter10AM = useMemo(() => isTodayDate && isAfterHour(breakfastEndHour), [isTodayDate]);
-  const isAfter3PM = useMemo(() => isTodayDate && isAfterHour(lunchEndHour), [isTodayDate]);
-  const isAfter12PM = useMemo(() => isTodayDate && isAfterHour(dinnerEndHour), [isTodayDate]);
+  const isAfter10AM = useMemo(
+    () => isTodayDate && isAfterHour(breakfastEndHour),
+    [isTodayDate],
+  );
+  const isAfter3PM = useMemo(
+    () => isTodayDate && isAfterHour(lunchEndHour),
+    [isTodayDate],
+  );
+  const isAfter12PM = useMemo(
+    () => isTodayDate && isAfterHour(dinnerEndHour),
+    [isTodayDate],
+  );
 
   // Guidelines checks
   const showBreakFastGuideline = useMemo(
@@ -58,7 +67,7 @@ export const useOrderManagement = () => {
       userData?.breakfast_guideline &&
       data.breakfastCategories &&
       data.breakfastCategories.length > 0,
-    [userData, data.breakfastCategories]
+    [userData, data.breakfastCategories],
   );
 
   const showLunchGuideline = useMemo(
@@ -66,7 +75,7 @@ export const useOrderManagement = () => {
       userData?.lunch_guideline &&
       data.lunchCategories &&
       data.lunchCategories.length > 0,
-    [userData, data.lunchCategories]
+    [userData, data.lunchCategories],
   );
 
   const showDinnerGuideline = useMemo(
@@ -74,7 +83,7 @@ export const useOrderManagement = () => {
       userData?.dinner_guideline &&
       data.dinnerCategories &&
       data.dinnerCategories.length > 0,
-    [userData, data.dinnerCategories]
+    [userData, data.dinnerCategories],
   );
 
   // API for menu fetching
@@ -92,13 +101,16 @@ export const useOrderManagement = () => {
         console.error("Error fetching menu list:", error);
         toast.error("Failed to load menu data");
       },
-    }
+    },
   );
 
   // Default tab index based on time
   const getDefaultTabIndex = useCallback(() => {
     const now = dayjs();
-    if (now.hour() > lunchEndHour || (now.hour() === lunchEndHour && now.minute() > 0)) {
+    if (
+      now.hour() > lunchEndHour ||
+      (now.hour() === lunchEndHour && now.minute() > 0)
+    ) {
       return 2; // Dinner
     } else if (now.hour() >= breakfastEndHour) {
       return 1; // Lunch
@@ -138,7 +150,7 @@ export const useOrderManagement = () => {
       const roomId = getApiRoomId(userData, roomNo);
       await fetchMenu(roomId, dateStr);
     },
-    [userData, roomNo, fetchMenu]
+    [userData, roomNo, fetchMenu],
   );
 
   // Build order payload
@@ -177,95 +189,111 @@ export const useOrderManagement = () => {
       // Use getApiRoomId to properly retrieve the room ID (same method as fetchMenuDetails)
       const room_id = getApiRoomId(userData, roomNo);
 
-      const orders = dataArray.map((data) => {
-        const updated = getItems(data);
-        
-        // Find original data for this date from mealData
-        const origDay = Array.isArray(mealData)
-          ? mealData.find((m) => m.date === data.date)
-          : mealData.date === data.date
-          ? mealData
-          : null;
-        
-        const original = origDay ? getItems(origDay) : [];
-        
-        // Create maps for efficient lookup
-        const origMap = new Map(original.map((o) => [`${o.item_id}_${o.order_id}`, o]));
-        const updMap = new Map(updated.map((u) => [`${u.item_id}_${u.order_id}`, u]));
+      const orders = dataArray
+        .map((data) => {
+          const updated = getItems(data);
 
-        const items = [];
+          // Find original data for this date from mealData
+          const origDay = Array.isArray(mealData)
+            ? mealData.find((m) => m.date === data.date)
+            : mealData.date === data.date
+              ? mealData
+              : null;
 
-        // 1. Check for new or changed items in updated
-        updated.forEach((u) => {
-          const key = `${u.item_id}_${u.order_id}`;
-          const o = origMap.get(key);
-          
-          if (!o) {
-            // New item — include only if qty > 0
-            if (u.qty > 0) {
+          const original = origDay ? getItems(origDay) : [];
+
+          // Create maps for efficient lookup
+          const origMap = new Map(
+            original.map((o) => [`${o.item_id}_${o.order_id}`, o]),
+          );
+          const updMap = new Map(
+            updated.map((u) => [`${u.item_id}_${u.order_id}`, u]),
+          );
+
+          const items = [];
+
+          // 1. Check for new or changed items in updated
+          updated.forEach((u) => {
+            const key = `${u.item_id}_${u.order_id}`;
+            const o = origMap.get(key);
+
+            if (!o) {
+              // New item — include only if qty > 0
+              if (u.qty > 0) {
+                items.push(u);
+              }
+            } else if (
+              u.qty !== o.qty ||
+              u.preference !== o.preference ||
+              u.item_options !== o.item_options
+            ) {
+              // Changed item — include it
               items.push(u);
             }
-          } else if (
-            u.qty !== o.qty ||
-            u.preference !== o.preference ||
-            u.item_options !== o.item_options
-          ) {
-            // Changed item — include it
-            items.push(u);
-          }
-        });
+          });
 
-        // 2. Check for removed items (present in original but not in updated, or qty went to 0)
-        original.forEach((o) => {
-          const key = `${o.item_id}_${o.order_id}`;
-          if (!updMap.has(key) && o.qty > 0) {
-            // Item completely removed, send with qty: 0
-            items.push({
-              ...o,
-              qty: 0,
-              preference: "",
-              item_options: "",
-            });
-          }
-        });
+          // 2. Check for removed items (present in original but not in updated, or qty went to 0)
+          original.forEach((o) => {
+            const key = `${o.item_id}_${o.order_id}`;
+            if (!updMap.has(key) && o.qty > 0) {
+              // Item completely removed, send with qty: 0
+              items.push({
+                ...o,
+                qty: 0,
+                preference: "",
+                item_options: "",
+              });
+            }
+          });
 
-        // Check if service flags changed
-        const additionalServicesChanged =
-          data.is_dinner_takeout_service !== (origDay?.is_dinner_takeout_service || 0) ||
-          data.is_dinner_tray_service !== (origDay?.is_dinner_tray_service || 0) ||
-          data.is_dinner_escort_service !== (origDay?.is_dinner_escort_service || 0) ||
-          data.is_brk_tray_service !== (origDay?.is_brk_tray_service || 0) ||
-          data.is_brk_escort_service !== (origDay?.is_brk_escort_service || 0) ||
-          data.is_brk_takeout_service !== (origDay?.is_brk_takeout_service || 0) ||
-          data.is_lunch_tray_service !== (origDay?.is_lunch_tray_service || 0) ||
-          data.is_lunch_escort_service !== (origDay?.is_lunch_escort_service || 0) ||
-          data.is_lunch_takeout_service !== (origDay?.is_lunch_takeout_service || 0);
+          // Check if service flags changed
+          const additionalServicesChanged =
+            data.is_dinner_takeout_service !==
+              (origDay?.is_dinner_takeout_service || 0) ||
+            data.is_dinner_tray_service !==
+              (origDay?.is_dinner_tray_service || 0) ||
+            data.is_dinner_escort_service !==
+              (origDay?.is_dinner_escort_service || 0) ||
+            data.is_brk_tray_service !== (origDay?.is_brk_tray_service || 0) ||
+            data.is_brk_escort_service !==
+              (origDay?.is_brk_escort_service || 0) ||
+            data.is_brk_takeout_service !==
+              (origDay?.is_brk_takeout_service || 0) ||
+            data.is_lunch_tray_service !==
+              (origDay?.is_lunch_tray_service || 0) ||
+            data.is_lunch_escort_service !==
+              (origDay?.is_lunch_escort_service || 0) ||
+            data.is_lunch_takeout_service !==
+              (origDay?.is_lunch_takeout_service || 0);
 
-        // Only include this order if there are item changes or service changes
-        if (items.length === 0 && !additionalServicesChanged) return null;
+          // Only include this order if there are item changes or service changes
+          if (items.length === 0 && !additionalServicesChanged) return null;
 
-        return {
-          date: data.date,
-          is_brk_tray_service: data.is_brk_tray_service || 0,
-          is_brk_escort_service: data.is_brk_escort_service || 0,
-          is_brk_takeout_service: data.is_brk_takeout_service || 0,
-          is_lunch_tray_service: data.is_lunch_tray_service || 0,
-          is_lunch_escort_service: data.is_lunch_escort_service || 0,
-          is_lunch_takeout_service: data.is_lunch_takeout_service || 0,
-          is_dinner_tray_service: data.is_dinner_tray_service || 0,
-          is_dinner_escort_service: data.is_dinner_escort_service || 0,
-          is_dinner_takeout_service: data.is_dinner_takeout_service || 0,
-          items,
-        };
-      }).filter(Boolean);
+          return {
+            date: data.date,
+            is_brk_tray_service: data.is_brk_tray_service || 0,
+            is_brk_escort_service: data.is_brk_escort_service || 0,
+            is_brk_takeout_service: data.is_brk_takeout_service || 0,
+            is_lunch_tray_service: data.is_lunch_tray_service || 0,
+            is_lunch_escort_service: data.is_lunch_escort_service || 0,
+            is_lunch_takeout_service: data.is_lunch_takeout_service || 0,
+            is_dinner_tray_service: data.is_dinner_tray_service || 0,
+            is_dinner_escort_service: data.is_dinner_escort_service || 0,
+            is_dinner_takeout_service: data.is_dinner_takeout_service || 0,
+            items,
+          };
+        })
+        .filter(Boolean);
 
       return {
-        current_date: dataArray.length ? dataArray[dataArray.length - 1].date : "",
+        current_date: dataArray.length
+          ? dataArray[dataArray.length - 1].date
+          : "",
         room_id,
         orders_to_change: JSON.stringify(orders),
       };
     },
-    [userData, roomNo, mealData]
+    [userData, roomNo, mealData],
   );
 
   // Get updated meal selections
@@ -286,7 +314,11 @@ export const useOrderManagement = () => {
   const submitData = useCallback(
     async (data, date) => {
       try {
-        const newMealSelections = getUpdatedMealSelections(mealSelections, data, date);
+        const newMealSelections = getUpdatedMealSelections(
+          mealSelections,
+          data,
+          date,
+        );
         setMealSelections(newMealSelections);
 
         const payload = buildOrderPayload(newMealSelections);
@@ -294,8 +326,10 @@ export const useOrderManagement = () => {
         const response = await OrderServices.submitOrder(payload);
 
         if (response?.ResponseText === "success") {
-          toast.success(langObj.orderSuccess || "Order submitted successfully!");
-          
+          toast.success(
+            langObj.orderSuccess || "Order submitted successfully!",
+          );
+
           // Clear meal selections and refetch menu
           setMealSelections([]);
           await fetchMenuDetails(date);
@@ -304,45 +338,59 @@ export const useOrderManagement = () => {
         }
       } catch (error) {
         console.error("Error submitting order:", error);
-        toast.error(langObj.orderFailed || "An error occurred while submitting the order.");
+        toast.error(
+          langObj.orderFailed ||
+            "An error occurred while submitting the order.",
+        );
       }
     },
-    [mealSelections, buildOrderPayload, langObj, getUpdatedMealSelections, fetchMenuDetails]
+    [
+      mealSelections,
+      buildOrderPayload,
+      langObj,
+      getUpdatedMealSelections,
+      fetchMenuDetails,
+    ],
   );
 
   // Room update handler
-  const roomUpdate = useCallback(
-    async (data) => {
-      if (data?.selectedUser?.id) {
-        try {
-          const specialInstruction = (data?.specialInstruction ?? "").toString().trim();
-          const foodTexture = (data?.foodTexture ?? "").toString().trim();
-          const allergy_Info = (data?.allergy_Info ?? "").toString().trim();
+  const roomUpdate = useCallback(async (data) => {
+    if (data?.selectedUser?.id) {
+      try {
+        const specialInstruction = (data?.specialInstruction ?? "")
+          .toString()
+          .trim();
+        const foodTexture = (data?.foodTexture ?? "").toString().trim();
+        const allergy_Info = (data?.allergy_Info ?? "").toString().trim();
 
-          const response = await OrderServices.updateRoomDetails(
-            data.selectedUser.id,
-            specialInstruction,
-            foodTexture,
-            allergy_Info
+        const response = await OrderServices.updateRoomDetails(
+          data.selectedUser.id,
+          specialInstruction,
+          foodTexture,
+          allergy_Info,
+        );
+
+        if (response?.ResponseCode === "1") {
+          toast.success(
+            response?.ResponseText || "Room Details Updated Successfully",
           );
-
-          if (response?.ResponseCode === "1") {
-            toast.success(response?.ResponseText || "Room Details Updated Successfully");
-          } else {
-            toast.error(response?.ResponseText || "Room Details Update failed. Please try again.");
-          }
-        } catch (error) {
-          console.error("Error updating room details:", error);
-          const errorMessage =
-            error?.response?.data?.error || "An unexpected error occurred. Please try again.";
-          toast.error(errorMessage);
+        } else {
+          toast.error(
+            response?.ResponseText ||
+              "Room Details Update failed. Please try again.",
+          );
         }
-      } else {
-        toast.error("No user selected for room update.");
+      } catch (error) {
+        console.error("Error updating room details:", error);
+        const errorMessage =
+          error?.response?.data?.error ||
+          "An unexpected error occurred. Please try again.";
+        toast.error(errorMessage);
       }
-    },
-    []
-  );
+    } else {
+      toast.error("No user selected for room update.");
+    }
+  }, []);
 
   // Handle guest order click
   const handleGuestOrderClick = useCallback(() => {
@@ -357,7 +405,10 @@ export const useOrderManagement = () => {
   // Get tab index by time
   const getTabIndexByTime = useCallback((dateObj) => {
     const now = dateObj;
-    if (now.hour() > lunchEndHour || (now.hour() === lunchEndHour && now.minute() > 0)) {
+    if (
+      now.hour() > lunchEndHour ||
+      (now.hour() === lunchEndHour && now.minute() > 0)
+    ) {
       return 2; // Dinner
     } else if (now.hour() >= breakfastEndHour) {
       return 1; // Lunch
@@ -369,13 +420,15 @@ export const useOrderManagement = () => {
   const handleDateChange = useCallback(
     (newDate) => {
       const previousDate = date.format("YYYY-MM-DD");
-      const obj = _.find(mealSelections, { date: newDate.format("YYYY-MM-DD") });
+      const obj = _.find(mealSelections, {
+        date: newDate.format("YYYY-MM-DD"),
+      });
 
       if (obj !== undefined) {
         const updatedMealSelections = getUpdatedMealSelections(
           mealSelections,
           data,
-          previousDate
+          previousDate,
         );
         setMealSelections(updatedMealSelections);
         setDate(newDate);
@@ -383,19 +436,21 @@ export const useOrderManagement = () => {
 
         const currentHour = dayjs().hour();
         const currentMinute = dayjs().minute();
-        const newDateTabIndex = getTabIndexByTime(dayjs().hour(currentHour).minute(currentMinute));
+        const newDateTabIndex = getTabIndexByTime(
+          dayjs().hour(currentHour).minute(currentMinute),
+        );
         setTabIndex(newDateTabIndex);
       } else {
         const updatedMealSelections = getUpdatedMealSelections(
           mealSelections,
           data,
-          previousDate
+          previousDate,
         );
         setMealSelections(updatedMealSelections);
         setDate(newDate);
       }
     },
-    [date, mealSelections, data, getUpdatedMealSelections, getTabIndexByTime]
+    [date, mealSelections, data, getUpdatedMealSelections, getTabIndexByTime],
   );
 
   return {

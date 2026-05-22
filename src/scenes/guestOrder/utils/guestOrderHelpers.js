@@ -1,5 +1,8 @@
 import _ from "lodash";
-import { selectFirstOption, flattenMealItems } from "../../order/utils/mealHelpers";
+import {
+  selectFirstOption,
+  flattenMealItems,
+} from "../../order/utils/mealHelpers";
 
 /**
  * Transform API meal data to component-friendly format
@@ -12,7 +15,7 @@ export const transformMealData = (mealData) => {
    */
   const transformCategory = (cat) => {
     const items = _.get(cat, "items", []);
-    
+
     // Extract entree items
     const entreeItems = _.chain(items)
       .filter((item) => item.type === "item")
@@ -62,15 +65,15 @@ export const transformMealData = (mealData) => {
   // Transform all meal categories
   const breakfastCategories = _.map(
     _.get(mealData, "breakfast", []),
-    transformCategory
+    transformCategory,
   );
   const lunchCategories = _.map(
     _.get(mealData, "lunch", []),
-    transformCategory
+    transformCategory,
   );
   const dinnerCategories = _.map(
     _.get(mealData, "dinner", []),
-    transformCategory
+    transformCategory,
   );
 
   return {
@@ -98,22 +101,22 @@ const getChangedItemsForMealType = (currentData, originalData, mealType) => {
     ]);
 
   const currentItems = flattenMealItems(
-    flattenCategory(_.get(currentData, mealType, []))
+    flattenCategory(_.get(currentData, mealType, [])),
   );
-  
+
   const originalItems = flattenMealItems(
-    flattenCategory(_.get(originalData, mealType, []))
+    flattenCategory(_.get(originalData, mealType, [])),
   );
 
   // Create maps for efficient lookup
   const originalMap = _.keyBy(
     originalItems,
-    (item) => `${item.item_id}_${item.order_id}`
+    (item) => `${item.item_id}_${item.order_id}`,
   );
-  
+
   const currentMap = _.keyBy(
     currentItems,
-    (item) => `${item.item_id}_${item.order_id}`
+    (item) => `${item.item_id}_${item.order_id}`,
   );
 
   const changedItems = [];
@@ -166,23 +169,23 @@ export const buildGuestOrderPayload = (data, originalData, params) => {
   const breakfastChanges = getChangedItemsForMealType(
     data,
     originalData,
-    "breakfastCategories"
+    "breakfastCategories",
   );
   const lunchChanges = getChangedItemsForMealType(
     data,
     originalData,
-    "lunchCategories"
+    "lunchCategories",
   );
   const dinnerChanges = getChangedItemsForMealType(
     data,
     originalData,
-    "dinnerCategories"
+    "dinnerCategories",
   );
 
   // Find selected room
   const selectedRoom = _.find(
     _.get(userData, "rooms", []),
-    (room) => room.name === roomNo
+    (room) => room.name === roomNo,
   );
 
   return {
