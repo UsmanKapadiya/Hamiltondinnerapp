@@ -89,7 +89,7 @@ const GuestOrderViewController = () => {
   return (
     <>
       {/* Alert Dialog */}
-      <Dialog open={alertOpen} onClose={handleAlertCancel} maxWidth="xs" fullWidth>
+      <Dialog open={alertOpen} onClose={handleAlertCancel} disableScrollLock={true} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ textAlign: "center", fontWeight: 600 }}>
           Remove All Items?
         </DialogTitle>
@@ -122,7 +122,7 @@ const GuestOrderViewController = () => {
           isGuest={false}
           profileScreen={true}
         />
-        
+
         <ToastContainer />
 
         {/* Content Box */}

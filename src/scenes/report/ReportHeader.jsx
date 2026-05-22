@@ -48,7 +48,7 @@ const ReportHeader = ({
                 dateAdapter={AdapterDayjs}
             >
                 {selectedSummaryType ===
-                "Multiple Date Record" ? (
+                    "Multiple Date Record" ? (
                     <Box display="flex" gap={2}>
                         <DatePicker
                             label="Start Date"
@@ -109,6 +109,7 @@ const ReportHeader = ({
                     anchorEl={summaryAnchor}
                     open={Boolean(summaryAnchor)}
                     onClose={handleSummaryClose}
+                    disableScrollLock={true}
                 >
                     <MenuItem
                         selected={

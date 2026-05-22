@@ -53,7 +53,7 @@ const ChargesReportFilters = ({
                 dateAdapter={AdapterDayjs}
             >
                 {selectedSummaryType ===
-                "Multiple Date Record" ? (
+                    "Multiple Date Record" ? (
                     <Box
                         display="flex"
                         gap={2}
@@ -156,6 +156,7 @@ const ChargesReportFilters = ({
                 onClose={() =>
                     setAnchorEl(null)
                 }
+                disableScrollLock={true}
             >
                 <MenuItem
                     selected={
