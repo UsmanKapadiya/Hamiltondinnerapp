@@ -112,7 +112,6 @@ const Header = ({ title, icon, addNewClick, addBulkDelete, buttons, addButton, d
     }
   };
   const handleGuestOnClick = () => {
-    console.log("Working handleGuestOnClick")
     handleGuestClick()
   }
 

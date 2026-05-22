@@ -50,7 +50,6 @@ const StaticFormServices = {
     return requests.post(`/rooms`, formData);
   },
   updateRoomDetails: async (id, formData) => {
-    // console.log("FormData", formData)
     return requests.put(`/rooms/${id}`, formData);
   },
   deleteRooms: async (id) => {
