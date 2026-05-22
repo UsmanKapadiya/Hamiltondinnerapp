@@ -311,7 +311,7 @@ const ChargesReportTable = ({
                         <TableRow>
                             <TableCell
                                 colSpan={
-                                    1 +
+                                    4 +
                                     (data?.breakfast_item_list
                                         ?.length ||
                                         0) +
@@ -324,18 +324,14 @@ const ChargesReportTable = ({
                                 }
                                 align="center"
                                 sx={{
-                                    border:
-                                        borderStyle,
+                                    border: "none",
                                     py: 5,
                                     fontWeight: 700,
                                     fontSize: 18,
                                     textAlign: "center",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
                                 }}
                             >
-                                No Report Found. dasd
+                                No Report Found.
                             </TableCell>
                         </TableRow>
                     ) : (
