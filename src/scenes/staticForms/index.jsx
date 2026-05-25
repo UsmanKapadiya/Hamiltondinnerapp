@@ -1,6 +1,3 @@
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import {
   Box,
   useTheme,
@@ -8,438 +5,62 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   TextField,
   Autocomplete,
-  useMediaQuery,
 } from "@mui/material";
 import { Header, PdfModal } from "../../components";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import { ReceiptOutlined } from "@mui/icons-material";
-import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import StaticFormServices from "../../services/staticFormServices";
-import { toast } from "react-toastify";
 import CustomButton from "../../components/CustomButton";
-import { useLocalStorage } from "../../hooks";
+import { useStaticFormsController } from "./hooks/useStaticFormsController";
 
 const StaticForms = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const isMdDevices = useMediaQuery("(min-width: 724px)");
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [formist, setFormList] = useState([]);
-  const [pdfModalOpen, setPdfModalOpen] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState("");
-  const [selectedFormType, setSelectedFormType] = useState("all");
-  const [markDialogOpen, setMarkDialogOpen] = useState(false);
-  const [markReason, setMarkReason] = useState("");
-  const [markRowId, setMarkRowId] = useState(null);
-  const [selectedMailFormId, setSelectedMailFormId] = useState("");
-  const [completedNames, setCompletedNames] = useState(() => {
-    const stored = localStorage.getItem("completedNames");
-    return stored ? JSON.parse(stored) : [];
-  });
-  const [userData] = useState(() => {
-    const userDatas = localStorage.getItem("userData");
-    return userDatas ? JSON.parse(userDatas) : null;
-  });
 
-  const handleAddNewClick = useCallback(
-    (formType) => {
-      let route = "incidentForm-create";
-      if (formType === "incidentForm") route = "incidentForm-create";
-      else if (formType === "Log Form") route = "logForm-create";
-      else if (formType === "MoveIn Summary Form")
-        route = "moveInSummaryForm-create";
-      navigate(route);
-    },
-    [navigate],
-  );
-
-  const fetchFormList = useCallback(async (formType = "all") => {
-    setLoading(true);
-    try {
-      let payload = { form_type: formType === "all" ? 0 : formType };
-      const response = await StaticFormServices.getFormList(payload);
-      setFormList(response?.list);
-    } catch (error) {
-      console.error("Error fetching room list:", error);
-      toast.error("Failed to fetch room list. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchFormList(selectedFormType);
-  }, [fetchFormList, selectedFormType]);
-
-  const handleDelete = async (id) => {
-    if (!id) return;
-    setLoading(true);
-    const payload = {
-      form_id: id,
-    };
-    try {
-      await StaticFormServices.deleteForm(payload);
-      toast.success("Form deleted successfully.");
-      fetchFormList(selectedFormType); // Refresh list
-    } catch (error) {
-      toast.error("Failed to delete form. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleOpenMarkDialog = (rowId) => {
-    setMarkRowId(rowId);
-    setMarkReason("");
-    setMarkDialogOpen(true);
-  };
-
-  const handleCloseMarkDialog = () => {
-    setMarkDialogOpen(false);
-    setMarkReason("");
-    setMarkRowId(null);
-  };
-
-  const handleMarkComplete = async () => {
-    const name = markReason.trim();
-    const formId = markRowId;
-    if (!name) {
-      toast.error("Name is required to mark as complete.");
-      return;
-    }
-
-    setLoading(true);
-    let updatedNames = completedNames;
-    if (!completedNames.includes(name)) {
-      updatedNames = [...completedNames, name];
-      setCompletedNames(updatedNames);
-      localStorage.setItem("completedNames", JSON.stringify(updatedNames));
-    }
-    const payload = {
-      form_id: formId,
-      completed_by: name,
-    };
-    try {
-      await StaticFormServices.completeLog(payload);
-      toast.success(`Marked as complete! Name: ${name}`);
-      fetchFormList(selectedFormType); // Refresh list
-      handleCloseMarkDialog();
-    } catch (error) {
-      toast.error("Failed to mark as complete. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSendMail = async (emailTo) => {
-    if (!emailTo) {
-      toast.error("Email is required.");
-      return;
-    }
-
-    try {
-      let payload = { to_id: emailTo, form_id: selectedMailFormId };
-      const response = await StaticFormServices.sendMail(payload);
-      if (response?.ResponseCode === "1") {
-        toast.success(`Email sent to ${emailTo}`);
-      } else if (response?.Message) {
-        toast.error(response.Message);
-      }
-    } catch (error) {
-      toast.error("Failed to send email. Please try again.");
-    }
-  };
-
-  const columns = [
-    // { field: "id", headerName: "ID" },
-    {
-      field: "displayName",
-      headerName: "Name",
-      flex: 1,
-      valueGetter: (params) => {
-        const form_response = params.row.form_response || {};
-        const form_type_id = params.row.form_type_id;
-        if (form_type_id === 1) {
-          // Incident Form
-          return form_response.incident_involved || "";
-        } else if (form_type_id === 2) {
-          // Log Form
-          return form_response.room_number && form_response.resident_name
-            ? `${form_response.room_number} - ${form_response.resident_name}`
-            : "";
-        } else if (form_type_id === 3) {
-          // MoveIn Summary Form
-          return form_response.suite_number &&
-            form_response.first_resident_name_first_name &&
-            form_response.first_resident_name_last_name
-            ? `${form_response.suite_number} - ${form_response.first_resident_name_first_name} - ${form_response.first_resident_name_last_name}`
-            : "";
-        }
-        return "";
-      },
-    },
-    {
-      field: "created_at",
-      headerName: "Date",
-      flex: 1,
-      renderCell: (params) => {
-        const date = params.value ? new Date(params.value) : null;
-        const formatted =
-          date && !isNaN(date) ? date.toISOString().slice(0, 10) : "";
-        return <span>{formatted}</span>;
-      },
-    },
-    {
-      field: "view",
-      headerName: "View",
-      sortable: false,
-      filterable: false,
-      width: 80,
-      renderCell: (params) => {
-        return (
-          params?.row?.formLink && (
-            <IconButton
-              size="small"
-              title="View"
-              sx={{ color: colors.greenAccent[600] }}
-              onClick={() => {
-                setSelectedMailFormId(params.row.id);
-                const url = params.row.formLink;
-                const isPdf = url && url.toLowerCase().endsWith(".pdf");
-                if (isPdf) {
-                  setPdfUrl(url);
-                  setPdfModalOpen(true);
-                } else {
-                  window.open(url, "_blank");
-                }
-              }}
-            >
-              <ReceiptOutlined fontSize="small" />
-            </IconButton>
-          )
-        );
-      },
-    },
-    // {
-    //   field: "view",
-    //   headerName: "View",
-    //   sortable: false,
-    //   filterable: false,
-    //   width: 80,
-    //   renderCell: (params) => {
-    //     return (
-    //       params?.row?.formLink && (
-    //         <IconButton
-    //           key={`view-btn-${params.row.id}`}
-    //           size="small"
-    //           title="View"
-    //           sx={{ color: colors.greenAccent[600] }}
-    //           onClick={() => {
-    //             setSelectedMailFormId(params.row.id);
-    //             const url = params.row.formLink;
-    //             const isPdf = url && url.toLowerCase().endsWith('.pdf');
-    //             if (isPdf) {
-    //               setPdfLoading(true);
-    //               setPdfError(false);
-    //               setPdfUrl(url);
-    //               setPdfModalOpen(true);
-    //             } else {
-    //               window.open(url, '_blank');
-    //             }
-    //           }}
-    //         >
-    //           <ReceiptOutlined fontSize="small" />
-    //         </IconButton>
-    //       )
-    //     );
-    //   }
-    // },
-    {
-      field: "actions",
-      headerName: "Action",
-      sortable: false,
-      filterable: false,
-      align: "right",
-      headerAlign: "center",
-      width: 120,
-      renderCell: (params) => {
-        const form_type_id = params.row.form_type_id;
-        if (form_type_id === 1 || form_type_id === 3) {
-          return (
-            <Box
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              gap={1}
-            >
-              <IconButton
-                key={`edit-btn-${params.row.id}`}
-                size="small"
-                title="Edit"
-                sx={{ color: colors.blueAccent[600] }}
-                onClick={async () => {
-                  // Fetch the form data by ID
-                  try {
-                    const payload = {
-                      form_id: params.row.id,
-                    };
-                    const response =
-                      await StaticFormServices.getFormById(payload);
-                    if (response?.ResponseCode === "1") {
-                      if (form_type_id === 1) {
-                        navigate(`incidentForm-edit/${params.row.id}`, {
-                          state: {
-                            formData: response,
-                            id: params.row.id,
-                            scrollToFollowUp:
-                              params?.row?.is_follow_up_incomplete === 1
-                                ? true
-                                : false,
-                          },
-                        });
-                      } else if (form_type_id === 3) {
-                        navigate(`moveInSummaryForm-edit/${params.row.id}`, {
-                          state: { formData: response, id: params.row.id },
-                        });
-                      }
-                    }
-                    // Navigate to the incident form edit screen, passing the form data
-                    // ;
-                  } catch (error) {
-                    toast.error("Failed to fetch form data. Please try again.");
-                  }
-                }}
-              >
-                <EditIcon fontSize="small" />
-              </IconButton>
-              <IconButton
-                key={`delete-btn-${params.row.id}`}
-                size="small"
-                title="Delete"
-                sx={{ color: colors.redAccent[600] }}
-                onClick={() => handleDelete(params.row.id)}
-              >
-                <DeleteForeverIcon fontSize="small" />
-              </IconButton>
-            </Box>
-          );
-        } else if (form_type_id === 2) {
-          // if check userData?.role === "concierge"  or  "nurse"  that time action empty,
-          // else if userData?.role === "admin" that time check form_response?.is_completed === 0 that time display mui icon CheckCircleOutlineIcon
-          const role = userData?.role;
-          const form_response = params.row.form_response || {};
-          if (role === "concierge" || role === "nurse") {
-            return null;
-          } else if (role === "admin" && form_response.is_completed === 0) {
-            return (
-              <>
-                <IconButton
-                  size="small"
-                  title="Mark as Complete"
-                  sx={{ color: colors.greenAccent[600] }}
-                  onClick={() => handleOpenMarkDialog(params.row.id)}
-                >
-                  <CheckCircleOutlineIcon fontSize="small" />
-                </IconButton>
-                <Dialog
-                  open={markDialogOpen}
-                  onClose={handleCloseMarkDialog}
-                  maxWidth="xs"
-                  fullWidth
-                >
-                  <DialogTitle>Completed By</DialogTitle>
-                  <DialogContent>
-                    <Autocomplete
-                      freeSolo
-                      options={completedNames}
-                      value={markReason}
-                      onInputChange={(e, newValue) => setMarkReason(newValue)}
-                      ListboxProps={{
-                        style: {
-                          maxHeight: 150,
-                          overflowY: "auto",
-                        },
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          autoFocus
-                          margin="dense"
-                          label="Enter name"
-                          type="text"
-                          fullWidth
-                        />
-                      )}
-                    />
-                  </DialogContent>
-                  <DialogActions>
-                    <CustomButton
-                      sx={{
-                        padding: "10px 32px",
-                        bgcolor: colors.blueAccent[700],
-                        color: "#fcfcfc",
-                        border: "none",
-                        borderRadius: 4,
-                        fontWeight: 600,
-                        fontSize: 16,
-                        cursor: "pointer",
-                        width: "auto",
-                      }}
-                      onClick={handleCloseMarkDialog}
-                    >
-                      Cancel
-                    </CustomButton>
-                    <CustomButton
-                      sx={{
-                        padding: "10px 32px",
-                        bgcolor: colors.blueAccent[50],
-                        color: colors.blueAccent[700],
-                        border: "none",
-                        borderRadius: 4,
-                        fontWeight: 600,
-                        fontSize: 16,
-                        cursor: "pointer",
-                        width: "auto",
-                      }}
-                      onClick={handleMarkComplete}
-                    >
-                      Submit
-                    </CustomButton>
-                  </DialogActions>
-                </Dialog>
-              </>
-            );
-          }
-        }
-        return null;
-      },
-    },
-  ];
+  // Use controller hook for all business logic
+  const {
+    loading,
+    formist,
+    selectedFormType,
+    userData,
+    pdfModalOpen,
+    pdfUrl,
+    showPrintButton,
+    showMailButton,
+    showFollowUpButton,
+    markDialogOpen,
+    markReason,
+    setMarkReason,
+    completedNames,
+    columns,
+    getRowClassName,
+    handleAddNewClick,
+    handleFormTypeChange,
+    handlePdfModalClose,
+    handleSendMail,
+    handleFollowUp,
+    handleCloseMarkDialog,
+    handleMarkComplete,
+  } = useStaticFormsController(colors);
 
   return (
     <Box m="20px">
-      {/* <Header title="Static Forms" subtitle="List of All Static Forms" /> */}
       <Header
         title="Static Forms"
         icon={<ReceiptOutlined />}
         addNewClick={handleAddNewClick}
-        // addBulkDelete={handleBulkDelete}
         buttons={true}
         addButton={true}
         deleteButton={false}
         isFormDropdown={true}
       />
+      
       {/* Dropdown filter for all forms */}
       <Box
         display="flex"
@@ -455,7 +76,7 @@ const StaticForms = () => {
             id="form-type-select"
             value={selectedFormType}
             label="All Forms"
-            onChange={(e) => setSelectedFormType(e.target.value)}
+            onChange={handleFormTypeChange}
             MenuProps={{
               PaperProps: {
                 sx: {
@@ -474,6 +95,7 @@ const StaticForms = () => {
           </Select>
         </FormControl>
       </Box>
+      
       <Box
         mt="20px"
         height="75vh"
@@ -525,65 +147,88 @@ const StaticForms = () => {
           }}
           checkboxSelection
           loading={loading}
-          getRowClassName={(params) => {
-            const role = userData?.role;
-            if (role === "concierge" || role === "nurse") {
-              return "row-white-bg";
-            }
-            if (params.row.is_follow_up_incomplete === 1) {
-              return "row-yellow-bg";
-            }
-            return "row-white-bg";
-          }}
+          getRowClassName={getRowClassName}
         />
       </Box>
+
+      {/* Mark Complete Dialog */}
+      <Dialog
+        open={markDialogOpen}
+        onClose={handleCloseMarkDialog}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Completed By</DialogTitle>
+        <DialogContent>
+          <Autocomplete
+            freeSolo
+            options={completedNames}
+            value={markReason}
+            onInputChange={(e, newValue) => setMarkReason(newValue)}
+            ListboxProps={{
+              style: {
+                maxHeight: 150,
+                overflowY: "auto",
+              },
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                autoFocus
+                margin="dense"
+                label="Enter name"
+                type="text"
+                fullWidth
+              />
+            )}
+          />
+        </DialogContent>
+        <DialogActions>
+          <CustomButton
+            sx={{
+              padding: "10px 32px",
+              bgcolor: colors.blueAccent[700],
+              color: "#fcfcfc",
+              border: "none",
+              borderRadius: 4,
+              fontWeight: 600,
+              fontSize: 16,
+              cursor: "pointer",
+              width: "auto",
+            }}
+            onClick={handleCloseMarkDialog}
+          >
+            Cancel
+          </CustomButton>
+          <CustomButton
+            sx={{
+              padding: "10px 32px",
+              bgcolor: colors.blueAccent[50],
+              color: colors.blueAccent[700],
+              border: "none",
+              borderRadius: 4,
+              fontWeight: 600,
+              fontSize: 16,
+              cursor: "pointer",
+              width: "auto",
+            }}
+            onClick={handleMarkComplete}
+          >
+            Submit
+          </CustomButton>
+        </DialogActions>
+      </Dialog>
 
       {/* PDF Modal Component */}
       <PdfModal
         open={pdfModalOpen}
-        onClose={() => setPdfModalOpen(false)}
+        onClose={handlePdfModalClose}
         pdfUrl={pdfUrl}
-        showPrintButton={
-          formist.find((f) => f.id === selectedMailFormId)?.form_type
-            ?.allow_print === 1
-        }
-        showMailButton={
-          formist.find((f) => f.id === selectedMailFormId)?.form_type
-            ?.allow_mail === 1
-        }
-        showFollowUpButton={
-          formist.find((f) => f.id === selectedMailFormId)
-            ?.is_follow_up_incomplete === 1 &&
-          formist.find((f) => f.id === selectedMailFormId)?.form_type_id === 1
-        }
+        showPrintButton={showPrintButton}
+        showMailButton={showMailButton}
+        showFollowUpButton={showFollowUpButton}
         onMail={handleSendMail}
-        onFollowUp={async () => {
-          const selectedForm = formist.find((f) => f.id === selectedMailFormId);
-          const formTypeId = selectedForm?.form_type_id;
-
-          try {
-            const payload = { form_id: selectedMailFormId };
-            const response = await StaticFormServices.getFormById(payload);
-
-            if (response?.ResponseCode === "1") {
-              setPdfModalOpen(false);
-
-              if (formTypeId === 1) {
-                navigate(`incidentForm-edit/${selectedMailFormId}`, {
-                  state: {
-                    formData: response,
-                    id: selectedMailFormId,
-                    scrollToFollowUp: true,
-                  },
-                });
-              }
-            } else {
-              toast.error("Failed to fetch form data. Please try again.");
-            }
-          } catch (error) {
-            toast.error("Failed to fetch form data. Please try again.");
-          }
-        }}
+        onFollowUp={handleFollowUp}
       />
     </Box>
   );
