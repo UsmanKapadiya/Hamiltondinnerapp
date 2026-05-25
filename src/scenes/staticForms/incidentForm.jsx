@@ -81,7 +81,7 @@ const IncidentForm = () => {
   } = useIncidentFormMappers();
 
   const { canEditFollowUp, canUpdateFollowUp } = useFollowUpPermissions(userData, location?.state?.formData);
-  
+
   const {
     showFollowUpConfirm,
     pendingSubmitValues,
@@ -153,7 +153,6 @@ const IncidentForm = () => {
     }
   }, [location.state]);
 
-
   const getDefaultFollowUpUser = () => {
     if (!userData?.user_list || !Array.isArray(userData.user_list)) {
       return '';
@@ -170,7 +169,6 @@ const IncidentForm = () => {
 
     return userData.user_list.length > 0 ? userData.user_list[0].id : '';
   };
-
 
   const initialValues = useMemo(() => ({
     id: formId || "",
@@ -242,7 +240,6 @@ const IncidentForm = () => {
     attachments: incidentFormDetails?.attachments || [],
     show_follow_up_details: formId ? true : incidentFormDetails?.show_follow_up_details || false,
   }), [incidentFormDetails, formId]);
-
 
   const handleFormSubmit = useCallback(
     async (values, actions) => {
@@ -1293,7 +1290,7 @@ const IncidentForm = () => {
                     />
                   ))}
                 </FormGroup>
-                {/* // --- Notified Resident Date --- */}
+                {/* Notified Resident Date */}
                 {values.notified_resident_responsible_party === "Yes" && (
                   <Box sx={{ width: "100%", mt: 2, display: "flex", gap: 2 }}>
                     <TextField
@@ -1520,7 +1517,6 @@ const IncidentForm = () => {
                       onBlur={handleBlur}
                       sx={{ mb: 2 }}
                       disabled={!canEditFollowUpFields && (formId ? !canUpdateFollowUp : !canEditFollowUp)}
-                    // disabled={formId ? !canUpdateFollowUp : !canEditFollowUp} //when canEditFollowUpFields true that time enable
                     />
                     <TextField
                       fullWidth
