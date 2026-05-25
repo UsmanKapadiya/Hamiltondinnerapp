@@ -1,15 +1,6 @@
-// ============================================
-// File: staticFormsColumns.js
-// ============================================
+import { Box, IconButton } from "@mui/material";
 
-import {
-  Box,
-  IconButton,
-} from "@mui/material";
-
-import {
-  ReceiptOutlined,
-} from "@mui/icons-material";
+import { ReceiptOutlined } from "@mui/icons-material";
 
 import EditIcon from "@mui/icons-material/Edit";
 
@@ -42,27 +33,20 @@ export const getColumns = ({
       flex: 1,
 
       valueGetter: (params) => {
-        const form_response =
-          params.row.form_response ||
-          {};
+        const form_response = params.row.form_response || {};
 
-        const form_type_id =
-          params.row.form_type_id;
+        const form_type_id = params.row.form_type_id;
 
         // INCIDENT
 
         if (form_type_id === 1) {
-          return (
-            form_response.incident_involved ||
-            ""
-          );
+          return form_response.incident_involved || "";
         }
 
         // LOG FORM
 
         if (form_type_id === 2) {
-          return form_response.room_number &&
-            form_response.resident_name
+          return form_response.room_number && form_response.resident_name
             ? `${form_response.room_number} - ${form_response.resident_name}`
             : "";
         }
@@ -91,26 +75,12 @@ export const getColumns = ({
       flex: 1,
 
       renderCell: (params) => {
-        const date =
-          params.value
-            ? new Date(
-                params.value
-              )
-            : null;
+        const date = params.value ? new Date(params.value) : null;
 
         const formatted =
-          date &&
-          !isNaN(date)
-            ? date
-                .toISOString()
-                .slice(0, 10)
-            : "";
+          date && !isNaN(date) ? date.toISOString().slice(0, 10) : "";
 
-        return (
-          <span>
-            {formatted}
-          </span>
-        );
+        return <span>{formatted}</span>;
       },
     },
 
@@ -129,13 +99,11 @@ export const getColumns = ({
 
       renderCell: (params) => {
         return (
-          params?.row
-            ?.formLink && (
+          params?.row?.formLink && (
             <Box
               sx={{
                 width: "100%",
-                textAlign:
-                  "center",
+                textAlign: "center",
                 mt: "6px",
               }}
             >
@@ -143,40 +111,21 @@ export const getColumns = ({
                 size="small"
                 title="View"
                 sx={{
-                  color:
-                    colors
-                      .greenAccent[600],
+                  color: colors.greenAccent[600],
                 }}
                 onClick={() => {
-                  setSelectedMailFormId(
-                    params.row.id
-                  );
+                  setSelectedMailFormId(params.row.id);
 
-                  const url =
-                    params.row
-                      .formLink;
+                  const url = params.row.formLink;
 
-                  const isPdf =
-                    url &&
-                    url
-                      .toLowerCase()
-                      .endsWith(
-                        ".pdf"
-                      );
+                  const isPdf = url && url.toLowerCase().endsWith(".pdf");
 
                   if (isPdf) {
-                    setPdfUrl(
-                      url
-                    );
+                    setPdfUrl(url);
 
-                    setPdfModalOpen(
-                      true
-                    );
+                    setPdfModalOpen(true);
                   } else {
-                    window.open(
-                      url,
-                      "_blank"
-                    );
+                    window.open(url, "_blank");
                   }
                 }}
               >
@@ -204,20 +153,16 @@ export const getColumns = ({
       headerAlign: "center",
 
       renderCell: (params) => {
-        const form_type_id =
-          params.row.form_type_id;
+        const form_type_id = params.row.form_type_id;
 
-        const form_response =
-          params.row.form_response || {};
+        const form_response = params.row.form_response || {};
 
         // CHECK ACTIONS
 
         const hasActions =
           form_type_id === 1 ||
           form_type_id === 3 ||
-          (form_type_id === 2 &&
-            form_response.is_completed ===
-              0);
+          (form_type_id === 2 && form_response.is_completed === 0);
 
         // EMPTY ACTION
 
@@ -226,8 +171,7 @@ export const getColumns = ({
             <Box
               sx={{
                 width: "100%",
-                textAlign:
-                  "center",
+                textAlign: "center",
                 mt: "6px",
               }}
             >
@@ -249,9 +193,7 @@ export const getColumns = ({
           >
             {/* EDIT + DELETE */}
 
-            {(form_type_id === 1 ||
-              form_type_id ===
-                3) && (
+            {(form_type_id === 1 || form_type_id === 3) && (
               <>
                 {/* EDIT */}
 
@@ -259,80 +201,44 @@ export const getColumns = ({
                   size="small"
                   title="Edit"
                   sx={{
-                    color:
-                      colors
-                        .blueAccent[600],
+                    color: colors.blueAccent[600],
                   }}
                   onClick={async () => {
                     try {
-                      const response =
-                        await StaticFormServices.getFormById(
-                          {
-                            form_id:
-                              params
-                                .row
-                                .id,
-                          }
-                        );
+                      const response = await StaticFormServices.getFormById({
+                        form_id: params.row.id,
+                      });
 
-                      if (
-                        response?.ResponseCode ===
-                        "1"
-                      ) {
+                      if (response?.ResponseCode === "1") {
                         // INCIDENT FORM
 
-                        if (
-                          form_type_id ===
-                          1
-                        ) {
-                          navigate(
-                            `incidentForm-edit/${params.row.id}`,
-                            {
-                              state:
-                                {
-                                  formData:
-                                    response,
+                        if (form_type_id === 1) {
+                          navigate(`incidentForm-edit/${params.row.id}`, {
+                            state: {
+                              formData: response,
 
-                                  id: params
-                                    .row
-                                    .id,
+                              id: params.row.id,
 
-                                  scrollToFollowUp:
-                                    params
-                                      ?.row
-                                      ?.is_follow_up_incomplete ===
-                                    1,
-                                },
-                            }
-                          );
+                              scrollToFollowUp:
+                                params?.row?.is_follow_up_incomplete === 1,
+                            },
+                          });
                         }
 
                         // MOVE-IN FORM
 
-                        if (
-                          form_type_id ===
-                          3
-                        ) {
-                          navigate(
-                            `moveInSummaryForm-edit/${params.row.id}`,
-                            {
-                              state:
-                                {
-                                  formData:
-                                    response,
+                        if (form_type_id === 3) {
+                          navigate(`moveInSummaryForm-edit/${params.row.id}`, {
+                            state: {
+                              formData: response,
 
-                                  id: params
-                                    .row
-                                    .id,
-                                },
-                            }
-                          );
+                              id: params.row.id,
+                            },
+                          });
                         }
                       }
                     } catch (error) {
-                      toast.error(
-                        "Failed to fetch form data."
-                      );
+                      toast.error("Failed to fetch form data.");
                     }
                   }}
                 >
@@ -345,15 +251,9 @@ export const getColumns = ({
                   size="small"
                   title="Delete"
                   sx={{
-                    color:
-                      colors
-                        .redAccent[600],
+                    color: colors.redAccent[600],
                   }}
-                  onClick={() =>
-                    handleDelete(
-                      params.row.id
-                    )
-                  }
+                  onClick={() => handleDelete(params.row.id)}
                 >
                   <DeleteForeverIcon fontSize="small" />
                 </IconButton>
@@ -362,26 +262,18 @@ export const getColumns = ({
 
             {/* COMPLETE */}
 
-            {form_type_id === 2 &&
-              form_response.is_completed ===
-                0 && (
-                <IconButton
-                  size="small"
-                  title="Complete"
-                  sx={{
-                    color:
-                      colors
-                        .greenAccent[600],
-                  }}
-                  onClick={() =>
-                    handleOpenMarkDialog(
-                      params.row.id
-                    )
-                  }
-                >
-                  <CheckCircleOutlineIcon fontSize="small" />
-                </IconButton>
-              )}
+            {form_type_id === 2 && form_response.is_completed === 0 && (
+              <IconButton
+                size="small"
+                title="Complete"
+                sx={{
+                  color: colors.greenAccent[600],
+                }}
+                onClick={() => handleOpenMarkDialog(params.row.id)}
+              >
+                <CheckCircleOutlineIcon fontSize="small" />
+              </IconButton>
+            )}
           </Box>
         );
       },

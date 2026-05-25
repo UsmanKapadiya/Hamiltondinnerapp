@@ -1,7 +1,23 @@
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import { Box, useTheme, FormControl, InputLabel, Select, MenuItem, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Autocomplete, useMediaQuery } from "@mui/material";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import {
+  Box,
+  useTheme,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  Autocomplete,
+  useMediaQuery,
+} from "@mui/material";
 import { Header, PdfModal } from "../../components";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
@@ -10,7 +26,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import StaticFormServices from "../../services/staticFormServices";
 import { toast } from "react-toastify";
-import CustomButton from '../../components/CustomButton';
+import CustomButton from "../../components/CustomButton";
 import { useLocalStorage } from "../../hooks";
 
 const StaticForms = () => {
@@ -22,7 +38,7 @@ const StaticForms = () => {
   const [formist, setFormList] = useState([]);
   const [pdfModalOpen, setPdfModalOpen] = useState(false);
   const [pdfUrl, setPdfUrl] = useState("");
-  const [selectedFormType, setSelectedFormType] = useState('all');
+  const [selectedFormType, setSelectedFormType] = useState("all");
   const [markDialogOpen, setMarkDialogOpen] = useState(false);
   const [markReason, setMarkReason] = useState("");
   const [markRowId, setMarkRowId] = useState(null);
@@ -36,18 +52,22 @@ const StaticForms = () => {
     return userDatas ? JSON.parse(userDatas) : null;
   });
 
-  const handleAddNewClick = useCallback((formType) => {
-    let route = "incidentForm-create";
-    if (formType === "incidentForm") route = "incidentForm-create";
-    else if (formType === "Log Form") route = "logForm-create";
-    else if (formType === "MoveIn Summary Form") route = "moveInSummaryForm-create";
-    navigate(route);
-  }, [navigate]);
+  const handleAddNewClick = useCallback(
+    (formType) => {
+      let route = "incidentForm-create";
+      if (formType === "incidentForm") route = "incidentForm-create";
+      else if (formType === "Log Form") route = "logForm-create";
+      else if (formType === "MoveIn Summary Form")
+        route = "moveInSummaryForm-create";
+      navigate(route);
+    },
+    [navigate],
+  );
 
-  const fetchFormList = useCallback(async (formType = 'all') => {
+  const fetchFormList = useCallback(async (formType = "all") => {
     setLoading(true);
     try {
-      let payload = { "form_type": formType === 'all' ? 0 : formType };
+      let payload = { form_type: formType === "all" ? 0 : formType };
       const response = await StaticFormServices.getFormList(payload);
       setFormList(response?.list);
     } catch (error) {
@@ -66,8 +86,8 @@ const StaticForms = () => {
     if (!id) return;
     setLoading(true);
     const payload = {
-      form_id: id
-    }
+      form_id: id,
+    };
     try {
       await StaticFormServices.deleteForm(payload);
       toast.success("Form deleted successfully.");
@@ -108,7 +128,7 @@ const StaticForms = () => {
     }
     const payload = {
       form_id: formId,
-      completed_by: name
+      completed_by: name,
     };
     try {
       await StaticFormServices.completeLog(payload);
@@ -154,13 +174,15 @@ const StaticForms = () => {
           // Incident Form
           return form_response.incident_involved || "";
         } else if (form_type_id === 2) {
-          // Log Form 
+          // Log Form
           return form_response.room_number && form_response.resident_name
             ? `${form_response.room_number} - ${form_response.resident_name}`
             : "";
         } else if (form_type_id === 3) {
           // MoveIn Summary Form
-          return form_response.suite_number && form_response.first_resident_name_first_name && form_response.first_resident_name_last_name
+          return form_response.suite_number &&
+            form_response.first_resident_name_first_name &&
+            form_response.first_resident_name_last_name
             ? `${form_response.suite_number} - ${form_response.first_resident_name_first_name} - ${form_response.first_resident_name_last_name}`
             : "";
         }
@@ -173,7 +195,8 @@ const StaticForms = () => {
       flex: 1,
       renderCell: (params) => {
         const date = params.value ? new Date(params.value) : null;
-        const formatted = date && !isNaN(date) ? date.toISOString().slice(0, 10) : "";
+        const formatted =
+          date && !isNaN(date) ? date.toISOString().slice(0, 10) : "";
         return <span>{formatted}</span>;
       },
     },
@@ -254,7 +277,12 @@ const StaticForms = () => {
         const form_type_id = params.row.form_type_id;
         if (form_type_id === 1 || form_type_id === 3) {
           return (
-            <Box display="flex" justifyContent="center" alignItems="center" gap={1}>
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              gap={1}
+            >
               <IconButton
                 key={`edit-btn-${params.row.id}`}
                 size="small"
@@ -264,21 +292,26 @@ const StaticForms = () => {
                   // Fetch the form data by ID
                   try {
                     const payload = {
-                      "form_id": params.row.id
-                    }
-                    const response = await StaticFormServices.getFormById(payload);
-                    if (response?.ResponseCode === '1') {
+                      form_id: params.row.id,
+                    };
+                    const response =
+                      await StaticFormServices.getFormById(payload);
+                    if (response?.ResponseCode === "1") {
                       if (form_type_id === 1) {
                         navigate(`incidentForm-edit/${params.row.id}`, {
                           state: {
                             formData: response,
                             id: params.row.id,
-                            scrollToFollowUp: params?.row?.is_follow_up_incomplete === 1 ? true : false,
-                          }
-                        })
-                      }
-                      else if (form_type_id === 3) {
-                        navigate(`moveInSummaryForm-edit/${params.row.id}`, { state: { formData: response, id: params.row.id } })
+                            scrollToFollowUp:
+                              params?.row?.is_follow_up_incomplete === 1
+                                ? true
+                                : false,
+                          },
+                        });
+                      } else if (form_type_id === 3) {
+                        navigate(`moveInSummaryForm-edit/${params.row.id}`, {
+                          state: { formData: response, id: params.row.id },
+                        });
                       }
                     }
                     // Navigate to the incident form edit screen, passing the form data
@@ -301,10 +334,9 @@ const StaticForms = () => {
               </IconButton>
             </Box>
           );
-        }
-        else if (form_type_id === 2) {
+        } else if (form_type_id === 2) {
           // if check userData?.role === "concierge"  or  "nurse"  that time action empty,
-          // else if userData?.role === "admin" that time check form_response?.is_completed === 0 that time display mui icon CheckCircleOutlineIcon 
+          // else if userData?.role === "admin" that time check form_response?.is_completed === 0 that time display mui icon CheckCircleOutlineIcon
           const role = userData?.role;
           const form_response = params.row.form_response || {};
           if (role === "concierge" || role === "nurse") {
@@ -320,7 +352,12 @@ const StaticForms = () => {
                 >
                   <CheckCircleOutlineIcon fontSize="small" />
                 </IconButton>
-                <Dialog open={markDialogOpen} onClose={handleCloseMarkDialog} maxWidth="xs" fullWidth>
+                <Dialog
+                  open={markDialogOpen}
+                  onClose={handleCloseMarkDialog}
+                  maxWidth="xs"
+                  fullWidth
+                >
                   <DialogTitle>Completed By</DialogTitle>
                   <DialogContent>
                     <Autocomplete
@@ -331,7 +368,7 @@ const StaticForms = () => {
                       ListboxProps={{
                         style: {
                           maxHeight: 150,
-                          overflowY: 'auto',
+                          overflowY: "auto",
                         },
                       }}
                       renderInput={(params) => (
@@ -357,7 +394,7 @@ const StaticForms = () => {
                         fontWeight: 600,
                         fontSize: 16,
                         cursor: "pointer",
-                        width: 'auto'
+                        width: "auto",
                       }}
                       onClick={handleCloseMarkDialog}
                     >
@@ -373,7 +410,7 @@ const StaticForms = () => {
                         fontWeight: 600,
                         fontSize: 16,
                         cursor: "pointer",
-                        width: 'auto'
+                        width: "auto",
                       }}
                       onClick={handleMarkComplete}
                     >
@@ -381,7 +418,6 @@ const StaticForms = () => {
                     </CustomButton>
                   </DialogActions>
                 </Dialog>
-
               </>
             );
           }
@@ -389,7 +425,6 @@ const StaticForms = () => {
         return null;
       },
     },
-
   ];
 
   return (
@@ -406,7 +441,13 @@ const StaticForms = () => {
         isFormDropdown={true}
       />
       {/* Dropdown filter for all forms */}
-      <Box display="flex" justifyContent="flex-start" alignItems="center" mt={2} mb={2}>
+      <Box
+        display="flex"
+        justifyContent="flex-start"
+        alignItems="center"
+        mt={2}
+        mb={2}
+      >
         <FormControl size="small" sx={{ minWidth: 220, zIndex: 1301 }}>
           <InputLabel id="form-type-select-label">All Forms</InputLabel>
           <Select
@@ -414,20 +455,21 @@ const StaticForms = () => {
             id="form-type-select"
             value={selectedFormType}
             label="All Forms"
-            onChange={e => setSelectedFormType(e.target.value)}
+            onChange={(e) => setSelectedFormType(e.target.value)}
             MenuProps={{
               PaperProps: {
                 sx: {
                   maxHeight: 300,
-                  overflowY: 'auto',
+                  overflowY: "auto",
                 },
               },
             }}
-
           >
             <MenuItem value="all">All Forms</MenuItem>
             {(userData?.form_types || []).map((form) => (
-              <MenuItem key={form.id} value={form.id}>{form.name}</MenuItem>
+              <MenuItem key={form.id} value={form.id}>
+                {form.name}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -463,11 +505,11 @@ const StaticForms = () => {
           "& .MuiDataGrid-iconSeparator": {
             color: colors.primary[100],
           },
-          '& .row-white-bg': {
-            backgroundColor: '#fff !important',
+          "& .row-white-bg": {
+            backgroundColor: "#fff !important",
           },
-          '& .row-yellow-bg': {
-            backgroundColor: '#ffd912 !important',
+          "& .row-yellow-bg": {
+            backgroundColor: "#ffd912 !important",
           },
         }}
       >
@@ -486,12 +528,12 @@ const StaticForms = () => {
           getRowClassName={(params) => {
             const role = userData?.role;
             if (role === "concierge" || role === "nurse") {
-              return 'row-white-bg';
+              return "row-white-bg";
             }
             if (params.row.is_follow_up_incomplete === 1) {
-              return 'row-yellow-bg';
+              return "row-yellow-bg";
             }
-            return 'row-white-bg';
+            return "row-white-bg";
           }}
         />
       </Box>
@@ -501,10 +543,17 @@ const StaticForms = () => {
         open={pdfModalOpen}
         onClose={() => setPdfModalOpen(false)}
         pdfUrl={pdfUrl}
-        showPrintButton={formist.find((f) => f.id === selectedMailFormId)?.form_type?.allow_print === 1}
-        showMailButton={formist.find((f) => f.id === selectedMailFormId)?.form_type?.allow_mail === 1}
+        showPrintButton={
+          formist.find((f) => f.id === selectedMailFormId)?.form_type
+            ?.allow_print === 1
+        }
+        showMailButton={
+          formist.find((f) => f.id === selectedMailFormId)?.form_type
+            ?.allow_mail === 1
+        }
         showFollowUpButton={
-          formist.find((f) => f.id === selectedMailFormId)?.is_follow_up_incomplete === 1 &&
+          formist.find((f) => f.id === selectedMailFormId)
+            ?.is_follow_up_incomplete === 1 &&
           formist.find((f) => f.id === selectedMailFormId)?.form_type_id === 1
         }
         onMail={handleSendMail}
@@ -516,12 +565,16 @@ const StaticForms = () => {
             const payload = { form_id: selectedMailFormId };
             const response = await StaticFormServices.getFormById(payload);
 
-            if (response?.ResponseCode === '1') {
+            if (response?.ResponseCode === "1") {
               setPdfModalOpen(false);
 
               if (formTypeId === 1) {
                 navigate(`incidentForm-edit/${selectedMailFormId}`, {
-                  state: { formData: response, id: selectedMailFormId, scrollToFollowUp: true }
+                  state: {
+                    formData: response,
+                    id: selectedMailFormId,
+                    scrollToFollowUp: true,
+                  },
                 });
               }
             } else {

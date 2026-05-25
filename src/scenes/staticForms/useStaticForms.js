@@ -1,299 +1,204 @@
-// ============================================
-// File: src/pages/StaticForms/useStaticForms.js
-// ============================================
-
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import StaticFormServices from "../../services/staticFormServices";
 
 const useStaticForms = () => {
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
-const [loading, setLoading] = useState(true);
-const [formist, setFormList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [formist, setFormList] = useState([]);
 
-const [pdfModalOpen, setPdfModalOpen] =
-useState(false);
+  const [pdfModalOpen, setPdfModalOpen] = useState(false);
 
-const [pdfUrl, setPdfUrl] = useState("");
+  const [pdfUrl, setPdfUrl] = useState("");
 
-const [selectedFormType, setSelectedFormType] =
-useState("all");
+  const [selectedFormType, setSelectedFormType] = useState("all");
 
-const [markDialogOpen, setMarkDialogOpen] =
-useState(false);
+  const [markDialogOpen, setMarkDialogOpen] = useState(false);
 
-const [markReason, setMarkReason] =
-useState("");
+  const [markReason, setMarkReason] = useState("");
 
-const [markRowId, setMarkRowId] =
-useState(null);
+  const [markRowId, setMarkRowId] = useState(null);
 
-const [selectedMailFormId, setSelectedMailFormId] =
-useState("");
+  const [selectedMailFormId, setSelectedMailFormId] = useState("");
 
-const [completedNames, setCompletedNames] =
-useState(() => {
-const stored = localStorage.getItem(
-"completedNames"
-);
+  const [completedNames, setCompletedNames] = useState(() => {
+    const stored = localStorage.getItem("completedNames");
 
+    return stored ? JSON.parse(stored) : [];
+  });
 
-  return stored
-    ? JSON.parse(stored)
-    : [];
-});
+  const [userData] = useState(() => {
+    const userDatas = localStorage.getItem("userData");
 
+    return userDatas ? JSON.parse(userDatas) : null;
+  });
 
-const [userData] = useState(() => {
-const userDatas =
-localStorage.getItem("userData");
+  // ============================================
+  // ADD NEW
+  // ============================================
 
+  const handleAddNewClick = useCallback(
+    (formType) => {
+      let route = "incidentForm-create";
 
-return userDatas
-  ? JSON.parse(userDatas)
-  : null;
+      if (formType === "incidentForm") {
+        route = "incidentForm-create";
+      } else if (formType === "Log Form") {
+        route = "logForm-create";
+      } else if (formType === "MoveIn Summary Form") {
+        route = "moveInSummaryForm-create";
+      }
 
+      navigate(route);
+    },
+    [navigate],
+  );
 
-});
+  // ============================================
+  // FETCH LIST
+  // ============================================
 
-// ============================================
-// ADD NEW
-// ============================================
+  const fetchFormList = useCallback(async (formType = "all") => {
+    setLoading(true);
 
-const handleAddNewClick = useCallback(
-(formType) => {
-let route = "incidentForm-create";
+    try {
+      const payload = {
+        form_type: formType === "all" ? 0 : formType,
+      };
 
+      const response = await StaticFormServices.getFormList(payload);
 
-  if (formType === "incidentForm") {
-    route = "incidentForm-create";
-  } else if (formType === "Log Form") {
-    route = "logForm-create";
-  } else if (
-    formType ===
-    "MoveIn Summary Form"
-  ) {
-    route =
-      "moveInSummaryForm-create";
-  }
-
-  navigate(route);
-},
-[navigate]
-
-
-);
-
-// ============================================
-// FETCH LIST
-// ============================================
-
-const fetchFormList = useCallback(
-async (formType = "all") => {
-setLoading(true);
-
-
-  try {
-    const payload = {
-      form_type:
-        formType === "all"
-          ? 0
-          : formType,
-    };
-
-    const response =
-      await StaticFormServices.getFormList(
-        payload
-      );
-
-    setFormList(
-      response?.list || []
-    );
-  } catch (error) {
-    toast.error(
-      "Failed to fetch forms."
-    );
-  } finally {
-    setLoading(false);
-  }
-},
-[]
-
-
-);
-
-useEffect(() => {
-fetchFormList(selectedFormType);
-}, [
-fetchFormList,
-selectedFormType,
-]);
-
-// ============================================
-// DELETE
-// ============================================
-
-const handleDelete = async (id) => {
-if (!id) return;
-
-
-setLoading(true);
-
-try {
-  await StaticFormServices.deleteForm(
-    {
-      form_id: id,
+      setFormList(response?.list || []);
+    } catch (error) {
+      toast.error("Failed to fetch forms.");
+    } finally {
+      setLoading(false);
     }
-  );
+  }, []);
 
-  toast.success(
-    "Form deleted successfully."
-  );
+  useEffect(() => {
+    fetchFormList(selectedFormType);
+  }, [fetchFormList, selectedFormType]);
 
-  fetchFormList(
-    selectedFormType
-  );
-} catch (error) {
-  toast.error(
-    "Failed to delete form."
-  );
-} finally {
-  setLoading(false);
-}
+  // ============================================
+  // DELETE
+  // ============================================
 
+  const handleDelete = async (id) => {
+    if (!id) return;
 
-};
+    setLoading(true);
 
-// ============================================
-// COMPLETE DIALOG
-// ============================================
+    try {
+      await StaticFormServices.deleteForm({
+        form_id: id,
+      });
 
-const handleOpenMarkDialog = (
-rowId
-) => {
-setMarkRowId(rowId);
-setMarkReason("");
-setMarkDialogOpen(true);
-};
+      toast.success("Form deleted successfully.");
 
-const handleCloseMarkDialog =
-() => {
-setMarkDialogOpen(false);
-setMarkReason("");
-setMarkRowId(null);
-};
+      fetchFormList(selectedFormType);
+    } catch (error) {
+      toast.error("Failed to delete form.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-// ============================================
-// MARK COMPLETE
-// ============================================
+  // ============================================
+  // COMPLETE DIALOG
+  // ============================================
 
-const handleMarkComplete =
-async () => {
-const name =
-markReason.trim();
+  const handleOpenMarkDialog = (rowId) => {
+    setMarkRowId(rowId);
+    setMarkReason("");
+    setMarkDialogOpen(true);
+  };
 
+  const handleCloseMarkDialog = () => {
+    setMarkDialogOpen(false);
+    setMarkReason("");
+    setMarkRowId(null);
+  };
 
-  if (!name) {
-    toast.error(
-      "Name is required."
-    );
+  // ============================================
+  // MARK COMPLETE
+  // ============================================
 
-    return;
-  }
+  const handleMarkComplete = async () => {
+    const name = markReason.trim();
 
-  setLoading(true);
+    if (!name) {
+      toast.error("Name is required.");
 
-  try {
-    let updatedNames =
-      completedNames;
-
-    if (
-      !completedNames.includes(
-        name
-      )
-    ) {
-      updatedNames = [
-        ...completedNames,
-        name,
-      ];
-
-      setCompletedNames(
-        updatedNames
-      );
-
-      localStorage.setItem(
-        "completedNames",
-        JSON.stringify(
-          updatedNames
-        )
-      );
+      return;
     }
 
-    await StaticFormServices.completeLog(
-      {
+    setLoading(true);
+
+    try {
+      let updatedNames = completedNames;
+
+      if (!completedNames.includes(name)) {
+        updatedNames = [...completedNames, name];
+
+        setCompletedNames(updatedNames);
+
+        localStorage.setItem("completedNames", JSON.stringify(updatedNames));
+      }
+
+      await StaticFormServices.completeLog({
         form_id: markRowId,
         completed_by: name,
-      }
-    );
+      });
 
-    toast.success(
-      "Marked as complete!"
-    );
+      toast.success("Marked as complete!");
 
-    fetchFormList(
-      selectedFormType
-    );
+      fetchFormList(selectedFormType);
 
-    handleCloseMarkDialog();
-  } catch (error) {
-    toast.error(
-      "Failed to mark complete."
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+      handleCloseMarkDialog();
+    } catch (error) {
+      toast.error("Failed to mark complete.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  return {
+    loading,
+    formist,
 
-return {
-loading,
-formist,
+    pdfModalOpen,
+    setPdfModalOpen,
 
+    pdfUrl,
+    setPdfUrl,
 
-pdfModalOpen,
-setPdfModalOpen,
+    selectedFormType,
+    setSelectedFormType,
 
-pdfUrl,
-setPdfUrl,
+    markDialogOpen,
+    markReason,
+    setMarkReason,
 
-selectedFormType,
-setSelectedFormType,
+    selectedMailFormId,
+    setSelectedMailFormId,
 
-markDialogOpen,
-markReason,
-setMarkReason,
+    completedNames,
 
-selectedMailFormId,
-setSelectedMailFormId,
+    userData,
 
-completedNames,
+    navigate,
 
-userData,
+    handleDelete,
+    handleAddNewClick,
 
-navigate,
+    handleOpenMarkDialog,
+    handleCloseMarkDialog,
 
-handleDelete,
-handleAddNewClick,
-
-handleOpenMarkDialog,
-handleCloseMarkDialog,
-
-handleMarkComplete,
-
-
-};
+    handleMarkComplete,
+  };
 };
 
 export default useStaticForms;

@@ -11,9 +11,13 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
 } from "@mui/material";
-import { DatePicker, TimePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import {
+  DatePicker,
+  TimePicker,
+  LocalizationProvider,
+} from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Header, PdfModal } from "../../components";
 import { Formik } from "formik";
@@ -64,7 +68,7 @@ const IncidentForm = () => {
   const navigate = useNavigate();
   const followUpRef = useRef(null);
   const userData = useMemo(() => getUserData(), []);
-  
+
   // ==================== STATE ====================
   const [incidentFormDetails, setIncidentFormDetails] = useState({});
   const [loading, setLoading] = useState(true);
@@ -80,7 +84,10 @@ const IncidentForm = () => {
     mapInformedOfIncident,
   } = useIncidentFormMappers();
 
-  const { canEditFollowUp, canUpdateFollowUp } = useFollowUpPermissions(userData, location?.state?.formData);
+  const { canEditFollowUp, canUpdateFollowUp } = useFollowUpPermissions(
+    userData,
+    location?.state?.formData,
+  );
 
   const {
     showFollowUpConfirm,
@@ -106,7 +113,18 @@ const IncidentForm = () => {
     submitIncidentForm: hookSubmitIncidentForm,
     handleAttachmentUpload: hookHandleAttachmentUpload,
     handleSendMail: hookHandleSendMail,
-  } = useIncidentForm(userData, incidentFormDetails, formId, setLoading, setIncidentFormDetails, navigate, setSelectedFormId, setIsFollowUpIncomplete, setPdfUrl, setPdfModalOpen);
+  } = useIncidentForm(
+    userData,
+    incidentFormDetails,
+    formId,
+    setLoading,
+    setIncidentFormDetails,
+    navigate,
+    setSelectedFormId,
+    setIsFollowUpIncomplete,
+    setPdfUrl,
+    setPdfModalOpen,
+  );
 
   useScrollToFollowUp(location.state?.scrollToFollowUp, followUpRef);
 
@@ -115,19 +133,38 @@ const IncidentForm = () => {
     if (location.state?.formData?.ResponseCode === "1") {
       const data = location.state.formData.form_data || {};
       setFormId(location.state?.id);
-      const followUpFilled = ["followUp_issue", "followUp_findings", "followUp_possible_solutions", "followUp_action_plan", "followUp_examine_result"]
-        .some(key => !!data[key]);
-      
+      const followUpFilled = [
+        "followUp_issue",
+        "followUp_findings",
+        "followUp_possible_solutions",
+        "followUp_action_plan",
+        "followUp_examine_result",
+      ].some((key) => !!data[key]);
+
       const transformedData = {
         ...data,
-        incident_date: data.incident_dt ? dayjs(data.incident_dt, "DD MMM YYYY").format("YYYY-MM-DD") : (data.incident_date || ""),
-        discovery_date: data.discovery_dt ? dayjs(data.discovery_dt, "DD MMM YYYY").format("YYYY-MM-DD") : (data.discovery_date || ""),
-        notified_family_doctor_date: data.notified_family_doctor_dt ? dayjs(data.notified_family_doctor_dt, "DD MMM YYYY").format("YYYY-MM-DD") : (data.notified_family_doctor_date || ""),
-        notified_other_date: data.notified_other_dt ? dayjs(data.notified_other_dt, "DD MMM YYYY").format("YYYY-MM-DD") : (data.notified_other_date || ""),
-        notified_resident_date: data.notified_resident_dt ? dayjs(data.notified_resident_dt, "DD MMM YYYY").format("YYYY-MM-DD") : (data.notified_resident_date || ""),
-        completed_date: data.completed_dt ? dayjs(data.completed_dt, "DD MMM YYYY").format("YYYY-MM-DD") : (data.completed_date || ""),
+        incident_date: data.incident_dt
+          ? dayjs(data.incident_dt, "DD MMM YYYY").format("YYYY-MM-DD")
+          : data.incident_date || "",
+        discovery_date: data.discovery_dt
+          ? dayjs(data.discovery_dt, "DD MMM YYYY").format("YYYY-MM-DD")
+          : data.discovery_date || "",
+        notified_family_doctor_date: data.notified_family_doctor_dt
+          ? dayjs(data.notified_family_doctor_dt, "DD MMM YYYY").format(
+              "YYYY-MM-DD",
+            )
+          : data.notified_family_doctor_date || "",
+        notified_other_date: data.notified_other_dt
+          ? dayjs(data.notified_other_dt, "DD MMM YYYY").format("YYYY-MM-DD")
+          : data.notified_other_date || "",
+        notified_resident_date: data.notified_resident_dt
+          ? dayjs(data.notified_resident_dt, "DD MMM YYYY").format("YYYY-MM-DD")
+          : data.notified_resident_date || "",
+        completed_date: data.completed_dt
+          ? dayjs(data.completed_dt, "DD MMM YYYY").format("YYYY-MM-DD")
+          : data.completed_date || "",
       };
-      
+
       setIncidentFormDetails({
         ...transformedData,
         ...mapIncidentInvolved(data.incident_involved),
@@ -135,9 +172,16 @@ const IncidentForm = () => {
         ...mapConditionAtIncident(data.condition_at_incident),
         ...mapAmbulation(data.ambulation),
         ...mapInformedOfIncident(data.informed_of_incident),
-        fall_assessment: data.fall_assessment ? data.fall_assessment.split(",") : [],
-        follow_up_assigned_to: data.follow_up_assigned_to || getDefaultFollowUpUser(),
-        show_follow_up_details: formId ? true : (followUpFilled || incidentFormDetails?.show_follow_up_details || false),
+        fall_assessment: data.fall_assessment
+          ? data.fall_assessment.split(",")
+          : [],
+        follow_up_assigned_to:
+          data.follow_up_assigned_to || getDefaultFollowUpUser(),
+        show_follow_up_details: formId
+          ? true
+          : followUpFilled ||
+            incidentFormDetails?.show_follow_up_details ||
+            false,
         attachments: location.state.formData.attachments || [],
       });
       setLoading(false);
@@ -145,7 +189,7 @@ const IncidentForm = () => {
       const timer = setTimeout(() => {
         setIncidentFormDetails({
           ...location.state,
-          follow_up_assigned_to: getDefaultFollowUpUser()
+          follow_up_assigned_to: getDefaultFollowUpUser(),
         });
         setLoading(false);
       }, 400);
@@ -155,105 +199,123 @@ const IncidentForm = () => {
 
   const getDefaultFollowUpUser = () => {
     if (!userData?.user_list || !Array.isArray(userData.user_list)) {
-      return '';
+      return "";
     }
 
     const adminUser = userData.user_list.find(
-      user => user.role === 'admin' || user.role === 'superadmin' ||
-        user.name?.toLowerCase() === 'admin'
+      (user) =>
+        user.role === "admin" ||
+        user.role === "superadmin" ||
+        user.name?.toLowerCase() === "admin",
     );
 
     if (adminUser) {
       return adminUser.id;
     }
 
-    return userData.user_list.length > 0 ? userData.user_list[0].id : '';
+    return userData.user_list.length > 0 ? userData.user_list[0].id : "";
   };
 
-  const initialValues = useMemo(() => ({
-    id: formId || "",
-    formTypes: incidentFormDetails?.formTypes || "",
-    incident_involved: incidentFormDetails?.incident_involved || [],
-    inc_invl_other_text: incidentFormDetails?.inc_invl_other_text || "",
-    incident_date: incidentFormDetails?.incident_date || "",
-    incident_dt: incidentFormDetails?.incident_dt || "",
-    incident_tm: incidentFormDetails?.incident_tm || "",
-    incident_location: incidentFormDetails?.incident_location || "",
-    witnessed_by: incidentFormDetails?.witnessed_by || "",
-    discovery_date: incidentFormDetails?.discovery_date || "",
-    discovery_dt: incidentFormDetails?.discovery_dt || "",
-    discovery_tm: incidentFormDetails?.discovery_tm || "",
-    discovery_location: incidentFormDetails?.discovery_location || "",
-    discovered_by: incidentFormDetails?.discovered_by || "",
-    type_of_incident: incidentFormDetails?.type_of_incident || [],
-    type_of_inc_other_text: incidentFormDetails?.type_of_inc_other_text || "",
-    safety_fob: incidentFormDetails?.safety_fob ?? "No",
-    safety_callbell: incidentFormDetails?.safety_callbell ?? "No",
-    safety_caution: incidentFormDetails?.safety_caution ?? "No",
-    safety_other: incidentFormDetails?.safety_other ?? "",
-    other_witnesses: incidentFormDetails?.other_witnesses ?? "No",
-    witness_name1: incidentFormDetails?.witness_name1 || "",
-    witness_position1: incidentFormDetails?.witness_position1 || "",
-    witness_name2: incidentFormDetails?.witness_name2 || "",
-    witness_position2: incidentFormDetails?.witness_position2 || "",
-    condition_at_incident: incidentFormDetails?.condition_at_incident || [],
-    condition_at_inc_other_text: incidentFormDetails?.condition_at_inc_other_text || "",
-    fall_assessment: incidentFormDetails?.fall_assessment || [],
-    ambulation: incidentFormDetails?.ambulation || [],
-    ambulation_other_text: incidentFormDetails?.ambulation_other_text || "",
-    fire_alarm_pulled: incidentFormDetails?.fire_alarm_pulled ?? "No",
-    fire_false_alarm: incidentFormDetails?.fire_false_alarm ?? "No",
-    fire_extinguisher_used: incidentFormDetails?.fire_extinguisher_used ?? "No",
-    fire_personal_injury: incidentFormDetails?.fire_personal_injury ?? "No",
-    fire_property_damage: incidentFormDetails?.fire_property_damage ?? "No",
-    factual_description: incidentFormDetails?.factual_description || "",
-    informed_of_incident: incidentFormDetails?.informed_of_incident || [],
-    initial_assistant_gm: incidentFormDetails?.initial_assistant_gm || "",
-    initial_gm: incidentFormDetails?.initial_gm || "",
-    initial_risk_mng_committee: incidentFormDetails?.initial_risk_mng_committee || "",
-    initial_other: incidentFormDetails?.initial_other || "",
-    informed_of_inc_other_text: incidentFormDetails?.informed_of_inc_other_text,
-    notified_family_doctor: incidentFormDetails?.notified_family_doctor || "",
-    notified_family_doctor_date: incidentFormDetails?.notified_family_doctor_date || "",
-    notified_family_doctor_dt: incidentFormDetails?.notified_family_doctor_dt || "",
-    notified_family_doctor_tm: incidentFormDetails?.notified_family_doctor_tm || "",
-    notified_other: incidentFormDetails?.notified_other || "",
-    notified_other_date: incidentFormDetails?.notified_other_date || "",
-    notified_other_dt: incidentFormDetails?.notified_other_dt || "",
-    notified_other_tm: incidentFormDetails?.notified_other_tm || "",
-    notified_resident_responsible_party: incidentFormDetails?.notified_resident_responsible_party || "no",
-    notified_resident_name: incidentFormDetails?.notified_resident_name || "",
-    notified_resident_date: incidentFormDetails?.notified_resident_date || "",
-    notified_resident_dt: incidentFormDetails?.notified_resident_dt || "",
-    notified_resident_tm: incidentFormDetails?.notified_resident_tm || "",
-    completed_by: incidentFormDetails?.completed_by || "",
-    completed_position: incidentFormDetails?.completed_position || "",
-    completed_date: incidentFormDetails?.completed_date || "",
-    completed_dt: incidentFormDetails?.completed_dt || "",
-    completed_tm: incidentFormDetails?.completed_tm || "",
-    follow_up_assigned_to: incidentFormDetails?.follow_up_assigned_to || getDefaultFollowUpUser(),
-    followUp_issue: incidentFormDetails?.followUp_issue || '',
-    followUp_findings: incidentFormDetails?.followUp_findings || '',
-    followUp_possible_solutions: incidentFormDetails?.followUp_possible_solutions || '',
-    followUp_action_plan: incidentFormDetails?.followUp_action_plan || '',
-    followUp_examine_result: incidentFormDetails?.followUp_examine_result || '',
-    attachments: incidentFormDetails?.attachments || [],
-    show_follow_up_details: formId ? true : incidentFormDetails?.show_follow_up_details || false,
-  }), [incidentFormDetails, formId]);
+  const initialValues = useMemo(
+    () => ({
+      id: formId || "",
+      formTypes: incidentFormDetails?.formTypes || "",
+      incident_involved: incidentFormDetails?.incident_involved || [],
+      inc_invl_other_text: incidentFormDetails?.inc_invl_other_text || "",
+      incident_date: incidentFormDetails?.incident_date || "",
+      incident_dt: incidentFormDetails?.incident_dt || "",
+      incident_tm: incidentFormDetails?.incident_tm || "",
+      incident_location: incidentFormDetails?.incident_location || "",
+      witnessed_by: incidentFormDetails?.witnessed_by || "",
+      discovery_date: incidentFormDetails?.discovery_date || "",
+      discovery_dt: incidentFormDetails?.discovery_dt || "",
+      discovery_tm: incidentFormDetails?.discovery_tm || "",
+      discovery_location: incidentFormDetails?.discovery_location || "",
+      discovered_by: incidentFormDetails?.discovered_by || "",
+      type_of_incident: incidentFormDetails?.type_of_incident || [],
+      type_of_inc_other_text: incidentFormDetails?.type_of_inc_other_text || "",
+      safety_fob: incidentFormDetails?.safety_fob ?? "No",
+      safety_callbell: incidentFormDetails?.safety_callbell ?? "No",
+      safety_caution: incidentFormDetails?.safety_caution ?? "No",
+      safety_other: incidentFormDetails?.safety_other ?? "",
+      other_witnesses: incidentFormDetails?.other_witnesses ?? "No",
+      witness_name1: incidentFormDetails?.witness_name1 || "",
+      witness_position1: incidentFormDetails?.witness_position1 || "",
+      witness_name2: incidentFormDetails?.witness_name2 || "",
+      witness_position2: incidentFormDetails?.witness_position2 || "",
+      condition_at_incident: incidentFormDetails?.condition_at_incident || [],
+      condition_at_inc_other_text:
+        incidentFormDetails?.condition_at_inc_other_text || "",
+      fall_assessment: incidentFormDetails?.fall_assessment || [],
+      ambulation: incidentFormDetails?.ambulation || [],
+      ambulation_other_text: incidentFormDetails?.ambulation_other_text || "",
+      fire_alarm_pulled: incidentFormDetails?.fire_alarm_pulled ?? "No",
+      fire_false_alarm: incidentFormDetails?.fire_false_alarm ?? "No",
+      fire_extinguisher_used:
+        incidentFormDetails?.fire_extinguisher_used ?? "No",
+      fire_personal_injury: incidentFormDetails?.fire_personal_injury ?? "No",
+      fire_property_damage: incidentFormDetails?.fire_property_damage ?? "No",
+      factual_description: incidentFormDetails?.factual_description || "",
+      informed_of_incident: incidentFormDetails?.informed_of_incident || [],
+      initial_assistant_gm: incidentFormDetails?.initial_assistant_gm || "",
+      initial_gm: incidentFormDetails?.initial_gm || "",
+      initial_risk_mng_committee:
+        incidentFormDetails?.initial_risk_mng_committee || "",
+      initial_other: incidentFormDetails?.initial_other || "",
+      informed_of_inc_other_text:
+        incidentFormDetails?.informed_of_inc_other_text,
+      notified_family_doctor: incidentFormDetails?.notified_family_doctor || "",
+      notified_family_doctor_date:
+        incidentFormDetails?.notified_family_doctor_date || "",
+      notified_family_doctor_dt:
+        incidentFormDetails?.notified_family_doctor_dt || "",
+      notified_family_doctor_tm:
+        incidentFormDetails?.notified_family_doctor_tm || "",
+      notified_other: incidentFormDetails?.notified_other || "",
+      notified_other_date: incidentFormDetails?.notified_other_date || "",
+      notified_other_dt: incidentFormDetails?.notified_other_dt || "",
+      notified_other_tm: incidentFormDetails?.notified_other_tm || "",
+      notified_resident_responsible_party:
+        incidentFormDetails?.notified_resident_responsible_party || "no",
+      notified_resident_name: incidentFormDetails?.notified_resident_name || "",
+      notified_resident_date: incidentFormDetails?.notified_resident_date || "",
+      notified_resident_dt: incidentFormDetails?.notified_resident_dt || "",
+      notified_resident_tm: incidentFormDetails?.notified_resident_tm || "",
+      completed_by: incidentFormDetails?.completed_by || "",
+      completed_position: incidentFormDetails?.completed_position || "",
+      completed_date: incidentFormDetails?.completed_date || "",
+      completed_dt: incidentFormDetails?.completed_dt || "",
+      completed_tm: incidentFormDetails?.completed_tm || "",
+      follow_up_assigned_to:
+        incidentFormDetails?.follow_up_assigned_to || getDefaultFollowUpUser(),
+      followUp_issue: incidentFormDetails?.followUp_issue || "",
+      followUp_findings: incidentFormDetails?.followUp_findings || "",
+      followUp_possible_solutions:
+        incidentFormDetails?.followUp_possible_solutions || "",
+      followUp_action_plan: incidentFormDetails?.followUp_action_plan || "",
+      followUp_examine_result:
+        incidentFormDetails?.followUp_examine_result || "",
+      attachments: incidentFormDetails?.attachments || [],
+      show_follow_up_details: formId
+        ? true
+        : incidentFormDetails?.show_follow_up_details || false,
+    }),
+    [incidentFormDetails, formId],
+  );
 
   const handleFormSubmit = useCallback(
     async (values, actions) => {
-      const isFollowUpIncomplete = values.show_follow_up_details &&
-        (
-          !values.followUp_issue ||
+      const isFollowUpIncomplete =
+        values.show_follow_up_details &&
+        (!values.followUp_issue ||
           !values.followUp_findings ||
           !values.followUp_possible_solutions ||
           !values.followUp_action_plan ||
-          !values.followUp_examine_result
-        );
+          !values.followUp_examine_result);
 
       const userRole = userData?.role;
-      const isConciergeOrNurse = userRole === "concierge" || userRole === "nurse";
+      const isConciergeOrNurse =
+        userRole === "concierge" || userRole === "nurse";
       const isFollowUpHidden = !values.show_follow_up_details;
 
       if (!isConciergeOrNurse && !isFollowUpHidden && isFollowUpIncomplete) {
@@ -263,7 +325,7 @@ const IncidentForm = () => {
 
       await hookSubmitIncidentForm(values, actions);
     },
-    [incidentFormDetails, formId, userData, navigate, handleOpenConfirm]
+    [incidentFormDetails, formId, userData, navigate, handleOpenConfirm],
   );
 
   const handleConfirmSubmit = async () => {
@@ -280,17 +342,17 @@ const IncidentForm = () => {
     if (selectedFormId && followUpRef.current) {
       // Scroll to follow-up section
       setTimeout(() => {
-        followUpRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        followUpRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
       }, 300);
     }
   };
-  
+
   return (
     <Box m="20px">
-      <Header
-        title={"INCIDENT FORM"}
-        Buttons={false}
-      />
+      <Header title={"INCIDENT FORM"} Buttons={false} />
       {loading ? (
         <Box
           display="flex"
@@ -315,12 +377,20 @@ const IncidentForm = () => {
             handleChange,
             handleSubmit,
             setFieldValue,
-            submitCount
+            submitCount,
           }) => (
             <form onSubmit={handleSubmit}>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormGroup row>
-                  <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%", fontSize: "18px" }}>
+                  <Box
+                    component="label"
+                    sx={{
+                      mb: 1,
+                      fontWeight: 600,
+                      width: "100%",
+                      fontSize: "18px",
+                    }}
+                  >
                     INCIDENT INVOLVED
                   </Box>
                   {incidentInvolvedData.map((option) => (
@@ -328,16 +398,25 @@ const IncidentForm = () => {
                       <FormControlLabel
                         control={
                           <Checkbox
-                            checked={values.incident_involved?.includes(option.label) || false}
+                            checked={
+                              values.incident_involved?.includes(
+                                option.label,
+                              ) || false
+                            }
                             onChange={() => {
                               const current = values.incident_involved || [];
                               if (current.includes(option.label)) {
                                 setFieldValue(
                                   "incident_involved",
-                                  current.filter((item) => item !== option.label)
+                                  current.filter(
+                                    (item) => item !== option.label,
+                                  ),
                                 );
                               } else {
-                                setFieldValue("incident_involved", [...current, option.label]);
+                                setFieldValue("incident_involved", [
+                                  ...current,
+                                  option.label,
+                                ]);
                               }
                             }}
                             name="incident_involved"
@@ -357,32 +436,47 @@ const IncidentForm = () => {
                         value={values.inc_invl_other_text || ""}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        error={touched.inc_invl_other_text && Boolean(errors.inc_invl_other_text)}
-                        helperText={touched.inc_invl_other_text && errors.inc_invl_other_text}
+                        error={
+                          touched.inc_invl_other_text &&
+                          Boolean(errors.inc_invl_other_text)
+                        }
+                        helperText={
+                          touched.inc_invl_other_text &&
+                          errors.inc_invl_other_text
+                        }
                       />
                     </Box>
                   )}
                   {touched.incident_involved && errors.incident_involved && (
-                    <Box sx={{ width: '100%', mt: 1 }}>
-                      <Typography color="error" variant="body2">{errors.incident_involved}</Typography>
+                    <Box sx={{ width: "100%", mt: 1 }}>
+                      <Typography color="error" variant="body2">
+                        {errors.incident_involved}
+                      </Typography>
                     </Box>
                   )}
                 </FormGroup>
               </Box>
 
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
-                <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                <Box
+                  component="label"
+                  sx={{ mb: 1, fontWeight: 600, width: "100%" }}
+                >
                   Date/Time of Incident
                 </Box>
                 <Box sx={{ width: "100%", display: "flex", gap: 2 }}>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Date"
-                      value={values.incident_date ? dayjs(values.incident_date) : null}
+                      value={
+                        values.incident_date
+                          ? dayjs(values.incident_date)
+                          : null
+                      }
                       onChange={(newValue) => {
                         setFieldValue(
                           "incident_date",
-                          newValue ? newValue.format("YYYY-MM-DD") : ""
+                          newValue ? newValue.format("YYYY-MM-DD") : "",
                         );
                         if (newValue && !values.incident_tm) {
                           setFieldValue("incident_tm", "12:00");
@@ -392,8 +486,11 @@ const IncidentForm = () => {
                         textField: {
                           fullWidth: true,
                           variant: "filled",
-                          error: touched.incident_date && Boolean(errors.incident_date),
-                          helperText: touched.incident_date && errors.incident_date,
+                          error:
+                            touched.incident_date &&
+                            Boolean(errors.incident_date),
+                          helperText:
+                            touched.incident_date && errors.incident_date,
                           sx: { mt: 1 },
                         },
                       }}
@@ -403,20 +500,27 @@ const IncidentForm = () => {
                       ampm={true}
                       value={
                         values.incident_tm
-                          ? dayjs(values.incident_tm, values.incident_tm.includes("AM") || values.incident_tm.includes("PM") ? "HH:mm A" : "HH:mm")
+                          ? dayjs(
+                              values.incident_tm,
+                              values.incident_tm.includes("AM") ||
+                                values.incident_tm.includes("PM")
+                                ? "HH:mm A"
+                                : "HH:mm",
+                            )
                           : null
                       }
                       onChange={(newValue) =>
                         setFieldValue(
                           "incident_tm",
-                          newValue ? newValue.format("HH:mm") : ""
+                          newValue ? newValue.format("HH:mm") : "",
                         )
                       }
                       slotProps={{
                         textField: {
                           fullWidth: true,
                           variant: "filled",
-                          error: touched.incident_tm && Boolean(errors.incident_tm),
+                          error:
+                            touched.incident_tm && Boolean(errors.incident_tm),
                           helperText: touched.incident_tm && errors.incident_tm,
                           sx: { mt: 1 },
                         },
@@ -426,7 +530,9 @@ const IncidentForm = () => {
                 </Box>
               </Box>
 
-              <Box sx={{ gridColumn: "span 4", mt: 2, display: "flex", gap: 2 }}>
+              <Box
+                sx={{ gridColumn: "span 4", mt: 2, display: "flex", gap: 2 }}
+              >
                 <TextField
                   fullWidth
                   variant="filled"
@@ -435,8 +541,13 @@ const IncidentForm = () => {
                   value={values.incident_location || ""}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  error={touched.incident_location && Boolean(errors.incident_location)}
-                  helperText={touched.incident_location && errors.incident_location}
+                  error={
+                    touched.incident_location &&
+                    Boolean(errors.incident_location)
+                  }
+                  helperText={
+                    touched.incident_location && errors.incident_location
+                  }
                   sx={{ flex: 1 }}
                 />
                 <TextField
@@ -454,16 +565,26 @@ const IncidentForm = () => {
               </Box>
 
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
-                <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                <Box
+                  component="label"
+                  sx={{ mb: 1, fontWeight: 600, width: "100%" }}
+                >
                   Date/Time Of Discovery
                 </Box>
                 <Box sx={{ width: "100%", display: "flex", gap: 2 }}>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Date"
-                      value={values.discovery_date ? dayjs(values.discovery_date) : null}
+                      value={
+                        values.discovery_date
+                          ? dayjs(values.discovery_date)
+                          : null
+                      }
                       onChange={(newValue) => {
-                        setFieldValue("discovery_date", newValue ? newValue.format("YYYY-MM-DD") : "");
+                        setFieldValue(
+                          "discovery_date",
+                          newValue ? newValue.format("YYYY-MM-DD") : "",
+                        );
                         if (newValue && !values.discovery_tm) {
                           setFieldValue("discovery_tm", "12:00 PM");
                         }
@@ -472,8 +593,11 @@ const IncidentForm = () => {
                         textField: {
                           fullWidth: true,
                           variant: "filled",
-                          error: touched.discovery_date && Boolean(errors.discovery_date),
-                          helperText: touched.discovery_date && errors.discovery_date,
+                          error:
+                            touched.discovery_date &&
+                            Boolean(errors.discovery_date),
+                          helperText:
+                            touched.discovery_date && errors.discovery_date,
                           sx: { mt: 1 },
                         },
                       }}
@@ -483,21 +607,30 @@ const IncidentForm = () => {
                       ampm={true}
                       value={
                         values.discovery_tm
-                          ? dayjs(values.discovery_tm, values.discovery_tm.includes("AM") || values.discovery_tm.includes("PM") ? "HH:mm A" : "HH:mm")
+                          ? dayjs(
+                              values.discovery_tm,
+                              values.discovery_tm.includes("AM") ||
+                                values.discovery_tm.includes("PM")
+                                ? "HH:mm A"
+                                : "HH:mm",
+                            )
                           : null
                       }
                       onChange={(newValue) =>
                         setFieldValue(
                           "discovery_tm",
-                          newValue ? newValue.format("HH:mm A") : ""
+                          newValue ? newValue.format("HH:mm A") : "",
                         )
                       }
                       slotProps={{
                         textField: {
                           fullWidth: true,
                           variant: "filled",
-                          error: touched.discovery_tm && Boolean(errors.discovery_tm),
-                          helperText: touched.discovery_tm && errors.discovery_tm,
+                          error:
+                            touched.discovery_tm &&
+                            Boolean(errors.discovery_tm),
+                          helperText:
+                            touched.discovery_tm && errors.discovery_tm,
                           sx: { mt: 1 },
                         },
                       }}
@@ -506,7 +639,9 @@ const IncidentForm = () => {
                 </Box>
               </Box>
 
-              <Box sx={{ gridColumn: "span 4", mt: 2, display: "flex", gap: 2 }}>
+              <Box
+                sx={{ gridColumn: "span 4", mt: 2, display: "flex", gap: 2 }}
+              >
                 <TextField
                   fullWidth
                   variant="filled"
@@ -515,8 +650,13 @@ const IncidentForm = () => {
                   value={values.discovery_location || ""}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  error={touched.discovery_location && Boolean(errors.discovery_location)}
-                  helperText={touched.discovery_location && errors.discovery_location}
+                  error={
+                    touched.discovery_location &&
+                    Boolean(errors.discovery_location)
+                  }
+                  helperText={
+                    touched.discovery_location && errors.discovery_location
+                  }
                   sx={{ flex: 1 }}
                 />
                 <TextField
@@ -534,24 +674,43 @@ const IncidentForm = () => {
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormGroup row>
-                  <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                  <Box
+                    component="label"
+                    sx={{ mb: 1, fontWeight: 600, width: "100%" }}
+                  >
                     Type Of Incident
                   </Box>
                   {typeOfIncidentOptions.map((option) => (
-                    <Box key={option.key} sx={{ width: "50%", display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+                    <Box
+                      key={option.key}
+                      sx={{
+                        width: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "flex-start",
+                      }}
+                    >
                       <FormControlLabel
                         control={
                           <Checkbox
-                            checked={values.type_of_incident?.includes(option.label) || false}
+                            checked={
+                              values.type_of_incident?.includes(option.label) ||
+                              false
+                            }
                             onChange={() => {
                               const current = values.type_of_incident || [];
                               if (current.includes(option.label)) {
                                 setFieldValue(
                                   "type_of_incident",
-                                  current.filter((item) => item !== option.label)
+                                  current.filter(
+                                    (item) => item !== option.label,
+                                  ),
                                 );
                               } else {
-                                setFieldValue("type_of_incident", [...current, option.label]);
+                                setFieldValue("type_of_incident", [
+                                  ...current,
+                                  option.label,
+                                ]);
                               }
                             }}
                             name="type_of_incident"
@@ -559,25 +718,33 @@ const IncidentForm = () => {
                         }
                         label={option.label}
                       />
-                      {option.label === 'Other' && values.type_of_incident?.includes('Other') && (
-                        <Box sx={{ ml: 2 }}>
-                          <TextField
-                            size="small"
-                            variant="filled"
-                            label="Please enter Other Type Of Incident"
-                            name="type_of_inc_other_text"
-                            value={values.type_of_inc_other_text || ""}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={touched.type_of_inc_other_text && Boolean(errors.type_of_inc_other_text)}
-                            helperText={touched.type_of_inc_other_text && errors.type_of_inc_other_text}
-                          />
-                        </Box>
-
-                      )}
+                      {option.label === "Other" &&
+                        values.type_of_incident?.includes("Other") && (
+                          <Box sx={{ ml: 2 }}>
+                            <TextField
+                              size="small"
+                              variant="filled"
+                              label="Please enter Other Type Of Incident"
+                              name="type_of_inc_other_text"
+                              value={values.type_of_inc_other_text || ""}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              error={
+                                touched.type_of_inc_other_text &&
+                                Boolean(errors.type_of_inc_other_text)
+                              }
+                              helperText={
+                                touched.type_of_inc_other_text &&
+                                errors.type_of_inc_other_text
+                              }
+                            />
+                          </Box>
+                        )}
                       {touched.type_of_incident && errors.type_of_incident && (
-                        <Box sx={{ width: '100%', mt: 1 }}>
-                          <Typography color="error" variant="body2">{errors.type_of_incident}</Typography>
+                        <Box sx={{ width: "100%", mt: 1 }}>
+                          <Typography color="error" variant="body2">
+                            {errors.type_of_incident}
+                          </Typography>
                         </Box>
                       )}
                     </Box>
@@ -586,11 +753,22 @@ const IncidentForm = () => {
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormGroup row>
-                  <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                  <Box
+                    component="label"
+                    sx={{ mb: 1, fontWeight: 600, width: "100%" }}
+                  >
                     Safety Devices In Use Before Occurrence
                   </Box>
                   {safetyDeviceOptions.map((item) => (
-                    <Box key={item.key} sx={{ display: "flex", alignItems: "center", width: "100%", mb: 1 }}>
+                    <Box
+                      key={item.key}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        width: "100%",
+                        mb: 1,
+                      }}
+                    >
                       <Box sx={{ flex: 1 }}>{item.label}</Box>
                       <Box sx={{ display: "flex", gap: 2 }}>
                         {["Yes", "No", "N/A"].map((option) => (
@@ -621,111 +799,178 @@ const IncidentForm = () => {
                   onBlur={handleBlur}
                   error={touched.safety_other && Boolean(errors.safety_other)}
                   helperText={touched.safety_other && errors.safety_other}
-                  sx={{ flex: 1, gridColumn: "span 4", }}
+                  sx={{ flex: 1, gridColumn: "span 4" }}
                 />
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormGroup row>
-                  {[
-                    { key: "other_witnesses", label: "Other Witnesses?" },
-                  ].map((item) => (
-                    <Box key={item.key} sx={{ display: "flex", alignItems: "center", width: "100%", mb: 1, flexDirection: 'column' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                        <Box sx={{ flex: 1 }}>{item.label}</Box>
-                        <Box sx={{ display: "flex", gap: 2 }}>
-                          {["Yes", "No"].map((option) => (
-                            <FormControlLabel
-                              key={option}
-                              control={
-                                <Radio
-                                  checked={values[item.key] === option}
-                                  onChange={() => setFieldValue(item.key, option)}
-                                  value={option}
-                                  name={item.key}
-                                />
-                              }
-                              label={option}
-                            />
-                          ))}
+                  {[{ key: "other_witnesses", label: "Other Witnesses?" }].map(
+                    (item) => (
+                      <Box
+                        key={item.key}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          width: "100%",
+                          mb: 1,
+                          flexDirection: "column",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                          }}
+                        >
+                          <Box sx={{ flex: 1 }}>{item.label}</Box>
+                          <Box sx={{ display: "flex", gap: 2 }}>
+                            {["Yes", "No"].map((option) => (
+                              <FormControlLabel
+                                key={option}
+                                control={
+                                  <Radio
+                                    checked={values[item.key] === option}
+                                    onChange={() =>
+                                      setFieldValue(item.key, option)
+                                    }
+                                    value={option}
+                                    name={item.key}
+                                  />
+                                }
+                                label={option}
+                              />
+                            ))}
+                          </Box>
                         </Box>
+                        {/* If Yes, show two sets of name/position fields, each on a new row */}
+                        {values[item.key] === "Yes" && (
+                          <>
+                            <Box
+                              sx={{
+                                width: "100%",
+                                mt: 2,
+                                display: "flex",
+                                gap: 2,
+                              }}
+                            >
+                              <TextField
+                                fullWidth
+                                variant="filled"
+                                label="Witness Name 1"
+                                name="witness_name1"
+                                value={values.witness_name1 || ""}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                error={
+                                  Boolean(errors.witness_name1) &&
+                                  (touched.witness_name1 || submitCount > 0)
+                                }
+                                helperText={
+                                  Boolean(errors.witness_name1) &&
+                                  (touched.witness_name1 || submitCount > 0)
+                                    ? errors.witness_name1
+                                    : ""
+                                }
+                                sx={{ flex: 1 }}
+                              />
+                              <TextField
+                                fullWidth
+                                variant="filled"
+                                label="Witness Position 1"
+                                name="witness_position1"
+                                value={values.witness_position1 || ""}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                error={
+                                  Boolean(errors.witness_position1) &&
+                                  (touched.witness_position1 || submitCount > 0)
+                                }
+                                helperText={
+                                  Boolean(errors.witness_position1) &&
+                                  (touched.witness_position1 || submitCount > 0)
+                                    ? errors.witness_position1
+                                    : ""
+                                }
+                                sx={{ flex: 1 }}
+                              />
+                            </Box>
+                            <Box
+                              sx={{
+                                width: "100%",
+                                mt: 2,
+                                display: "flex",
+                                gap: 2,
+                              }}
+                            >
+                              <TextField
+                                fullWidth
+                                variant="filled"
+                                label="Witness Name 2"
+                                name="witness_name2"
+                                value={values.witness_name2 || ""}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                sx={{ flex: 1 }}
+                              />
+                              <TextField
+                                fullWidth
+                                variant="filled"
+                                label="Witness Position 2"
+                                name="witness_position2"
+                                value={values.witness_position2 || ""}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                sx={{ flex: 1 }}
+                              />
+                            </Box>
+                          </>
+                        )}
                       </Box>
-                      {/* If Yes, show two sets of name/position fields, each on a new row */}
-                      {values[item.key] === "Yes" && (
-                        <>
-                          <Box sx={{ width: "100%", mt: 2, display: 'flex', gap: 2 }}>
-                            <TextField
-                              fullWidth
-                              variant="filled"
-                              label="Witness Name 1"
-                              name="witness_name1"
-                              value={values.witness_name1 || ''}
-                              onChange={handleChange}
-                              onBlur={handleBlur}
-                              error={Boolean(errors.witness_name1) && (touched.witness_name1 || submitCount > 0)}
-                              helperText={Boolean(errors.witness_name1) && (touched.witness_name1 || submitCount > 0) ? errors.witness_name1 : ""}
-                              sx={{ flex: 1 }}
-                            />
-                            <TextField
-                              fullWidth
-                              variant="filled"
-                              label="Witness Position 1"
-                              name="witness_position1"
-                              value={values.witness_position1 || ''}
-                              onChange={handleChange}
-                              onBlur={handleBlur}
-                              error={Boolean(errors.witness_position1) && (touched.witness_position1 || submitCount > 0)}
-                              helperText={Boolean(errors.witness_position1) && (touched.witness_position1 || submitCount > 0) ? errors.witness_position1 : ""}
-                              sx={{ flex: 1 }}
-                            />
-                          </Box>
-                          <Box sx={{ width: "100%", mt: 2, display: 'flex', gap: 2 }}>
-                            <TextField
-                              fullWidth
-                              variant="filled"
-                              label="Witness Name 2"
-                              name="witness_name2"
-                              value={values.witness_name2 || ''}
-                              onChange={handleChange}
-                              onBlur={handleBlur}
-                              sx={{ flex: 1 }}
-                            />
-                            <TextField
-                              fullWidth
-                              variant="filled"
-                              label="Witness Position 2"
-                              name="witness_position2"
-                              value={values.witness_position2 || ''}
-                              onChange={handleChange}
-                              onBlur={handleBlur}
-                              sx={{ flex: 1 }}
-                            />
-                          </Box>
-                        </>
-                      )}
-                    </Box>
-                  ))}
+                    ),
+                  )}
                 </FormGroup>
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormGroup row>
-                  <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                  <Box
+                    component="label"
+                    sx={{ mb: 1, fontWeight: 600, width: "100%" }}
+                  >
                     Condition At Time of Incident
                   </Box>
                   {conditionAtTimeOptions.map((option) => (
-                    <Box key={option.key} sx={{ width: '50%', display: 'flex', alignItems: 'center' }}>
+                    <Box
+                      key={option.key}
+                      sx={{
+                        width: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
                       <FormControlLabel
                         control={
                           <Checkbox
-                            checked={values.condition_at_incident?.includes(option.label) || false}
+                            checked={
+                              values.condition_at_incident?.includes(
+                                option.label,
+                              ) || false
+                            }
                             onChange={() => {
-                              const current = values.condition_at_incident || [];
+                              const current =
+                                values.condition_at_incident || [];
                               if (current.includes(option.label)) {
                                 setFieldValue(
-                                  'condition_at_incident',
-                                  current.filter((item) => item !== option.label)
+                                  "condition_at_incident",
+                                  current.filter(
+                                    (item) => item !== option.label,
+                                  ),
                                 );
                               } else {
-                                setFieldValue('condition_at_incident', [...current, option.label]);
+                                setFieldValue("condition_at_incident", [
+                                  ...current,
+                                  option.label,
+                                ]);
                               }
                             }}
                             name="condition_at_incident"
@@ -735,18 +980,30 @@ const IncidentForm = () => {
                       />
                     </Box>
                   ))}
-                  {values.condition_at_incident?.includes('Other (Specify)') && (
-                    <Box sx={{ width: '100%', mt: 2 }}>
+                  {values.condition_at_incident?.includes(
+                    "Other (Specify)",
+                  ) && (
+                    <Box sx={{ width: "100%", mt: 2 }}>
                       <TextField
                         fullWidth
                         variant="filled"
                         label="Please specify Other Condition"
                         name="condition_at_inc_other_text"
-                        value={values.condition_at_inc_other_text || ''}
+                        value={values.condition_at_inc_other_text || ""}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        error={Boolean(errors.condition_at_inc_other_text) && (touched.condition_at_inc_other_text || submitCount > 0)}
-                        helperText={Boolean(errors.condition_at_inc_other_text) && (touched.condition_at_inc_other_text || submitCount > 0) ? errors.condition_at_inc_other_text : ""}
+                        error={
+                          Boolean(errors.condition_at_inc_other_text) &&
+                          (touched.condition_at_inc_other_text ||
+                            submitCount > 0)
+                        }
+                        helperText={
+                          Boolean(errors.condition_at_inc_other_text) &&
+                          (touched.condition_at_inc_other_text ||
+                            submitCount > 0)
+                            ? errors.condition_at_inc_other_text
+                            : ""
+                        }
                       />
                     </Box>
                   )}
@@ -754,7 +1011,10 @@ const IncidentForm = () => {
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormGroup row>
-                  <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                  <Box
+                    component="label"
+                    sx={{ mb: 1, fontWeight: 600, width: "100%" }}
+                  >
                     Fall Assessment
                   </Box>
                   {fallAssessmentOptions.map((option) => (
@@ -762,16 +1022,24 @@ const IncidentForm = () => {
                       <FormControlLabel
                         control={
                           <Checkbox
-                            checked={values.fall_assessment?.includes(option.label) || false}
+                            checked={
+                              values.fall_assessment?.includes(option.label) ||
+                              false
+                            }
                             onChange={() => {
                               const current = values.fall_assessment || [];
                               if (current.includes(option.label)) {
                                 setFieldValue(
                                   "fall_assessment",
-                                  current.filter((item) => item !== option.label)
+                                  current.filter(
+                                    (item) => item !== option.label,
+                                  ),
                                 );
                               } else {
-                                setFieldValue("fall_assessment", [...current, option.label]);
+                                setFieldValue("fall_assessment", [
+                                  ...current,
+                                  option.label,
+                                ]);
                               }
                             }}
                             name="fall_assessment"
@@ -785,24 +1053,41 @@ const IncidentForm = () => {
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormGroup row>
-                  <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                  <Box
+                    component="label"
+                    sx={{ mb: 1, fontWeight: 600, width: "100%" }}
+                  >
                     Ambulation
                   </Box>
                   {ambulationOptions.map((option) => (
-                    <Box key={option.key} sx={{ width: "50%", display: 'flex', alignItems: 'center' }}>
+                    <Box
+                      key={option.key}
+                      sx={{
+                        width: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
                       <FormControlLabel
                         control={
                           <Checkbox
-                            checked={values.ambulation?.includes(option.label) || false}
+                            checked={
+                              values.ambulation?.includes(option.label) || false
+                            }
                             onChange={() => {
                               const current = values.ambulation || [];
                               if (current.includes(option.label)) {
                                 setFieldValue(
                                   "ambulation",
-                                  current.filter((item) => item !== option.label)
+                                  current.filter(
+                                    (item) => item !== option.label,
+                                  ),
                                 );
                               } else {
-                                setFieldValue("ambulation", [...current, option.label]);
+                                setFieldValue("ambulation", [
+                                  ...current,
+                                  option.label,
+                                ]);
                               }
                             }}
                             name="ambulation"
@@ -812,19 +1097,23 @@ const IncidentForm = () => {
                       />
                     </Box>
                   ))}
-                  {values.ambulation?.includes('Other (Specify)') && (
-                    <Box sx={{ width: '100%', mt: 2 }}>
+                  {values.ambulation?.includes("Other (Specify)") && (
+                    <Box sx={{ width: "100%", mt: 2 }}>
                       <TextField
                         fullWidth
                         variant="filled"
                         label="Please specify Other Ambulation"
                         name="ambulation_other_text"
-                        value={values.ambulation_other_text || ''}
+                        value={values.ambulation_other_text || ""}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        error={Boolean(errors.ambulation_other_text) && (touched.ambulation_other_text || submitCount > 0)}
+                        error={
+                          Boolean(errors.ambulation_other_text) &&
+                          (touched.ambulation_other_text || submitCount > 0)
+                        }
                         helperText={
-                          Boolean(errors.ambulation_other_text) && (touched.ambulation_other_text || submitCount > 0)
+                          Boolean(errors.ambulation_other_text) &&
+                          (touched.ambulation_other_text || submitCount > 0)
                             ? errors.ambulation_other_text
                             : ""
                         }
@@ -835,11 +1124,22 @@ const IncidentForm = () => {
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormGroup row>
-                  <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                  <Box
+                    component="label"
+                    sx={{ mb: 1, fontWeight: 600, width: "100%" }}
+                  >
                     Fire
                   </Box>
                   {fireOptions.map((item) => (
-                    <Box key={item.key} sx={{ display: "flex", alignItems: "center", width: "100%", mb: 1 }}>
+                    <Box
+                      key={item.key}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        width: "100%",
+                        mb: 1,
+                      }}
+                    >
                       <Box sx={{ flex: 1 }}>{item.label}</Box>
                       <Box sx={{ display: "flex", gap: 2 }}>
                         {["Yes", "No"].map((option) => (
@@ -863,8 +1163,12 @@ const IncidentForm = () => {
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormGroup row>
-                  <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
-                    FACTUAL CONCISE DESCRIPTION OF INCIDENT, INJURY AND ACTION TAKEN
+                  <Box
+                    component="label"
+                    sx={{ mb: 1, fontWeight: 600, width: "100%" }}
+                  >
+                    FACTUAL CONCISE DESCRIPTION OF INCIDENT, INJURY AND ACTION
+                    TAKEN
                   </Box>
                   <TextField
                     fullWidth
@@ -876,23 +1180,27 @@ const IncidentForm = () => {
                     value={values.factual_description || ""}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    error={touched.factual_description && Boolean(errors.factual_description)}
-                    helperText={touched.factual_description && errors.factual_description}
+                    error={
+                      touched.factual_description &&
+                      Boolean(errors.factual_description)
+                    }
+                    helperText={
+                      touched.factual_description && errors.factual_description
+                    }
                     sx={{ mt: 1 }}
                   />
                 </FormGroup>
               </Box>
-              
+
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormGroup row>
-                  <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                  <Box
+                    component="label"
+                    sx={{ mb: 1, fontWeight: 600, width: "100%" }}
+                  >
                     ATTACHMENT
                   </Box>
-                  <Button
-                    variant="contained"
-                    component="label"
-                    sx={{ mt: 1 }}
-                  >
+                  <Button variant="contained" component="label" sx={{ mt: 1 }}>
                     Upload Photo/Video
                     <input
                       type="file"
@@ -905,137 +1213,198 @@ const IncidentForm = () => {
                         if (formId) {
                           // If form exists, upload immediately to API
                           await hookHandleAttachmentUpload(files);
-                        } else {                          
+                        } else {
                           const prev = values.attachments || [];
                           setFieldValue("attachments", [...files, ...prev]);
                         }
-                        event.target.value = '';
+                        event.target.value = "";
                       }}
                     />
                   </Button>
-                  {Array.isArray(values.attachments) && values.attachments.length > 0 && (
-                    <Box sx={{ width: '100%', mt: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                      {values.attachments.map((file, idx) => {
-                        const isFileObject = file instanceof File;
-                        const isImage = isFileObject
-                          ? file.type.startsWith('image/')
-                          : file.type === 'image';
-                        const isVideo = isFileObject
-                          ? file.type.startsWith('video/')
-                          : file.type === 'video';
+                  {Array.isArray(values.attachments) &&
+                    values.attachments.length > 0 && (
+                      <Box
+                        sx={{
+                          width: "100%",
+                          mt: 2,
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: 2,
+                        }}
+                      >
+                        {values.attachments.map((file, idx) => {
+                          const isFileObject = file instanceof File;
+                          const isImage = isFileObject
+                            ? file.type.startsWith("image/")
+                            : file.type === "image";
+                          const isVideo = isFileObject
+                            ? file.type.startsWith("video/")
+                            : file.type === "video";
 
-                        const mediaUrl = isFileObject
-                          ? URL.createObjectURL(file)
-                          : file.path;
+                          const mediaUrl = isFileObject
+                            ? URL.createObjectURL(file)
+                            : file.path;
 
-                        const fileName = isFileObject ? file.name : file.name;
+                          const fileName = isFileObject ? file.name : file.name;
 
-                        return (
-                          <Box key={idx} sx={{ position: 'relative', display: 'inline-block' }}>
-                            {isImage ? (
-                              <img
-                                src={mediaUrl}
-                                alt={fileName}
-                                style={{
-                                  width: 80,
-                                  height: 80,
-                                  objectFit: 'cover',
-                                  borderRadius: 4,
-                                  border: '1px solid #ccc'
-                                }}
-                              />
-                            ) : isVideo ? (
-                              <video
-                                src={mediaUrl}
-                                style={{
-                                  width: 80,
-                                  height: 80,
-                                  objectFit: 'cover',
-                                  borderRadius: 4,
-                                  border: '1px solid #ccc'
-                                }}
-                                controls
-                              />
-                            ) : (
-                              <Box
-                                sx={{
-                                  width: 80,
-                                  height: 80,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  border: '1px solid #ccc',
-                                  borderRadius: 1,
-                                  bgcolor: '#f5f5f5'
-                                }}
-                              >
-                                <Typography variant="caption" sx={{ textAlign: 'center', p: 1 }}>
-                                  {file.file_extension || 'File'}
-                                </Typography>
-                              </Box>
-                            )}
-                            <Button
-                              size="small"
+                          return (
+                            <Box
+                              key={idx}
                               sx={{
-                                position: 'absolute',
-                                top: 0,
-                                right: 0,
-                                minWidth: 0,
-                                p: 0,
-                                bgcolor: 'rgba(255,255,255,0.7)'
-                              }}
-                              onClick={async () => {
-                                if (formId && file.id) {
-                                  // If form exists and file has ID, call delete API
-                                  try {
-                                    const response = await StaticFormServices.deleteFormAttachment({
-                                      form_id: formId,
-                                      attachment_id: file.id
-                                    });
-                                    if (response?.ResponseCode === "1") {
-                                      toast.success("Attachment deleted successfully.");
-
-                                      const newArr = values.attachments.filter((_, i) => i !== idx);
-                                      setFieldValue('attachments', newArr);
-
-                                      setIncidentFormDetails(prev => ({
-                                        ...prev,
-                                        attachments: newArr
-                                      }));
-                                    } else {
-                                      toast.error(response?.ResponseText || "Failed to delete attachment.");
-                                    }
-                                  } catch (error) {
-                                    console.error("Error deleting attachment:", error);
-                                    toast.error("Failed to delete attachment.");
-                                  } finally {
-                                    setLoading(false);
-                                  }
-                                } else {
-                                  // Just remove from state (for new uploads not yet saved)
-                                  const newArr = values.attachments.filter((_, i) => i !== idx);
-                                  setFieldValue('attachments', newArr);
-                                }
+                                position: "relative",
+                                display: "inline-block",
                               }}
                             >
-                              <span style={{ color: 'red', fontWeight: 'bold', fontSize: 18, lineHeight: 1 }}>×</span>
-                            </Button>
-                          </Box>
-                        );
-                      })}
-                    </Box>
-                  )}
+                              {isImage ? (
+                                <img
+                                  src={mediaUrl}
+                                  alt={fileName}
+                                  style={{
+                                    width: 80,
+                                    height: 80,
+                                    objectFit: "cover",
+                                    borderRadius: 4,
+                                    border: "1px solid #ccc",
+                                  }}
+                                />
+                              ) : isVideo ? (
+                                <video
+                                  src={mediaUrl}
+                                  style={{
+                                    width: 80,
+                                    height: 80,
+                                    objectFit: "cover",
+                                    borderRadius: 4,
+                                    border: "1px solid #ccc",
+                                  }}
+                                  controls
+                                />
+                              ) : (
+                                <Box
+                                  sx={{
+                                    width: 80,
+                                    height: 80,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    border: "1px solid #ccc",
+                                    borderRadius: 1,
+                                    bgcolor: "#f5f5f5",
+                                  }}
+                                >
+                                  <Typography
+                                    variant="caption"
+                                    sx={{ textAlign: "center", p: 1 }}
+                                  >
+                                    {file.file_extension || "File"}
+                                  </Typography>
+                                </Box>
+                              )}
+                              <Button
+                                size="small"
+                                sx={{
+                                  position: "absolute",
+                                  top: 0,
+                                  right: 0,
+                                  minWidth: 0,
+                                  p: 0,
+                                  bgcolor: "rgba(255,255,255,0.7)",
+                                }}
+                                onClick={async () => {
+                                  if (formId && file.id) {
+                                    // If form exists and file has ID, call delete API
+                                    try {
+                                      const response =
+                                        await StaticFormServices.deleteFormAttachment(
+                                          {
+                                            form_id: formId,
+                                            attachment_id: file.id,
+                                          },
+                                        );
+                                      if (response?.ResponseCode === "1") {
+                                        toast.success(
+                                          "Attachment deleted successfully.",
+                                        );
+
+                                        const newArr =
+                                          values.attachments.filter(
+                                            (_, i) => i !== idx,
+                                          );
+                                        setFieldValue("attachments", newArr);
+
+                                        setIncidentFormDetails((prev) => ({
+                                          ...prev,
+                                          attachments: newArr,
+                                        }));
+                                      } else {
+                                        toast.error(
+                                          response?.ResponseText ||
+                                            "Failed to delete attachment.",
+                                        );
+                                      }
+                                    } catch (error) {
+                                      console.error(
+                                        "Error deleting attachment:",
+                                        error,
+                                      );
+                                      toast.error(
+                                        "Failed to delete attachment.",
+                                      );
+                                    } finally {
+                                      setLoading(false);
+                                    }
+                                  } else {
+                                    // Just remove from state (for new uploads not yet saved)
+                                    const newArr = values.attachments.filter(
+                                      (_, i) => i !== idx,
+                                    );
+                                    setFieldValue("attachments", newArr);
+                                  }
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    color: "red",
+                                    fontWeight: "bold",
+                                    fontSize: 18,
+                                    lineHeight: 1,
+                                  }}
+                                >
+                                  ×
+                                </span>
+                              </Button>
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                    )}
                 </FormGroup>
               </Box>
 
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
-                <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%", backgroundColor: 'darkgray' }}>
+                <Box
+                  component="label"
+                  sx={{
+                    mb: 1,
+                    fontWeight: 600,
+                    width: "100%",
+                    backgroundColor: "darkgray",
+                  }}
+                >
                   NOTIFICATION
                 </Box>
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
                 <FormGroup row>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: "100%", mb: 1 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      width: "100%",
+                      mb: 1,
+                    }}
+                  >
                     <Box component="label" sx={{ fontWeight: 600 }}>
                       Informed Of Incident
                     </Box>
@@ -1055,27 +1424,45 @@ const IncidentForm = () => {
                         flexDirection: "row",
                       }}
                     >
-                      <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          width: "100%",
+                        }}
+                      >
                         <Checkbox
-                          checked={values.informed_of_incident?.includes(item.label) || false}
+                          checked={
+                            values.informed_of_incident?.includes(item.label) ||
+                            false
+                          }
                           onChange={() => {
                             const current = values.informed_of_incident || [];
                             if (current.includes(item.label)) {
                               setFieldValue(
                                 "informed_of_incident",
-                                current.filter((v) => v !== item.label)
+                                current.filter((v) => v !== item.label),
                               );
                               if (item.label === "Other") {
                                 setFieldValue("informed_of_inc_other_text", "");
                               }
                             } else {
-                              setFieldValue("informed_of_incident", [...current, item.label]);
+                              setFieldValue("informed_of_incident", [
+                                ...current,
+                                item.label,
+                              ]);
                             }
                           }}
                           name="informed_of_incident"
                         />
                         <Box sx={{ minWidth: 170, mr: 2 }}>{item.label}</Box>
-                        <Box sx={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
+                        <Box
+                          sx={{
+                            flex: 1,
+                            display: "flex",
+                            justifyContent: "flex-end",
+                          }}
+                        >
                           <TextField
                             size="small"
                             variant="filled"
@@ -1113,7 +1500,7 @@ const IncidentForm = () => {
                                       : item.key === "informed_of_inc_other"
                                         ? "initial_other"
                                         : "",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             sx={{ width: 180 }}
@@ -1123,7 +1510,7 @@ const IncidentForm = () => {
                     </Box>
                   ))}
                   {values.informed_of_incident?.includes("Other") && (
-                    <Box sx={{ width: '100%', mb: 2 }}>
+                    <Box sx={{ width: "100%", mb: 2 }}>
                       <TextField
                         fullWidth
                         size="small"
@@ -1133,9 +1520,15 @@ const IncidentForm = () => {
                         value={values.informed_of_inc_other_text || ""}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        error={Boolean(errors.informed_of_inc_other_text) && (touched.informed_of_inc_other_text || submitCount > 0)}
+                        error={
+                          Boolean(errors.informed_of_inc_other_text) &&
+                          (touched.informed_of_inc_other_text ||
+                            submitCount > 0)
+                        }
                         helperText={
-                          Boolean(errors.informed_of_inc_other_text) && (touched.informed_of_inc_other_text || submitCount > 0)
+                          Boolean(errors.informed_of_inc_other_text) &&
+                          (touched.informed_of_inc_other_text ||
+                            submitCount > 0)
                             ? errors.informed_of_inc_other_text
                             : ""
                         }
@@ -1143,15 +1536,20 @@ const IncidentForm = () => {
                     </Box>
                   )}
                 </FormGroup>
-
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
-                <Box component="label" sx={{ mb: 1, fontWeight: 700, width: "100%" }}>
+                <Box
+                  component="label"
+                  sx={{ mb: 1, fontWeight: 700, width: "100%" }}
+                >
                   Person Notified
                 </Box>
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }}>
-                <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                <Box
+                  component="label"
+                  sx={{ mb: 1, fontWeight: 600, width: "100%" }}
+                >
                   Family Doctor
                 </Box>
                 <TextField
@@ -1159,31 +1557,48 @@ const IncidentForm = () => {
                   variant="filled"
                   label="Family Doctor"
                   name="notified_family_doctor"
-                  value={values.notified_family_doctor || ''}
+                  value={values.notified_family_doctor || ""}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   sx={{ mb: 2 }}
                 />
-                <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                <Box
+                  component="label"
+                  sx={{ mb: 1, fontWeight: 600, width: "100%" }}
+                >
                   Date/Time
                 </Box>
                 <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Date"
-                      value={values.notified_family_doctor_date ? dayjs(values.notified_family_doctor_date) : null}
+                      value={
+                        values.notified_family_doctor_date
+                          ? dayjs(values.notified_family_doctor_date)
+                          : null
+                      }
                       onChange={(newValue) => {
-                        setFieldValue("notified_family_doctor_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                        setFieldValue(
+                          "notified_family_doctor_date",
+                          newValue ? newValue.format("YYYY-MM-DD") : "",
+                        );
                         if (newValue && !values.notified_family_doctor_tm) {
-                          setFieldValue("notified_family_doctor_tm", "12:00 PM");
+                          setFieldValue(
+                            "notified_family_doctor_tm",
+                            "12:00 PM",
+                          );
                         }
                       }}
                       slotProps={{
                         textField: {
                           fullWidth: true,
                           variant: "filled",
-                          error: touched.notified_family_doctor_date && Boolean(errors.notified_family_doctor_date),
-                          helperText: touched.notified_family_doctor_date && errors.notified_family_doctor_date,
+                          error:
+                            touched.notified_family_doctor_date &&
+                            Boolean(errors.notified_family_doctor_date),
+                          helperText:
+                            touched.notified_family_doctor_date &&
+                            errors.notified_family_doctor_date,
                         },
                       }}
                     />
@@ -1192,24 +1607,40 @@ const IncidentForm = () => {
                       ampm={true}
                       value={
                         values.notified_family_doctor_tm
-                          ? dayjs(values.notified_family_doctor_tm, values.notified_family_doctor_tm.includes("AM") || values.notified_family_doctor_tm.includes("PM") ? "HH:mm A" : "HH:mm")
+                          ? dayjs(
+                              values.notified_family_doctor_tm,
+                              values.notified_family_doctor_tm.includes("AM") ||
+                                values.notified_family_doctor_tm.includes("PM")
+                                ? "HH:mm A"
+                                : "HH:mm",
+                            )
                           : null
                       }
                       onChange={(newValue) =>
-                        setFieldValue("notified_family_doctor_tm", newValue ? newValue.format("HH:mm A") : "")
+                        setFieldValue(
+                          "notified_family_doctor_tm",
+                          newValue ? newValue.format("HH:mm A") : "",
+                        )
                       }
                       slotProps={{
                         textField: {
                           fullWidth: true,
                           variant: "filled",
-                          error: touched.notified_family_doctor_tm && Boolean(errors.notified_family_doctor_tm),
-                          helperText: touched.notified_family_doctor_tm && errors.notified_family_doctor_tm,
+                          error:
+                            touched.notified_family_doctor_tm &&
+                            Boolean(errors.notified_family_doctor_tm),
+                          helperText:
+                            touched.notified_family_doctor_tm &&
+                            errors.notified_family_doctor_tm,
                         },
                       }}
                     />
                   </LocalizationProvider>
                 </Box>
-                <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                <Box
+                  component="label"
+                  sx={{ mb: 1, fontWeight: 600, width: "100%" }}
+                >
                   Other
                 </Box>
                 <TextField
@@ -1217,7 +1648,7 @@ const IncidentForm = () => {
                   variant="filled"
                   label="Other"
                   name="notified_other"
-                  value={values.notified_other || ''}
+                  value={values.notified_other || ""}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   sx={{ mb: 2 }}
@@ -1226,9 +1657,16 @@ const IncidentForm = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Date"
-                      value={values.notified_other_date ? dayjs(values.notified_other_date) : null}
+                      value={
+                        values.notified_other_date
+                          ? dayjs(values.notified_other_date)
+                          : null
+                      }
                       onChange={(newValue) => {
-                        setFieldValue("notified_other_date", newValue ? newValue.format("YYYY-MM-DD") : "");
+                        setFieldValue(
+                          "notified_other_date",
+                          newValue ? newValue.format("YYYY-MM-DD") : "",
+                        );
                         if (newValue && !values.notified_other_tm) {
                           setFieldValue("notified_other_tm", "12:00 PM");
                         }
@@ -1237,8 +1675,14 @@ const IncidentForm = () => {
                         textField: {
                           fullWidth: true,
                           variant: "filled",
-                          error: Boolean(errors.notified_other_date) && (touched.notified_other_date || submitCount > 0),
-                          helperText: Boolean(errors.notified_other_date) && (touched.notified_other_date || submitCount > 0) ? errors.notified_other_date : "",
+                          error:
+                            Boolean(errors.notified_other_date) &&
+                            (touched.notified_other_date || submitCount > 0),
+                          helperText:
+                            Boolean(errors.notified_other_date) &&
+                            (touched.notified_other_date || submitCount > 0)
+                              ? errors.notified_other_date
+                              : "",
                         },
                       }}
                     />
@@ -1247,25 +1691,43 @@ const IncidentForm = () => {
                       ampm={true}
                       value={
                         values.notified_other_tm
-                          ? dayjs(values.notified_other_tm, values.notified_other_tm.includes("AM") || values.notified_other_tm.includes("PM") ? "HH:mm A" : "HH:mm")
+                          ? dayjs(
+                              values.notified_other_tm,
+                              values.notified_other_tm.includes("AM") ||
+                                values.notified_other_tm.includes("PM")
+                                ? "HH:mm A"
+                                : "HH:mm",
+                            )
                           : null
                       }
                       onChange={(newValue) =>
-                        setFieldValue("notified_other_tm", newValue ? newValue.format("HH:mm A") : "")
+                        setFieldValue(
+                          "notified_other_tm",
+                          newValue ? newValue.format("HH:mm A") : "",
+                        )
                       }
                       slotProps={{
                         textField: {
                           fullWidth: true,
                           variant: "filled",
-                          error: Boolean(errors.notified_other_tm) && (touched.notified_other_tm || submitCount > 0),
-                          helperText: Boolean(errors.notified_other_tm) && (touched.notified_other_tm || submitCount > 0) ? errors.notified_other_tm : "",
+                          error:
+                            Boolean(errors.notified_other_tm) &&
+                            (touched.notified_other_tm || submitCount > 0),
+                          helperText:
+                            Boolean(errors.notified_other_tm) &&
+                            (touched.notified_other_tm || submitCount > 0)
+                              ? errors.notified_other_tm
+                              : "",
                         },
                       }}
                     />
                   </LocalizationProvider>
                 </Box>
 
-                <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                <Box
+                  component="label"
+                  sx={{ mb: 1, fontWeight: 600, width: "100%" }}
+                >
                   Notified Resident's Responsible Party
                 </Box>
                 <FormGroup row>
@@ -1274,9 +1736,16 @@ const IncidentForm = () => {
                       key={option.key}
                       control={
                         <Radio
-                          checked={String(values.notified_resident_responsible_party).toLowerCase() === option.key.toLowerCase()}
+                          checked={
+                            String(
+                              values.notified_resident_responsible_party,
+                            ).toLowerCase() === option.key.toLowerCase()
+                          }
                           onChange={() => {
-                            setFieldValue("notified_resident_responsible_party", option.key);
+                            setFieldValue(
+                              "notified_resident_responsible_party",
+                              option.key,
+                            );
                             // Clear related fields when changing the selection
                             setFieldValue("notified_resident_name", "");
                             setFieldValue("notified_resident_date", "");
@@ -1298,19 +1767,34 @@ const IncidentForm = () => {
                       variant="filled"
                       label="Notified Resident Name"
                       name="notified_resident_name"
-                      value={values.notified_resident_name || ''}
+                      value={values.notified_resident_name || ""}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      error={Boolean(errors.notified_resident_name) && (touched.notified_resident_name || submitCount > 0)}
-                      helperText={Boolean(errors.notified_resident_name) && (touched.notified_resident_name || submitCount > 0) ? errors.notified_resident_name : ""}
+                      error={
+                        Boolean(errors.notified_resident_name) &&
+                        (touched.notified_resident_name || submitCount > 0)
+                      }
+                      helperText={
+                        Boolean(errors.notified_resident_name) &&
+                        (touched.notified_resident_name || submitCount > 0)
+                          ? errors.notified_resident_name
+                          : ""
+                      }
                       sx={{ mb: 2 }}
                     />
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
                         label="Date"
-                        value={values.notified_resident_date ? dayjs(values.notified_resident_date) : null}
+                        value={
+                          values.notified_resident_date
+                            ? dayjs(values.notified_resident_date)
+                            : null
+                        }
                         onChange={(newValue) => {
-                          setFieldValue("notified_resident_date", newValue ? newValue.format("YYYY-MM-DD") : "");
+                          setFieldValue(
+                            "notified_resident_date",
+                            newValue ? newValue.format("YYYY-MM-DD") : "",
+                          );
                           if (newValue && !values.notified_resident_tm) {
                             setFieldValue("notified_resident_tm", "12:00 PM");
                           }
@@ -1319,9 +1803,14 @@ const IncidentForm = () => {
                           textField: {
                             fullWidth: true,
                             variant: "filled",
-                            error: Boolean(errors.notified_resident_date) && (touched.notified_resident_date || submitCount > 0),
+                            error:
+                              Boolean(errors.notified_resident_date) &&
+                              (touched.notified_resident_date ||
+                                submitCount > 0),
                             helperText:
-                              Boolean(errors.notified_resident_date) && (touched.notified_resident_date || submitCount > 0)
+                              Boolean(errors.notified_resident_date) &&
+                              (touched.notified_resident_date ||
+                                submitCount > 0)
                                 ? errors.notified_resident_date
                                 : "",
                           },
@@ -1332,19 +1821,32 @@ const IncidentForm = () => {
                         ampm={true}
                         value={
                           values.notified_resident_tm
-                            ? dayjs(values.notified_resident_tm, values.notified_resident_tm.includes("AM") || values.notified_resident_tm.includes("PM") ? "HH:mm A" : "HH:mm")
+                            ? dayjs(
+                                values.notified_resident_tm,
+                                values.notified_resident_tm.includes("AM") ||
+                                  values.notified_resident_tm.includes("PM")
+                                  ? "HH:mm A"
+                                  : "HH:mm",
+                              )
                             : null
                         }
-                        onChange={(newValue) =>
-                          setFieldValue("notified_resident_tm", newValue ? newValue.format("HH:mm A") : "")  // Changed
+                        onChange={
+                          (newValue) =>
+                            setFieldValue(
+                              "notified_resident_tm",
+                              newValue ? newValue.format("HH:mm A") : "",
+                            ) // Changed
                         }
                         slotProps={{
                           textField: {
                             fullWidth: true,
                             variant: "filled",
-                            error: Boolean(errors.notified_resident_tm) && (touched.notified_resident_tm || submitCount > 0),
+                            error:
+                              Boolean(errors.notified_resident_tm) &&
+                              (touched.notified_resident_tm || submitCount > 0),
                             helperText:
-                              Boolean(errors.notified_resident_tm) && (touched.notified_resident_tm || submitCount > 0)
+                              Boolean(errors.notified_resident_tm) &&
+                              (touched.notified_resident_tm || submitCount > 0)
                                 ? errors.notified_resident_tm
                                 : "",
                           },
@@ -1353,7 +1855,10 @@ const IncidentForm = () => {
                     </LocalizationProvider>
                   </Box>
                 )}
-                <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                <Box
+                  component="label"
+                  sx={{ mb: 1, fontWeight: 600, width: "100%" }}
+                >
                   Completed By
                 </Box>
                 <TextField
@@ -1361,14 +1866,25 @@ const IncidentForm = () => {
                   variant="filled"
                   label="Completed By"
                   name="completed_by"
-                  value={values.completed_by || ''}
+                  value={values.completed_by || ""}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   sx={{ mb: 2 }}
-                  error={Boolean(errors.completed_by) && (touched.completed_by || submitCount > 0)}
-                  helperText={Boolean(errors.completed_by) && (touched.completed_by || submitCount > 0) ? errors.completed_by : ""}
+                  error={
+                    Boolean(errors.completed_by) &&
+                    (touched.completed_by || submitCount > 0)
+                  }
+                  helperText={
+                    Boolean(errors.completed_by) &&
+                    (touched.completed_by || submitCount > 0)
+                      ? errors.completed_by
+                      : ""
+                  }
                 />
-                <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                <Box
+                  component="label"
+                  sx={{ mb: 1, fontWeight: 600, width: "100%" }}
+                >
                   Position
                 </Box>
                 <TextField
@@ -1376,23 +1892,41 @@ const IncidentForm = () => {
                   variant="filled"
                   label="Position"
                   name="completed_position"
-                  value={values.completed_position || ''}
+                  value={values.completed_position || ""}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  error={Boolean(errors.completed_position) && (touched.completed_position || submitCount > 0)}
-                  helperText={Boolean(errors.completed_position) && (touched.completed_position || submitCount > 0) ? errors.completed_position : ""}
+                  error={
+                    Boolean(errors.completed_position) &&
+                    (touched.completed_position || submitCount > 0)
+                  }
+                  helperText={
+                    Boolean(errors.completed_position) &&
+                    (touched.completed_position || submitCount > 0)
+                      ? errors.completed_position
+                      : ""
+                  }
                   sx={{ mb: 2 }}
                 />
-                <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                <Box
+                  component="label"
+                  sx={{ mb: 1, fontWeight: 600, width: "100%" }}
+                >
                   Date/Time Completed
                 </Box>
                 <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Date"
-                      value={values.completed_date ? dayjs(values.completed_date) : null}
+                      value={
+                        values.completed_date
+                          ? dayjs(values.completed_date)
+                          : null
+                      }
                       onChange={(newValue) => {
-                        setFieldValue("completed_date", newValue ? newValue.format("YYYY-MM-DD") : "")
+                        setFieldValue(
+                          "completed_date",
+                          newValue ? newValue.format("YYYY-MM-DD") : "",
+                        );
                         if (newValue && !values.completed_tm) {
                           setFieldValue("completed_tm", "12:00 PM");
                         }
@@ -1401,8 +1935,11 @@ const IncidentForm = () => {
                         textField: {
                           fullWidth: true,
                           variant: "filled",
-                          error: touched.completed_date && Boolean(errors.completed_date),
-                          helperText: touched.completed_date && errors.completed_date,
+                          error:
+                            touched.completed_date &&
+                            Boolean(errors.completed_date),
+                          helperText:
+                            touched.completed_date && errors.completed_date,
                         },
                       }}
                     />
@@ -1411,24 +1948,39 @@ const IncidentForm = () => {
                       ampm={true}
                       value={
                         values.completed_tm
-                          ? dayjs(values.completed_tm, values.completed_tm.includes("AM") || values.completed_tm.includes("PM") ? "HH:mm A" : "HH:mm")
+                          ? dayjs(
+                              values.completed_tm,
+                              values.completed_tm.includes("AM") ||
+                                values.completed_tm.includes("PM")
+                                ? "HH:mm A"
+                                : "HH:mm",
+                            )
                           : null
                       }
                       onChange={(newValue) =>
-                        setFieldValue("completed_tm", newValue ? newValue.format("HH:mm A") : "")
+                        setFieldValue(
+                          "completed_tm",
+                          newValue ? newValue.format("HH:mm A") : "",
+                        )
                       }
                       slotProps={{
                         textField: {
                           fullWidth: true,
                           variant: "filled",
-                          error: touched.completed_tm && Boolean(errors.completed_tm),
-                          helperText: touched.completed_tm && errors.completed_tm,
+                          error:
+                            touched.completed_tm &&
+                            Boolean(errors.completed_tm),
+                          helperText:
+                            touched.completed_tm && errors.completed_tm,
                         },
                       }}
                     />
                   </LocalizationProvider>
                 </Box>
-                <Box component="label" sx={{ mb: 1, fontWeight: 600, width: "100%" }}>
+                <Box
+                  component="label"
+                  sx={{ mb: 1, fontWeight: 600, width: "100%" }}
+                >
                   Assign Follow Up to
                 </Box>
                 <TextField
@@ -1437,7 +1989,7 @@ const IncidentForm = () => {
                   variant="filled"
                   label="Assign Follow Up to"
                   name="follow_up_assigned_to"
-                  value={values.follow_up_assigned_to || ''}
+                  value={values.follow_up_assigned_to || ""}
                   onChange={(e) => {
                     handleChange(e);
                     const selectedId = e.target.value;
@@ -1460,21 +2012,29 @@ const IncidentForm = () => {
                   }}
                   onBlur={handleBlur}
                   sx={{ mb: 2 }}
-                  error={touched.follow_up_assigned_to && Boolean(errors.follow_up_assigned_to)}
-                  helperText={touched.follow_up_assigned_to && errors.follow_up_assigned_to}
+                  error={
+                    touched.follow_up_assigned_to &&
+                    Boolean(errors.follow_up_assigned_to)
+                  }
+                  helperText={
+                    touched.follow_up_assigned_to &&
+                    errors.follow_up_assigned_to
+                  }
                   SelectProps={{
                     MenuProps: {
                       PaperProps: {
                         style: {
-                          maxHeight: 200
-                        }
-                      }
+                          maxHeight: 200,
+                        },
+                      },
                     },
                     renderValue: (selected) => {
                       if (!selected) return "Select";
-                      const user = userData?.user_list?.find(u => u.id === selected);
+                      const user = userData?.user_list?.find(
+                        (u) => u.id === selected,
+                      );
                       return user ? user.name : selected;
-                    }
+                    },
                   }}
                 >
                   <MenuItem value="">Select</MenuItem>
@@ -1485,14 +2045,18 @@ const IncidentForm = () => {
                       </MenuItem>
                     ))}
                 </TextField>
-
               </Box>
               <Box sx={{ gridColumn: "span 4", mt: 2 }} ref={followUpRef}>
                 <FormControlLabel
                   control={
                     <Checkbox
                       checked={values.show_follow_up_details || false}
-                      onChange={(e) => setFieldValue('show_follow_up_details', e.target.checked)}
+                      onChange={(e) =>
+                        setFieldValue(
+                          "show_follow_up_details",
+                          e.target.checked,
+                        )
+                      }
                       name="show_follow_up_details"
                     />
                   }
@@ -1500,8 +2064,19 @@ const IncidentForm = () => {
                 />
                 {values.show_follow_up_details && (
                   <>
-                    <Box sx={{ mb: 2, backgroundColor: '#e0e0e0', borderRadius: 1, py: 1 }}>
-                      <Typography variant="h6" align="center" sx={{ fontWeight: 700, color: '#333' }}>
+                    <Box
+                      sx={{
+                        mb: 2,
+                        backgroundColor: "#e0e0e0",
+                        borderRadius: 1,
+                        py: 1,
+                      }}
+                    >
+                      <Typography
+                        variant="h6"
+                        align="center"
+                        sx={{ fontWeight: 700, color: "#333" }}
+                      >
                         FOLLOW UP
                       </Typography>
                     </Box>
@@ -1512,11 +2087,14 @@ const IncidentForm = () => {
                       variant="filled"
                       label="ISSUE (Problem)"
                       name="followUp_issue"
-                      value={values.followUp_issue || ''}
+                      value={values.followUp_issue || ""}
                       onChange={handleChange}
                       onBlur={handleBlur}
                       sx={{ mb: 2 }}
-                      disabled={!canEditFollowUpFields && (formId ? !canUpdateFollowUp : !canEditFollowUp)}
+                      disabled={
+                        !canEditFollowUpFields &&
+                        (formId ? !canUpdateFollowUp : !canEditFollowUp)
+                      }
                     />
                     <TextField
                       fullWidth
@@ -1525,11 +2103,14 @@ const IncidentForm = () => {
                       variant="filled"
                       label="FINDINGS (Gather Information)"
                       name="followUp_findings"
-                      value={values.followUp_findings || ''}
+                      value={values.followUp_findings || ""}
                       onChange={handleChange}
                       onBlur={handleBlur}
                       sx={{ mb: 2 }}
-                      disabled={!canEditFollowUpFields && (formId ? !canUpdateFollowUp : !canEditFollowUp)}
+                      disabled={
+                        !canEditFollowUpFields &&
+                        (formId ? !canUpdateFollowUp : !canEditFollowUp)
+                      }
                     />
                     <TextField
                       fullWidth
@@ -1538,11 +2119,14 @@ const IncidentForm = () => {
                       variant="filled"
                       label="POSSIBLE SOLUTIONS (Identify Solution)"
                       name="followUp_possible_solutions"
-                      value={values.followUp_possible_solutions || ''}
+                      value={values.followUp_possible_solutions || ""}
                       onChange={handleChange}
                       onBlur={handleBlur}
                       sx={{ mb: 2 }}
-                      disabled={!canEditFollowUpFields && (formId ? !canUpdateFollowUp : !canEditFollowUp)}
+                      disabled={
+                        !canEditFollowUpFields &&
+                        (formId ? !canUpdateFollowUp : !canEditFollowUp)
+                      }
                     />
                     <TextField
                       fullWidth
@@ -1551,11 +2135,14 @@ const IncidentForm = () => {
                       variant="filled"
                       label="ACTION PLAN"
                       name="followUp_action_plan"
-                      value={values.followUp_action_plan || ''}
+                      value={values.followUp_action_plan || ""}
                       onChange={handleChange}
                       onBlur={handleBlur}
                       sx={{ mb: 2 }}
-                      disabled={!canEditFollowUpFields && (formId ? !canUpdateFollowUp : !canEditFollowUp)}
+                      disabled={
+                        !canEditFollowUpFields &&
+                        (formId ? !canUpdateFollowUp : !canEditFollowUp)
+                      }
                     />
                     <TextField
                       fullWidth
@@ -1564,11 +2151,14 @@ const IncidentForm = () => {
                       variant="filled"
                       label="FOLLOW UP (Examine Result - Did the Plan work?)"
                       name="followUp_examine_result"
-                      value={values.followUp_examine_result || ''}
+                      value={values.followUp_examine_result || ""}
                       onChange={handleChange}
                       onBlur={handleBlur}
                       sx={{ mb: 2 }}
-                      disabled={!canEditFollowUpFields && (formId ? !canUpdateFollowUp : !canEditFollowUp)}
+                      disabled={
+                        !canEditFollowUpFields &&
+                        (formId ? !canUpdateFollowUp : !canEditFollowUp)
+                      }
                     />
                   </>
                 )}
@@ -1584,7 +2174,7 @@ const IncidentForm = () => {
                   disabled={loading}
                   sx={{
                     width: "200px",
-                    bgcolor: '#1976d2',
+                    bgcolor: "#1976d2",
                     color: "#fcfcfc",
                     fontSize: "16px",
                     fontWeight: "bold",
@@ -1592,23 +2182,34 @@ const IncidentForm = () => {
                     mt: "18px",
                     transition: ".3s ease",
                     ":hover": {
-                      bgcolor: '#115293',
+                      bgcolor: "#115293",
                     },
                   }}
                 >
                   {loading ? "Loading..." : "Submit"}
                 </CustomButton>
               </Box>
-              <Dialog open={showFollowUpConfirm} onClose={() => setShowFollowUpConfirm(false)}>
+              <Dialog
+                open={showFollowUpConfirm}
+                onClose={() => setShowFollowUpConfirm(false)}
+              >
                 <DialogTitle>Incomplete Follow Up</DialogTitle>
                 <DialogContent>
-                  Follow Up form is not completely filled. Do you still want to submit it?
+                  Follow Up form is not completely filled. Do you still want to
+                  submit it?
                 </DialogContent>
                 <DialogActions>
-                  <Button onClick={() => setShowFollowUpConfirm(false)} color="primary">
+                  <Button
+                    onClick={() => setShowFollowUpConfirm(false)}
+                    color="primary"
+                  >
                     Cancel
                   </Button>
-                  <Button onClick={handleConfirmSubmit} color="primary" autoFocus>
+                  <Button
+                    onClick={handleConfirmSubmit}
+                    color="primary"
+                    autoFocus
+                  >
                     Yes, Submit
                   </Button>
                 </DialogActions>
@@ -1628,8 +2229,14 @@ const IncidentForm = () => {
         }}
         pdfUrl={pdfUrl}
         onMail={hookHandleSendMail}
-        showPrintButton={userData?.form_types?.find((f) => f.id === 1)?.allow_print === 1}
-        showMailButton={userData?.form_types?.find((f) => f.id === 1)?.allow_mail === 1 ? true : false}
+        showPrintButton={
+          userData?.form_types?.find((f) => f.id === 1)?.allow_print === 1
+        }
+        showMailButton={
+          userData?.form_types?.find((f) => f.id === 1)?.allow_mail === 1
+            ? true
+            : false
+        }
         showFollowUpButton={isFollowUpIncomplete}
         onFollowUp={handleFollowUpClick}
         onPrint={() => window.open(pdfUrl, "_blank")}
